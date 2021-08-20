@@ -6,7 +6,7 @@
 import pytest
 
 
-from protocol import protocol
+from protocol import base
 
 
 @pytest.fixture

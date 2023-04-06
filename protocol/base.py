@@ -219,3 +219,21 @@ class BaseSequence(MutableMapping):
     def __repr__(self):
         return self.__str__()
 
+
+class ImagingSequence(BaseSequence, ABC):
+    """Class representing an Imaging sequence
+
+    Although we would use it mostly for MR imaging sequences to start with,
+      it should be able to store any sequence captured by DICOM: CT, XRAY etc
+    """
+
+
+    def __init__(self, name='MRI'):
+        """constructor"""
+
+        super().__init__(name=name)
+
+
+    def from_dicom(self, dcm_path):
+        """Parses the parameter values from a given DICOM file."""
+

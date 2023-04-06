@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "protocol"
+dynamic = ["version"]
+description = "generic framework to develop protocols"
+readme = "README.rst"
+license = "Apache-2.0"
+authors = [
+    { name = "Pradeep Reddy Raamana", email = "raamana@gmail.com" },
+]
+keywords = [
+    "protocol",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache-2.0",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/raamana/protocol"
+
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "protocol/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/protocol",
+]
+exclude = [
+  "/.github",
+  "/docs",
+]

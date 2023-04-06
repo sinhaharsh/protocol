@@ -93,3 +93,129 @@ class BaseParameter(ABC):
 
         return f'{self.name}({self.value})'
 
+class BaseSequence(MutableMapping):
+    """Container to capture imaging parameter values for a given sequence.
+
+    Intended usage:
+
+    seq = Sequence()
+    seq.params['name'] = value
+
+    if seq1.compliant(seq2):
+        # they are compliant
+    else:
+        # not compliant
+
+    """
+
+
+    def __init__(self,
+                 name: str = 'Sequence',
+                 params: dict = None):
+        """constructor"""
+
+        super().__init__()
+
+        self.name = name
+        self.params = set()
+
+        if isinstance(params, dict):
+            self.params = set(list(params.keys()))
+            self.__dict__.update(params)
+
+        # parameters and their values can be modified
+        self._mutable = True
+
+
+    def add(self, param_list: Union[BaseParameter, list[BaseParameter]]):
+        """method to add new parameters; overwrite previous values if exists."""
+
+        if not isinstance(param_list, Iterable):
+            param_list = [param_list, ]
+
+        for param in param_list:
+            if not isinstance(param, BaseParameter):
+                raise ValueError(f'Input value {param} is not of type BaseParameter')
+
+            # retaining full Parameter instance, not just value
+            self.__dict__[param.name] = param
+            self.params.add(param.name)
+
+
+    def __setitem__(self,
+                    key : str,
+                    value: BaseParameter):
+        """setter"""
+
+        if not isinstance(value, BaseParameter):
+            raise ValueError('Input value is not of type BaseParameter')
+
+        if not isinstance(key, str):
+            raise ValueError('Input name is not a string!')
+
+        self.__dict__[key] = value
+        self.params.add(key)
+
+
+    def __getitem__(self, name,
+                    not_found_value=Unspecified):
+        """getter"""
+
+        try:
+            return self.__dict__[name]
+        except KeyError:
+            return not_found_value
+
+
+    def compliant(self, other):
+        """Method to check if one sequence is compatible w.r.t another,
+            either in equality or within acceptable range, for each parameter.
+        """
+
+        if not isinstance(other, BaseSequence):
+            raise TypeError(f'Sequence to compare {other} is not of type '
+                            f'BaseSequence')
+
+        non_compliant_params = list()
+
+        for pname in self.params:
+            this_param = self.__dict__[pname]
+            that_param = other[pname]
+            if not that_param.compliant(this_param):
+                non_compliant_params.append((this_param, that_param))
+
+        bool_flag = len(non_compliant_params) < 1
+
+        return bool_flag, non_compliant_params
+
+
+    def __eq__(self, other):
+        """equivalence operator"""
+
+        bool_flag, _ = self.compliant(other)
+        return bool_flag
+
+
+    def __delitem__(self, key):
+        del self.__dict__[key]
+        self.params.remove(key)
+
+    def __iter__(self):
+        return iter(self.params)
+
+    def __len__(self):
+        return len(self.params)
+
+    def __str__(self):
+        """human readable representation"""
+
+        plist = list()
+        for key in self.params:
+            param = self.__dict__[key]
+            plist.append(f'{param.name}={param.value}')
+
+        return '{}({})'.format(self.name, ','.join(plist))
+
+    def __repr__(self):
+        return self.__str__()
+

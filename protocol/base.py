@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 
-"""Main module."""
+"""Main module containing the core classes."""
+
+from abc import ABC, abstractmethod
+from collections import UserDict
+from collections.abc import Iterable, MutableMapping
+from warnings import warn
+from typing import Union, Optional
+
+from protocol.config import (supported_imaging_modalities,
+                             MRI_PARAMETERS,
+                             BASE_IMAGING_PARAMETER_NAMES)
+
+
 # A [imaging] Parameter is a container class for a single value, with a name
 #       with methods to check for compliance and validity
 # A [imaging] Sequence is defined as a set of parameters
@@ -8,6 +20,8 @@
 # A [Sequence] Protocol is an unmutable Sequence for reference
 # An Imaging Protocol is an ordered sequence of Sequences for a single session
 #       although their order isn't used or checked in any way
+
+
 class Unspecified(object):
     """Class to denote an unspecified value
 
@@ -92,6 +106,7 @@ class BaseParameter(ABC):
         """repr"""
 
         return f'{self.name}({self.value})'
+
 
 class BaseSequence(MutableMapping):
     """Container to capture imaging parameter values for a given sequence.
@@ -237,3 +252,110 @@ class ImagingSequence(BaseSequence, ABC):
     def from_dicom(self, dcm_path):
         """Parses the parameter values from a given DICOM file."""
 
+
+
+class BaseProtocol(BaseSequence):
+    """
+    Base class for all protocols.
+
+    A protocol is a sequence, except it is not mutable, to serve as a reference.
+    """
+
+
+    def __init__(self,
+                 seq : BaseSequence,  # not optional
+                 name="Protocol"):
+        """constructor"""
+
+        super().__init__(params=seq.params, name=name)
+        self._mutable = False
+
+
+
+
+class BaseImagingProtocol(BaseProtocol):
+    """Base class for all imaging protocols such as MRI / neuroimaging.
+    """
+
+
+    def __init__(self,
+                 name='ImagingProtocol',
+                 category='MR'):
+        """constructor
+        """
+
+        super().__init__(name=name)
+
+        # to distinguish between different types of imaging: MR, CT, XRAY etc.
+        #   as they touch different portions of DICOM
+        if category not in supported_imaging_modalities:
+            raise TypeError(f'This modality {category} not supported.'
+                            f'Choose one of {supported_imaging_modalities}')
+        else:
+            self._category = category
+
+
+class BaseMRImagingProtocol(BaseImagingProtocol):
+    """Base class for all MR imaging protocols, including neuroimaging datasets
+    """
+
+
+    def __init__(self,
+                 name="MRIProtocol",
+                 path=None):
+        """constructor"""
+
+        super().__init__(name=name, category='MR')
+
+        self._seq = dict()
+
+
+    def add(self, seq):
+        """Adds a new sequence to the current protocol"""
+
+        if not isinstance(seq, BaseSequence):
+            raise TypeError('Invalid type! Must be a valid instance of BaseSequence')
+
+        if seq.name in self._seq:
+            raise ValueError('This sequence already exists! Double check or rename!')
+
+        self._seq[seq.name] = seq
+
+
+    def __bool__(self):
+        """Checks if the protocol is empty"""
+
+        if len(self._seq) < 1:
+            return False
+        else:
+            return True
+
+
+class SiemensMRIProtocol(BaseMRImagingProtocol):
+    """Siemens specific MRI protocol
+    """
+
+
+    def __init__(self):
+        """"""
+
+
+    def _parse_private_header(self):
+        """method to parse vendor specific headers"""
+
+
+
+# MR_protocol = BaseMRImagingProtocol('MRP')
+#
+# MR_protocol['param']
+# MR_protocol['param'] = value
+#
+# MR_protocol.set_param(name, value)
+# MR_protocol.get_param(name)
+#
+# mrds = MRdataset()
+#
+# mrds[subject, session, run] = list()  # list of volumes from different modalities
+# mrds[modality] = list()  # list of all sessions with that modality
+#
+# MRdataset

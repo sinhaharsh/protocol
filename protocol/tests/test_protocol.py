@@ -1,25 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `protocol` package."""
-
 import pytest
+from pathlib import Path
+from protocol.base import Unspecified, BaseParameter, ImagingSequence
+from protocol.imaging import TR, FA
+
+test_dir = Path(__file__).parent.resolve()
+base_dir = test_dir / 'datasets'
+path_d14 = base_dir / 'ds114_test2'
 
 
-from protocol import base
+tr = TR(1200)
+fa = FA(90)
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
+seq = ImagingSequence('MRI')
+seq.add([tr, fa])
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
+s2 = ImagingSequence()
+s2.add([fa, tr])
 
+print(s2.compliant(seq))
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+print(s2==seq)
+
+print('test')

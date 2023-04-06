@@ -1,8 +1,9 @@
-from protocol.base import BaseParameter, Unspecified
-from protocol.config import (BASE_IMAGING_PARAMS_DICOM_TAGS as IMAGING_PARAMS,
-                             ACRONYMS_IMAGING_PARAMETERS as ACRONYMS)
-import numpy as np
 from numbers import Number
+
+import numpy as np
+from protocol.base import BaseParameter, Unspecified
+from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
+                             BASE_IMAGING_PARAMS_DICOM_TAGS as IMAGING_PARAMS)
 
 
 class RepetitionTime(BaseParameter):

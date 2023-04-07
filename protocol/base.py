@@ -88,7 +88,13 @@ class BaseParameter(ABC):
     def __repr__(self):
         """repr"""
 
-        return f'{self.name}({self.value})'
+        name = self.acronym if self.acronym else self.name
+        return f'{name}({self.value})'
+
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class NumericParameter(BaseParameter):
     """Parameter specific class for RepetitionTime"""
@@ -256,7 +262,8 @@ class BaseSequence(MutableMapping):
         plist = list()
         for key in self.params:
             param = self.__dict__[key]
-            plist.append(f'{param.name}={param.value}')
+            name = param.acronym if param.acronym else param.name
+            plist.append(f'{name}={param.value}')
 
         return '{}({})'.format(self.name, ','.join(plist))
 

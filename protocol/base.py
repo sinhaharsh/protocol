@@ -4,9 +4,11 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, MutableMapping
-from warnings import warn
+from numbers import Number
 from typing import Union
+from warnings import warn
 
+import numpy as np
 from protocol.config import (Unspecified)
 
 

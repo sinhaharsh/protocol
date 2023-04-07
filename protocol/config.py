@@ -80,3 +80,46 @@ ACRONYMS_IMAGING_PARAMETERS = {
     }
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
+
+
+# Constant dicom Identifiers used to extract dicom headers
+HEADER_TAGS = {
+    "image_header_info": [0x29, 0x1010],
+    "series_header_info": [0x29, 0x1020],
+}
+SLICE_MODE = {
+    "1": "sequential",
+    "2": "interleaved",
+    "4": "singleshot"
+}
+SSDict = {
+    "SE": "Spin Echo",
+    "IR": "Inversion Recovery",
+    "GR": "Gradient Recalled",
+    "EP": "Echo Planar",
+    "RM": "Research Mode"
+}
+SVDict = {
+    "SK": "segmented k-space",
+    "MTC": "magnetization transfer contrast",
+    "SS": "steady state",
+    "TRSS": "time reversed steady state",
+    "SP": "spoiled",
+    "MP": "MAG prepared",
+    "OSP": "oversampling phase",
+    "NONE": "no sequence variant"
+}
+
+PAT = {
+    "1": 'None',
+    "2": 'Grappa',
+    "3": 'Sense'
+}
+
+SHIM = {
+    "1": 'tune_up',
+    "2": 'standard',
+    "4": 'advanced'
+}
+
+ATDict = ["2D", "3D"]

@@ -200,10 +200,17 @@ class ImagingSequence(BaseSequence, ABC):
     """
 
 
-    def __init__(self, name='MRI'):
+    def __init__(self,
+                 name='MRI',
+                 dicom=None):
         """constructor"""
 
         super().__init__(name=name)
+
+        self.multi_echo = False
+
+        if dicom is not None:
+            self.parse(dicom)
 
 
     def parse(self, dicom):

@@ -3,14 +3,11 @@
 """Main module containing the core classes."""
 
 from abc import ABC, abstractmethod
-from collections import UserDict
 from collections.abc import Iterable, MutableMapping
 from warnings import warn
-from typing import Union, Optional
+from typing import Union
 
-from protocol.config import (supported_imaging_modalities,
-                             MRI_PARAMETERS,
-                             BASE_IMAGING_PARAMETER_NAMES)
+from protocol.config import (Unspecified)
 
 
 # A [imaging] Parameter is a container class for a single value, with a name

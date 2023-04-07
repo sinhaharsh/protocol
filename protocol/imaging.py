@@ -1,9 +1,15 @@
+from abc import ABC
 from numbers import Number
+from pathlib import Path
 
 import numpy as np
+import pydicom
+from protocol import BaseSequence
 from protocol.base import BaseParameter, NumericParameter
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
-                             BASE_IMAGING_PARAMS_DICOM_TAGS as IMAGING_PARAMS)
+                             BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
+                             Unspecified)
+from protocol.utils import get_dicom_param_value
 
 
 class RepetitionTime(NumericParameter):
@@ -50,6 +56,7 @@ class FlipAngle(NumericParameter):
         self.abs_tolerance = 0  # degrees
 
 
+    # overriding base class method
     def _check_compliance(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
@@ -83,14 +90,17 @@ class EffectiveEchoSpacing(NumericParameter):
 class PhaseEncodingDirection(BaseParameter):
     """Parameter specific class for PhaseEncodingDirection"""
 
+    _name = 'PhaseEncodingDirection'
 
     def __init__(self, value=Unspecified):
         """Constructor."""
 
-        _name = 'PhaseEncodingDirection'
-        super().__init__(name=_name, dtype=str, required=True,
-                         severity='critical', dicom_tag=IMAGING_PARAMS[_name],
-                         acronym=ACRONYMS[_name])
+        super().__init__(name=self._name,
+                         dtype=str,
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS[self._name])
 
         self.allowed_values = list(['i',  'j',  'k',
                                     'i-', 'j-', 'k-'])

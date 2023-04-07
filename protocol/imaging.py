@@ -1,64 +1,46 @@
 from numbers import Number
 
 import numpy as np
+from protocol.base import BaseParameter, NumericParameter
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as IMAGING_PARAMS)
 
 
-class RepetitionTime(BaseParameter):
+class RepetitionTime(NumericParameter):
     """Parameter specific class for RepetitionTime"""
 
+    _name = 'RepetitionTime'
 
     def __init__(self, value=Unspecified):
         """Constructor."""
 
-        _name = 'RepetitionTime'
-        super().__init__(name=_name,
-                         dtype=Number,
+        super().__init__(name=self._name,
+                         value=value,
                          units='ms',
                          range=(0, 100000),  # TODO verify the accuracy of this range
                          required=True,
                          severity='critical',
-                         dicom_tag=IMAGING_PARAMS[_name],
-                         acronym=ACRONYMS[_name])
-
-        if not isinstance(value, self.dtype):
-            raise TypeError(f'Input {value} is not of type {self.dtype}')
-
-        self.value = value
-
-        # overriding default from parent class
-        self.decimals = 3
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS[self._name])
 
 
-    def _check_compliance(self, other):
-        """Method to check if one parameter value is compatible w.r.t another,
-            either in equality or within acceptable range, for that data type.
-        """
-
-        # tolerance is 1e-N where N = self.decimals
-        if np.isclose(self.value, other.value, atol=1 ** -self.decimals):
-            return True
-        else:
-            return False
-
-
-class FlipAngle(BaseParameter):
+class FlipAngle(NumericParameter):
     """Parameter specific class for FlipAngle"""
 
+    _name = "FlipAngle"
 
     def __init__(self, value=Unspecified):
-        """Constructor."""
+        """constructor"""
 
-        _name = 'FlipAngle'
-        super().__init__(name=_name, dtype=Number, required=True,
-                         severity='critical', dicom_tag=IMAGING_PARAMS[_name],
-                         acronym=ACRONYMS[_name])
 
-        if not isinstance(value, self.dtype):
-            raise TypeError(f'Input {value} is not of type {self.dtype}')
-
-        self.value = value
+        super().__init__(name=self._name,
+                         value=value,
+                         units='degrees',
+                         range=(0, 360),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS[self._name])
 
         # overriding default from parent class
         self.decimals = 0
@@ -77,6 +59,25 @@ class FlipAngle(BaseParameter):
             return True
         else:
             return False
+
+
+class EffectiveEchoSpacing(NumericParameter):
+    """Parameter specific class for EffectiveEchoSpacing"""
+
+    _name = "EffectiveEchoSpacing"
+
+    def __init__(self, value=Unspecified):
+        """constructor"""
+
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='mm',
+                         range=(0, 1000),
+                         required=False,
+                         severity='critical',
+                         dicom_tag=None,
+                         acronym=ACRONYMS[self._name])
 
 
 class PhaseEncodingDirection(BaseParameter):

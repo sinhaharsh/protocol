@@ -90,6 +90,52 @@ class BaseParameter(ABC):
 
         return f'{self.name}({self.value})'
 
+class NumericParameter(BaseParameter):
+    """Parameter specific class for RepetitionTime"""
+
+    _name = 'NumericParameter'
+
+    def __init__(self,
+                 name,
+                 value,
+                 dicom_tag,
+                 acronym,
+                 units=None,
+                 range=None,
+                 required=True,
+                 severity='critical', ):
+        """Constructor."""
+
+        super().__init__(name=name,
+                         value=value,
+                         dtype=Number,
+                         units=units,
+                         range=range,
+                         required=required,
+                         severity=severity,
+                         dicom_tag=dicom_tag,
+                         acronym=acronym)
+
+        if not isinstance(value, self.dtype):
+            raise TypeError(f'Input {value} is not of type {self.dtype}')
+
+        self.value = value
+
+        # overriding default from parent class
+        self.decimals = 3
+
+
+    def _check_compliance(self, other):
+        """Method to check if one parameter value is compatible w.r.t another,
+            either in equality or within acceptable range, for that data type.
+        """
+
+        # tolerance is 1e-N where N = self.decimals
+        if np.isclose(self.value, other.value, atol=1 ** -self.decimals):
+            return True
+        else:
+            return False
+
 
 class BaseSequence(MutableMapping):
     """Container to capture imaging parameter values for a given sequence.

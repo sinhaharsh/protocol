@@ -9,7 +9,7 @@ from protocol.base import BaseParameter, NumericParameter
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              Unspecified)
-from protocol.utils import get_dicom_param_value
+from protocol.utils import get_dicom_param_value, get_effective_echo_spacing
 
 
 class RepetitionTime(NumericParameter):
@@ -228,9 +228,10 @@ class ImagingSequence(BaseSequence, ABC):
             pname = param_class._name
             self[pname] = param_class(get_dicom_param_value(dicom, pname))
 
-        self['is3d'] = self['MRAcquisitionType'] == '3D'
+        # self['is3d'] = self['MRAcquisitionType'] == '3D'
 
-        self["EffectiveEchoSpacing"] = effective_echo_spacing(dicom)
+        # self["EffectiveEchoSpacing"] = EffectiveEchoSpacing(
+        #     get_effective_echo_spacing(dicom))
 
 
     def _parse_private(self, dicom):

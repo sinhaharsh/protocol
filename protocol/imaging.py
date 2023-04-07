@@ -103,7 +103,8 @@ class PhaseEncodingDirection(BaseParameter):
                          acronym=ACRONYMS[self._name])
 
         self.allowed_values = list(['i',  'j',  'k',
-                                    'i-', 'j-', 'k-'])
+                                    'i-', 'j-', 'k-',
+                                    'ROW', 'COL'])
 
         if not isinstance(value, self.dtype):
             raise TypeError(f'Input {value} is not of type {self.dtype}')
@@ -121,7 +122,7 @@ class PhaseEncodingDirection(BaseParameter):
             either in equality or within acceptable range, for that data type.
         """
 
-        if isinstance(other, self):
+        if isinstance(other, type(self)):
             value_to_compare = other.value
         elif isinstance(other, self.dtype):
             value_to_compare = other

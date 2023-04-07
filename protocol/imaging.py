@@ -132,6 +132,49 @@ class PhaseEncodingDirection(BaseParameter):
         return self.value == value_to_compare
 
 
+class ScanningSequence(BaseParameter):
+    """Parameter specific class for PhaseEncodingDirection"""
+
+    _name = 'ScanningSequence'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         dtype=str,
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS[self._name])
+
+        if not isinstance(value, self.dtype):
+            raise TypeError(f'Input {value} is not of type {self.dtype}')
+        #
+        # self.allowed_values = list(['i',  'j',  'k',
+        #                             'i-', 'j-', 'k-'])
+        #
+        # if value not in self.allowed_values:
+        #     raise ValueError(f'Invalid value for PED. '
+        #                      f'Must be one of {self.allowed_values}')
+
+        self.value = str(value).lower()
+
+
+    def _check_compliance(self, other):
+        """Method to check if one parameter value is compatible w.r.t another,
+            either in equality or within acceptable range, for that data type.
+        """
+
+        if isinstance(other, type(self)):
+            value_to_compare = other.value
+        elif isinstance(other, self.dtype):
+            value_to_compare = other
+        else:
+            raise TypeError(f'Invalid type. Must be an instance of '
+                            f'{self.dtype} or {self}')
+
+        return self.value == value_to_compare
+
 # shortcuts
 
 TR=RepetitionTime

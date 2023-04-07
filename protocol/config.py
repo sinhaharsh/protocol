@@ -1,5 +1,23 @@
 from collections import namedtuple
 
+
+class Unspecified(object):
+    """Class to denote an unspecified value
+
+    Reasons include:
+        - not specified in the original source e.g., DICOM image header
+        - enocded as None or similar; or presumed to be default
+
+    We need this to correctly inform the downstream users of the source,
+        to prevent them from assigning default values or imputing them another way!
+    """
+
+    def __init__(self):
+        """constructor"""
+
+        return NotImplemented
+
+
 # Constant Dicom Identifiers Used for dataset creation and manipulation
 SESSION_INFO = {
     "series_instance_uid": (0x20, 0x0e),

@@ -22,23 +22,6 @@ from protocol.config import (supported_imaging_modalities,
 #       although their order isn't used or checked in any way
 
 
-class Unspecified(object):
-    """Class to denote an unspecified value
-
-    Reasons include:
-        - not specified in the original source e.g., DICOM image header
-        - enocded as None or similar; or presumed to be default
-
-    We need this to correctly inform the downstream users of the source,
-        to prevent them from assigning default values or imputing them another way!
-    """
-
-    def __init__(self):
-        """constructor"""
-
-        return NotImplemented
-
-
 class BaseParameter(ABC):
     """
     Container class to support various parameter data types
@@ -235,25 +218,6 @@ class BaseSequence(MutableMapping):
         return self.__str__()
 
 
-class ImagingSequence(BaseSequence, ABC):
-    """Class representing an Imaging sequence
-
-    Although we would use it mostly for MR imaging sequences to start with,
-      it should be able to store any sequence captured by DICOM: CT, XRAY etc
-    """
-
-
-    def __init__(self, name='MRI'):
-        """constructor"""
-
-        super().__init__(name=name)
-
-
-    def from_dicom(self, dcm_path):
-        """Parses the parameter values from a given DICOM file."""
-
-
-
 class BaseProtocol(BaseSequence):
     """
     Base class for all protocols.
@@ -329,19 +293,6 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
             return False
         else:
             return True
-
-
-class SiemensMRIProtocol(BaseMRImagingProtocol):
-    """Siemens specific MRI protocol
-    """
-
-
-    def __init__(self):
-        """"""
-
-
-    def _parse_private_header(self):
-        """method to parse vendor specific headers"""
 
 
 

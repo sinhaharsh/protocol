@@ -1,7 +1,6 @@
 from numbers import Number
 
 import numpy as np
-from protocol.base import BaseParameter, Unspecified
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as IMAGING_PARAMS)
 
@@ -127,3 +126,52 @@ class PhaseEncodingDirection(BaseParameter):
 TR=RepetitionTime
 PED=PhaseEncodingDirection
 FA=FlipAngle
+class ImagingSequence(BaseSequence, ABC):
+    """Class representing an Imaging sequence
+
+    Although we would use it mostly for MR imaging sequences to start with,
+      it should be able to store any sequence captured by DICOM: CT, XRAY etc
+    """
+
+
+    def __init__(self, name='MRI'):
+        """constructor"""
+
+        super().__init__(name=name)
+
+
+    def parse(self, dicom):
+        """Parses the parameter values from a given DICOM object or file."""
+
+        if not isinstance(dicom, pydicom.FileDataset):
+            if not isinstance(dicom, Path):
+                raise ValueError('Input must be a pydicom FileDataset or Path')
+            else:
+                if not dicom.exists():
+                    raise IOError('input dicom path does not exist!')
+                dicom = pydicom.dcmread(dicom)
+
+        for param_class in IMAGING_PARAM_CLASSES:
+            pname = param_class._name
+            self[pname] = param_class(get_dicom_param_value(dicom, pname))
+
+        self['is3d'] = self['MRAcquisitionType'] == '3D'
+
+        self["EffectiveEchoSpacing"] = effective_echo_spacing(dicom)
+
+
+    def _parse_private(self, dicom):
+        """vendor specific private headers"""
+
+        if header_exists(dicom):
+            csa_header, csa_values = parse_csa_params(dicom)
+            for name, val in csa_values.items():
+                self[name] = value
+        else:
+            # TODO consider throwing a warning when expected header doesnt exist
+            # TODO need ways to specific parameter could not be read or queryable etc
+            params['MultiSliceMode'] = None
+            params['ipat'] = None
+            params['shim'] = None
+            params['PhaseEncodingDirection'] = None
+

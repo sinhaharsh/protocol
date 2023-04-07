@@ -76,6 +76,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'ScanningSequence'      : 'SSEQ',
     'SequenceVariant'       : 'SEQV',
     'MRAcquisitionType'     : 'MRAT',
+    'EffectiveEchoSpacing'  : 'EES',
     }
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())

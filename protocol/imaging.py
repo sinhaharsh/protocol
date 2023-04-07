@@ -180,6 +180,17 @@ class ScanningSequence(BaseParameter):
 TR=RepetitionTime
 PED=PhaseEncodingDirection
 FA=FlipAngle
+EES=EffectiveEchoSpacing
+
+ScanSeq = ScanningSequence
+
+# common to all vendors (EES can only be read from private CSA headers)
+IMAGING_PARAM_CLASSES = [TR,
+                         PED,
+                         FA,
+                         ScanSeq]
+
+
 class ImagingSequence(BaseSequence, ABC):
     """Class representing an Imaging sequence
 

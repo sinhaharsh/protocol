@@ -119,8 +119,9 @@ class NumericParameter(BaseParameter):
                          dicom_tag=dicom_tag,
                          acronym=acronym)
 
-        if not isinstance(value, self.dtype):
-            raise TypeError(f'Input {value} is not of type {self.dtype}')
+        if value is not Unspecified:
+            if not isinstance(value, self.dtype):
+                raise TypeError(f'Input {value} is not of type {self.dtype}')
 
         self.value = value
 

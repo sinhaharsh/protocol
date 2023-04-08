@@ -281,6 +281,13 @@ class BaseSequence(MutableMapping):
             raise TypeError(f'Sequence to compare {other} is not of type '
                             f'BaseSequence')
 
+        if self.params != other.params:
+            diff = self.params.symmetric_difference(other.params)
+            warn('different sets of parameters - '
+                 'below params exist in one but not the other :\n\t{}'
+                 ''.format(diff))
+            return False, diff  # TODO varying dtype: list of names!
+
         non_compliant_params = list()
 
         for pname in self.params:
@@ -291,7 +298,7 @@ class BaseSequence(MutableMapping):
 
         bool_flag = len(non_compliant_params) < 1
 
-        return bool_flag, non_compliant_params
+        return bool_flag, non_compliant_params  # list of BaseParameter classes
 
 
     def __eq__(self, other):

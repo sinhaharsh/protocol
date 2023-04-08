@@ -98,8 +98,6 @@ class BaseParameter(ABC):
 class NumericParameter(BaseParameter):
     """Parameter specific class for RepetitionTime"""
 
-    _name = 'NumericParameter'
-
     def __init__(self,
                  name,
                  value,
@@ -107,6 +105,7 @@ class NumericParameter(BaseParameter):
                  acronym,
                  units=None,
                  range=None,
+                 steps=None,
                  required=True,
                  severity='critical', ):
         """Constructor."""
@@ -116,6 +115,7 @@ class NumericParameter(BaseParameter):
                          dtype=Number,
                          units=units,
                          range=range,
+                         steps=steps,
                          required=required,
                          severity=severity,
                          dicom_tag=dicom_tag,

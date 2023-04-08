@@ -262,8 +262,11 @@ class BaseSequence(MutableMapping):
         self.params.add(key)
 
 
+    def get(self, name, not_found_value=None):
+        self.__getitem__(name=name, not_found_value=not_found_value)
+
     def __getitem__(self, name,
-                    not_found_value=Unspecified):
+                    not_found_value=None):
         """getter"""
 
         try:

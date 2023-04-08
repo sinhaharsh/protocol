@@ -123,3 +123,7 @@ SHIM = {
 }
 
 ATDict = ["2D", "3D"]
+
+allowed_values_PED = list(['i', 'j', 'k',
+                           'i-', 'j-', 'k-',
+                           'ROW', 'COL'])

@@ -69,6 +69,25 @@ class FlipAngle(NumericParameter):
             return False
 
 
+class EchoTime(NumericParameter):
+    """Parameter specific class for EffectiveEchoSpacing"""
+
+    _name = "EchoTime"
+
+    def __init__(self, value=Unspecified):
+        """constructor"""
+
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='ms',
+                         range=(0, 10000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS[self._name])
+
+
 class EffectiveEchoSpacing(NumericParameter):
     """Parameter specific class for EffectiveEchoSpacing"""
 
@@ -122,6 +141,7 @@ class ScanningSequence(CategoricalParameter):
 # shortcuts
 
 TR=RepetitionTime
+TE=EchoTime
 PED=PhaseEncodingDirection
 FA=FlipAngle
 EES=EffectiveEchoSpacing
@@ -130,6 +150,7 @@ ScanSeq = ScanningSequence
 
 # common to all vendors (EES can only be read from private CSA headers)
 IMAGING_PARAM_CLASSES = [TR,
+                         TE,
                          PED,
                          FA,
                          ScanSeq]

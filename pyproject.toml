@@ -19,7 +19,7 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3.11",
 ]
-dependencies = []
+dependencies = ['pydicom',]
 
 [project.urls]
 Homepage = "https://github.com/raamana/protocol"

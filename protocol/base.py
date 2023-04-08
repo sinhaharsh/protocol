@@ -272,7 +272,10 @@ class BaseSequence(MutableMapping):
         try:
             return self.__dict__[name]
         except KeyError:
-            return not_found_value
+            if not_found_value is not None:
+                return not_found_value
+            else:
+                raise KeyError(f'{name} has not been set yet')
 
 
     def compliant(self, other):

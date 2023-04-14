@@ -161,7 +161,7 @@ class CategoricalParameter(BaseParameter):
 
         super().__init__(name=name,
                          value=value,
-                         dtype=str,
+                         dtype=Iterable,
                          units=units,
                          range=range,
                          required=required,

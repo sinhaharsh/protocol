@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, MutableMapping
 from numbers import Number
-from typing import Union
+from typing import Union, List
 from warnings import warn
 
 import numpy as np
@@ -232,7 +232,7 @@ class BaseSequence(MutableMapping):
         self._mutable = True
 
 
-    def add(self, param_list: Union[BaseParameter, list[BaseParameter]]):
+    def add(self, param_list: Union[BaseParameter, List[BaseParameter]]):
         """method to add new parameters; overwrite previous values if exists."""
 
         if not isinstance(param_list, Iterable):

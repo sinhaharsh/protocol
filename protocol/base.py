@@ -125,7 +125,7 @@ class NumericParameter(BaseParameter):
             if not isinstance(value, self.dtype):
                 raise TypeError(f'Input {value} is not of type {self.dtype}')
 
-        self.value = value
+        self.value = float(value)
 
         # overriding default from parent class
         self.decimals = 3
@@ -339,7 +339,7 @@ class BaseSequence(MutableMapping):
         return self.__str__()
 
 
-class BaseProtocol(BaseSequence):
+class BaseProtocol():
     """
     Base class for all protocols.
 
@@ -348,11 +348,8 @@ class BaseProtocol(BaseSequence):
 
 
     def __init__(self,
-                 seq : BaseSequence,  # not optional
                  name="Protocol"):
         """constructor"""
-
-        super().__init__(params=seq.params, name=name)
         self._mutable = False
 
 

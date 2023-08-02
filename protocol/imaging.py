@@ -208,14 +208,15 @@ class ImagingSequence(BaseSequence, ABC):
         if header_exists(dicom):
             csa_header, csa_values = parse_csa_params(dicom)
             for name, val in csa_values.items():
-                self[name] = value
+                print(name, val)
         else:
+            print('No private header found in DICOM file')
             # TODO consider throwing a warning when expected header doesnt exist
             # TODO need ways to specific parameter could not be read or queryable etc
-            params['MultiSliceMode'] = None
-            params['ipat'] = None
-            params['shim'] = None
-            params['PhaseEncodingDirection'] = None
+            # params['MultiSliceMode'] = None
+            # params['ipat'] = None
+            # params['shim'] = None
+            # params['PhaseEncodingDirection'] = None
 
 
 class SiemensImagingSequence(ImagingSequence):

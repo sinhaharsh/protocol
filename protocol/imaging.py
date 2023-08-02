@@ -10,8 +10,7 @@ from protocol import config as cfg
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              Unspecified)
-from protocol.utils import get_dicom_param_value, get_effective_echo_spacing
-
+from protocol.utils import get_dicom_param_value, header_exists, import_string, parse_csa_params
 
 class RepetitionTime(NumericParameter):
     """Parameter specific class for RepetitionTime"""
@@ -138,22 +137,22 @@ class ScanningSequence(CategoricalParameter):
                          acronym=ACRONYMS[self._name])
 
 
-# shortcuts
-
-TR=RepetitionTime
-TE=EchoTime
-PED=PhaseEncodingDirection
-FA=FlipAngle
-EES=EffectiveEchoSpacing
-
-ScanSeq = ScanningSequence
-
-# common to all vendors (EES can only be read from private CSA headers)
-IMAGING_PARAM_CLASSES = [TR,
-                         TE,
-                         PED,
-                         FA,
-                         ScanSeq]
+# # shortcuts
+#
+# TR=RepetitionTime
+# TE=EchoTime
+# PED=PhaseEncodingDirection
+# FA=FlipAngle
+# EES=EffectiveEchoSpacing
+#
+# ScanSeq = ScanningSequence
+#
+# # common to all vendors (EES can only be read from private CSA headers)
+# IMAGING_PARAM_CLASSES = [TR,
+#                          TE,
+#                          PED,
+#                          FA,
+#                          ScanSeq]
 
 
 class ImagingSequence(BaseSequence, ABC):
@@ -166,13 +165,18 @@ class ImagingSequence(BaseSequence, ABC):
 
     def __init__(self,
                  name='MRI',
-                 dicom=None):
+                 dicom=None,
+                 imaging_params=None,):
         """constructor"""
 
         super().__init__(name=name)
 
         self.multi_echo = False
-
+        self.imaging_params = []
+        for p in imaging_params:
+            param_cls_name = f'protocol.imaging.{p}'
+            cls_object = import_string(param_cls_name)
+            self.imaging_params.append(cls_object)
         if dicom is not None:
             self.parse(dicom)
 
@@ -188,7 +192,7 @@ class ImagingSequence(BaseSequence, ABC):
                     raise IOError('input dicom path does not exist!')
                 dicom = pydicom.dcmread(dicom)
 
-        for param_class in IMAGING_PARAM_CLASSES:
+        for param_class in self.imaging_params:
             pname = param_class._name
             self[pname] = param_class(get_dicom_param_value(dicom, pname))
 

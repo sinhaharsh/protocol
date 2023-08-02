@@ -9,7 +9,7 @@ from typing import Union, List
 from warnings import warn
 
 import numpy as np
-from protocol.config import (Unspecified)
+from protocol.config import (Unspecified, SUPPORTED_IMAGING_MODALITIES)
 
 
 # A [imaging] Parameter is a container class for a single value, with a name
@@ -373,9 +373,9 @@ class BaseImagingProtocol(BaseProtocol):
 
         # to distinguish between different types of imaging: MR, CT, XRAY etc.
         #   as they touch different portions of DICOM
-        if category not in supported_imaging_modalities:
+        if category not in SUPPORTED_IMAGING_MODALITIES:
             raise TypeError(f'This modality {category} not supported.'
-                            f'Choose one of {supported_imaging_modalities}')
+                            f'Choose one of {SUPPORTED_IMAGING_MODALITIES}')
         else:
             self._category = category
 

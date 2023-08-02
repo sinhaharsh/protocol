@@ -126,3 +126,6 @@ ATDict = ["2D", "3D"]
 allowed_values_PED = list(['i', 'j', 'k',
                            'i-', 'j-', 'k-',
                            'ROW', 'COL'])
+
+#, 'CT', 'PET', 'SPECT', 'US', 'NM', 'MG', 'CR', 'DX', 'OT']
+SUPPORTED_IMAGING_MODALITIES = ['MR']

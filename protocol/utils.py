@@ -1,9 +1,19 @@
+import re
+import functools
+import re
+import warnings
+from importlib import import_module
+from typing import Optional
 
-from protocol.base import BaseParameter
+import pydicom
+
+from protocol import config
 from protocol.config import BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS, \
     Unspecified
-import pydicom
-from typing import Optional
+
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore')
+    from nibabel.nicom import csareader
 
 def get_dicom_param_value(dicom: pydicom.FileDataset,
                             name: str,
@@ -40,9 +50,35 @@ def get_dicom_param_value(dicom: pydicom.FileDataset,
         return not_found_value
 
 
+def safe_get(dictionary: dict, keys: str, default=None):
+    """
+    Used to get value from nested dictionaries without getting KeyError
+
+    Parameters
+    ----------
+    dictionary : nested dict from which the value should be fetched
+    keys : string of keys delimited by '.'
+    default : if KeyError, return default
+
+    Returns
+    -------
+    Value stored in that key
+
+    Examples:
+    To get value, dictionary[tag1][tag2][tag3],
+    if KeyError: return default
+    >>>     items = safe_get(dictionary, 'tags1.tag2.tag3')
+
+    """
+    return functools.reduce(
+        lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+        keys.split('.'),
+        dictionary
+    )
+
 def parse_csa_params(dicom: pydicom.FileDataset,
                      not_found_value=None
-                     ) -> dict:
+                     ):
     """
     Returns params parsed from private CSA header from Siemens scanner exported DICOM
 
@@ -61,7 +97,7 @@ def parse_csa_params(dicom: pydicom.FileDataset,
 
     """
     csa_header = csareader.read(get_header(dicom, 'series_header_info'))
-    items = utils.safe_get(csa_header, 'tags.MrPhoenixProtocol.items')
+    items = safe_get(csa_header, 'tags.MrPhoenixProtocol.items')
     if items:
         text = items[0]
     else:
@@ -76,14 +112,37 @@ def parse_csa_params(dicom: pydicom.FileDataset,
     shim_code = get_csa_props("sAdjData.uiAdjShimMode", text)
     shim = config.SHIM.get(shim_code, not_found_value)
 
-    ped = get_phase_encoding(dicom, csa_header)
+    # ped = get_phase_encoding(dicom, csa_header)
 
-    values = {'MultiSliceMode': slice_mode,
+    values = {'slice_mode': slice_mode,
               'ipat': ipat,
-              'shim': shim,
-              'PhaseEncodingDirection': ped}
+              'shim': shim}
 
     return csa_header, values
+
+
+def get_header(dicom: pydicom.FileDataset, name: str):
+    """
+    Extracts value from dicom headers looking up the corresponding HEX tag
+    in config.HEADER_TAGS
+
+    Parameters
+    ----------
+    dicom : pydicom.FileDataset
+        dicom object read from pydicom.read_file
+
+    name : str
+        parameter name such as ImageHeader or SeriesHeader
+
+    Returns
+    -------
+    This method return a value for the given key. If key is not available,
+    then returns default value None.
+    """
+    data = dicom.get(config.HEADER_TAGS[name], None)
+    if data:
+        return data.value
+    return None
 
 
 def get_csa_props(parameter, corpus):
@@ -121,6 +180,44 @@ def get_csa_props(parameter, corpus):
 
     # couldn't figure out
     return -1
+
+
+# TODO : rename csa
+def header_exists(dicom: pydicom.FileDataset) -> bool:
+    """
+    Check if the private SIEMENS header exists in the file or not. Some
+    parameters like effective_echo_spacing and shim method need the dicom
+    header to be present.
+
+    Parameters
+    ----------
+    dicom : pydicom.FileDataset
+        dicom object read from pydicom.read_file
+
+    Returns
+    -------
+    bool
+    """
+    try:
+        series = get_header(dicom, 'series_header_info')
+        image = get_header(dicom, 'image_header_info')
+        series_header = csareader.read(series)
+
+        # just try reading these values, to bypass any errors,
+        # don't need these values now
+        # image_header = \
+        csareader.read(image)
+        # items = \
+        series_header['tags']['MrPhoenixProtocol']['items'][0].split('\n')
+        return True
+    except Exception as e:
+        warnings.warn(f'Expects dicom files from Siemens to be able to'
+                    f' read the private header. For other vendors',
+                    f'private header is skipped. '
+                    f'{e} in {dicom.filename}')
+        # "Use --skip_private_header to create report".format(e))
+        # raise e
+        return False
 
 
 def get_effective_echo_spacing(dicom: pydicom.FileDataset,

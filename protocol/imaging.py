@@ -227,6 +227,15 @@ class ImagingSequence(BaseSequence, ABC):
             # params['shim'] = None
             # params['PhaseEncodingDirection'] = None
 
+    def from_dict(self, params_dict):
+        """Populates the sequence parameters from a dictionary."""
+        if self.imaging_params is None:
+            self.imaging_params = list(params_dict.keys())
+            self._init_param_classes()
+
+        for param_class in self.imaging_params_classes:
+            pname = param_class._name
+            self[pname] = param_class(params_dict[pname])
 
 class SiemensImagingSequence(ImagingSequence):
     """Siemens specific sequence parsing

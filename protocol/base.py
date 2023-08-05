@@ -140,17 +140,22 @@ class NumericParameter(BaseParameter):
         # overriding default from parent class
         self.decimals = 3
 
-
     def _check_compliance(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
+        return self._cmp_value(other) and self._cmp_units(other)
 
+    def _cmp_value(self, other):
         # tolerance is 1e-N where N = self.decimals
         if np.isclose(self.value, other.value, atol=1 ** -self.decimals):
             return True
         else:
             return False
+
+    def _cmp_units(self, other):
+        # TODO: implement unit conversion
+        return self.units == other.units
 
 
 class CategoricalParameter(BaseParameter):
@@ -191,12 +196,17 @@ class CategoricalParameter(BaseParameter):
 
         self.value = str(value).upper()
 
-
     def _check_compliance(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
+        return self._cmp_value(other) and self._cmp_units(other)
 
+    def _cmp_units(self, other):
+        # TODO: implement unit conversion
+        return self.units == other.units
+
+    def _cmp_value(self, other):
         if isinstance(other, type(self)):
             value_to_compare = other.value
         elif isinstance(other, self.dtype):

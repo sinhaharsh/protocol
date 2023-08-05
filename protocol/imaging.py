@@ -172,17 +172,27 @@ class ImagingSequence(BaseSequence, ABC):
         super().__init__(name=name)
 
         self.multi_echo = False
-        self.imaging_params = []
-        for p in imaging_params:
-            param_cls_name = f'protocol.imaging.{p}'
-            cls_object = import_string(param_cls_name)
-            self.imaging_params.append(cls_object)
+        self.imaging_params = imaging_params
+        self.imaging_params_classes = []
+        if self.imaging_params is not None:
+            self._init_param_classes()
         if dicom is not None:
             self.parse(dicom)
 
+    def _init_param_classes(self):
+        for p in self.imaging_params:
+            param_cls_name = f'protocol.imaging.{p}'
+            cls_object = import_string(param_cls_name)
+            self.imaging_params_classes.append(cls_object)
 
-    def parse(self, dicom):
+    def parse(self, dicom, imaging_params=None):
         """Parses the parameter values from a given DICOM object or file."""
+        if self.imaging_params is None:
+            if imaging_params is None:
+                raise ValueError('imaging_params must be provided either during'
+                                 ' initialization or during parse() call')
+            else:
+                self._init_param_classes()
 
         if not isinstance(dicom, pydicom.FileDataset):
             if not isinstance(dicom, Path):
@@ -192,7 +202,7 @@ class ImagingSequence(BaseSequence, ABC):
                     raise IOError('input dicom path does not exist!')
                 dicom = pydicom.dcmread(dicom)
 
-        for param_class in self.imaging_params:
+        for param_class in self.imaging_params_classes:
             pname = param_class._name
             self[pname] = param_class(get_dicom_param_value(dicom, pname))
 

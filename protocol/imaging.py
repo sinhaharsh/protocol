@@ -201,7 +201,6 @@ class ImagingSequence(BaseSequence, ABC):
         # self["EffectiveEchoSpacing"] = EffectiveEchoSpacing(
         #     get_effective_echo_spacing(dicom))
 
-
     def _parse_private(self, dicom):
         """vendor specific private headers"""
 

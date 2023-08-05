@@ -27,7 +27,6 @@ class BaseParameter(ABC):
       including numerical continuous (time), categorical (site), or an array of them
     """
 
-
     def __init__(self,
                  name='parameter',
                  value=Unspecified,
@@ -56,7 +55,6 @@ class BaseParameter(ABC):
 
         self.decimals = 2  # numerical tolerance in decimal places
 
-
     def compliant(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
@@ -65,11 +63,11 @@ class BaseParameter(ABC):
         """
 
         if self.value is Unspecified or other.value is Unspecified:
-            warn('one of the values being compared is Unspecified!', UserWarning)
+            warn('one of the values being compared is Unspecified!',
+                 UserWarning)
             return False
         else:
             return self._check_compliance(other)
-
 
     @abstractmethod
     def _check_compliance(self, other):
@@ -77,19 +75,31 @@ class BaseParameter(ABC):
             either in equality or within acceptable range, for that data type.
         """
 
+    @abstractmethod
+    def _cmp_value(self, other):
+        """
+        Method to compare the values of two parameters
+        """
+
+    @abstractmethod
+    def _cmp_units(self, other):
+        """
+        Method to compare the units of two parameters
+        """
 
     def __eq__(self, other):
         """equality is defined as compliance here"""
 
         return self.compliant(other)
 
+    def __hash__(self):
+        return hash(self.__repr__())
 
     def __repr__(self):
         """repr"""
 
         name = self.acronym if self.acronym else self.name
         return f'{name}({self.value})'
-
 
     def __str__(self):
         return self.__repr__()
@@ -213,7 +223,6 @@ class BaseSequence(MutableMapping):
 
     """
 
-
     def __init__(self,
                  name: str = 'Sequence',
                  params: dict = None):
@@ -231,7 +240,6 @@ class BaseSequence(MutableMapping):
         # parameters and their values can be modified
         self._mutable = True
 
-
     def add(self, param_list: Union[BaseParameter, List[BaseParameter]]):
         """method to add new parameters; overwrite previous values if exists."""
 
@@ -240,15 +248,15 @@ class BaseSequence(MutableMapping):
 
         for param in param_list:
             if not isinstance(param, BaseParameter):
-                raise ValueError(f'Input value {param} is not of type BaseParameter')
+                raise ValueError(
+                    f'Input value {param} is not of type BaseParameter')
 
             # retaining full Parameter instance, not just value
             self.__dict__[param.name] = param
             self.params.add(param.name)
 
-
     def __setitem__(self,
-                    key : str,
+                    key: str,
                     value: BaseParameter):
         """setter"""
 
@@ -260,7 +268,6 @@ class BaseSequence(MutableMapping):
 
         self.__dict__[key] = value
         self.params.add(key)
-
 
     def get(self, name, not_found_value=None):
         self.__getitem__(name=name, not_found_value=not_found_value)
@@ -276,7 +283,6 @@ class BaseSequence(MutableMapping):
                 return not_found_value
             else:
                 raise KeyError(f'{name} has not been set yet')
-
 
     def compliant(self, other):
         """Method to check if one sequence is compatible w.r.t another,
@@ -306,13 +312,11 @@ class BaseSequence(MutableMapping):
 
         return bool_flag, non_compliant_params  # list of BaseParameter classes
 
-
     def __eq__(self, other):
         """equivalence operator"""
 
         bool_flag, _ = self.compliant(other)
         return bool_flag
-
 
     def __delitem__(self, key):
         del self.__dict__[key]
@@ -346,19 +350,15 @@ class BaseProtocol():
     A protocol is a sequence, except it is not mutable, to serve as a reference.
     """
 
-
     def __init__(self,
                  name="Protocol"):
         """constructor"""
         self._mutable = False
 
 
-
-
 class BaseImagingProtocol(BaseProtocol):
     """Base class for all imaging protocols such as MRI / neuroimaging.
     """
-
 
     def __init__(self,
                  name='ImagingProtocol',
@@ -381,7 +381,6 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
     """Base class for all MR imaging protocols, including neuroimaging datasets
     """
 
-
     def __init__(self,
                  name="MRIProtocol",
                  path=None):
@@ -391,18 +390,18 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
 
         self._seq = dict()
 
-
     def add(self, seq):
         """Adds a new sequence to the current protocol"""
 
         if not isinstance(seq, BaseSequence):
-            raise TypeError('Invalid type! Must be a valid instance of BaseSequence')
+            raise TypeError(
+                'Invalid type! Must be a valid instance of BaseSequence')
 
         if seq.name in self._seq:
-            raise ValueError('This sequence already exists! Double check or rename!')
+            raise ValueError(
+                'This sequence already exists! Double check or rename!')
 
         self._seq[seq.name] = seq
-
 
     def __bool__(self):
         """Checks if the protocol is empty"""
@@ -411,8 +410,6 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
             return False
         else:
             return True
-
-
 
 # MR_protocol = BaseMRImagingProtocol('MRP')
 #

@@ -421,6 +421,14 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
         else:
             return True
 
+    def __getitem__(self, name):
+        """getter"""
+
+        try:
+            return self._seq[name]
+        except KeyError:
+            raise KeyError(f'{name} has not been set yet')
+
 # MR_protocol = BaseMRImagingProtocol('MRP')
 #
 # MR_protocol['param']

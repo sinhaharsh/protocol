@@ -116,9 +116,9 @@ def parse_csa_params(dicom: pydicom.FileDataset,
 
     # ped = get_phase_encoding(dicom, csa_header)
 
-    values = {'slice_mode': slice_mode,
-              'ipat': ipat,
-              'shim': shim}
+    values = {'SliceMode': slice_mode,
+              'iPat': ipat,
+              'Shim': shim}
 
     return csa_header, values
 

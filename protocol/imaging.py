@@ -1,3 +1,4 @@
+import warnings
 from abc import ABC
 from numbers import Number
 from pathlib import Path
@@ -10,7 +11,9 @@ from protocol import config as cfg
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              Unspecified)
-from protocol.utils import get_dicom_param_value, header_exists, import_string, parse_csa_params
+from protocol.utils import get_dicom_param_value, header_exists, import_string, \
+    parse_csa_params
+
 
 class RepetitionTime(NumericParameter):
     """Parameter specific class for RepetitionTime"""
@@ -172,6 +175,7 @@ class ImagingSequence(BaseSequence, ABC):
             self._init_param_classes()
         if dicom is not None:
             self.parse(dicom)
+            self._parse_private(dicom)
 
     def _init_param_classes(self):
         for p in self.imaging_params:
@@ -200,26 +204,22 @@ class ImagingSequence(BaseSequence, ABC):
             pname = param_class._name
             self[pname] = param_class(get_dicom_param_value(dicom, pname))
 
-        # self['is3d'] = self['MRAcquisitionType'] == '3D'
-
-        # self["EffectiveEchoSpacing"] = EffectiveEchoSpacing(
-        #     get_effective_echo_spacing(dicom))
-
     def _parse_private(self, dicom):
         """vendor specific private headers"""
 
         if header_exists(dicom):
             csa_header, csa_values = parse_csa_params(dicom)
             for name, val in csa_values.items():
-                print(name, val)
+                param_cls_name = f'protocol.imaging.{name}'
+                param_cls = import_string(param_cls_name)
+                if name in self.imaging_params:
+                    self[name] = param_cls(val)
         else:
-            print('No private header found in DICOM file')
-            # TODO consider throwing a warning when expected header doesnt exist
-            # TODO need ways to specific parameter could not be read or queryable etc
-            # params['MultiSliceMode'] = None
-            # params['ipat'] = None
-            # params['shim'] = None
-            # params['PhaseEncodingDirection'] = None
+            warnings.warn('No private header found in DICOM file')
+            # TODO: consider throwing a warning when expected header doesnt
+            #  exist
+            # TODO: need ways to specific parameter could not be read or
+            #  queryable etc
 
     def from_dict(self, params_dict):
         """Populates the sequence parameters from a dictionary."""

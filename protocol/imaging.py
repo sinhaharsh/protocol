@@ -23,7 +23,8 @@ class RepetitionTime(NumericParameter):
         super().__init__(name=self._name,
                          value=value,
                          units='ms',
-                         range=(0, 100000),  # TODO verify the accuracy of this range
+                         range=(0, 100000),
+                         # TODO verify the accuracy of this range
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
@@ -37,7 +38,6 @@ class FlipAngle(NumericParameter):
 
     def __init__(self, value=Unspecified):
         """constructor"""
-
 
         super().__init__(name=self._name,
                          value=value,
@@ -54,7 +54,6 @@ class FlipAngle(NumericParameter):
         # acceptable range could be achieved with different levels of tolerance
         #   from +/- 5 degrees to +/- 20 degrees
         self.abs_tolerance = 0  # degrees
-
 
     # overriding base class method
     def _check_compliance(self, other):
@@ -76,7 +75,6 @@ class EchoTime(NumericParameter):
     def __init__(self, value=Unspecified):
         """constructor"""
 
-
         super().__init__(name=self._name,
                          value=value,
                          units='ms',
@@ -95,7 +93,6 @@ class EffectiveEchoSpacing(NumericParameter):
     def __init__(self, value=Unspecified):
         """constructor"""
 
-
         super().__init__(name=self._name,
                          value=value,
                          units='mm',
@@ -111,7 +108,6 @@ class PhaseEncodingDirection(CategoricalParameter):
 
     _name = 'PhaseEncodingDirection'
 
-
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -126,7 +122,6 @@ class ScanningSequence(CategoricalParameter):
     """Parameter specific class for PhaseEncodingDirection"""
 
     _name = 'ScanningSequence'
-
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -162,11 +157,10 @@ class ImagingSequence(BaseSequence, ABC):
       it should be able to store any sequence captured by DICOM: CT, XRAY etc
     """
 
-
     def __init__(self,
                  name='MRI',
                  dicom=None,
-                 imaging_params=None,):
+                 imaging_params=None, ):
         """constructor"""
 
         super().__init__(name=name)
@@ -237,10 +231,10 @@ class ImagingSequence(BaseSequence, ABC):
             pname = param_class._name
             self[pname] = param_class(params_dict[pname])
 
+
 class SiemensImagingSequence(ImagingSequence):
     """Siemens specific sequence parsing
     """
-
 
     def __init__(self,
                  name='MRI',
@@ -249,7 +243,5 @@ class SiemensImagingSequence(ImagingSequence):
 
         super().__init__(name=name)
 
-
     def _parse_private_header(self):
         """method to parse vendor specific headers"""
-

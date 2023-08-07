@@ -15,9 +15,10 @@ with warnings.catch_warnings():
     warnings.filterwarnings('ignore')
     from nibabel.nicom import csareader
 
+
 def get_dicom_param_value(dicom: pydicom.FileDataset,
-                            name: str,
-                            not_found_value=None):
+                          name: str,
+                          not_found_value=None):
     """
     Extracts value from dicom metadata looking up the corresponding HEX tag
     in DICOM_TAGS
@@ -75,6 +76,7 @@ def safe_get(dictionary: dict, keys: str, default=None):
         keys.split('.'),
         dictionary
     )
+
 
 def parse_csa_params(dicom: pydicom.FileDataset,
                      not_found_value=None
@@ -155,7 +157,7 @@ def get_csa_props(parameter, corpus):
     if index == -1:
         return -1
 
-    shift = len(parameter)+6
+    shift = len(parameter) + 6
     if index + shift > len(corpus):
         print(f"#WARNING: {parameter} in CSA too short: '{corpus[index:]}'")
         return -1
@@ -212,9 +214,9 @@ def header_exists(dicom: pydicom.FileDataset) -> bool:
         return True
     except Exception as e:
         warnings.warn(f'Expects dicom files from Siemens to be able to'
-                    f' read the private header. For other vendors',
-                    f'private header is skipped. '
-                    f'{e} in {dicom.filename}')
+                      f' read the private header. For other vendors',
+                      f'private header is skipped. '
+                      f'{e} in {dicom.filename}')
         # "Use --skip_private_header to create report".format(e))
         # raise e
         return False
@@ -264,7 +266,8 @@ def import_string(dotted_path):
     try:
         module_path, class_name = dotted_path.rsplit(".", 1)
     except ValueError as err:
-        raise ImportError("%s doesn't look like a module path" % dotted_path) from err
+        raise ImportError(
+            "%s doesn't look like a module path" % dotted_path) from err
 
     module = import_module(module_path)
 
@@ -275,4 +278,3 @@ def import_string(dotted_path):
             'Module "%s" does not define a "%s" attribute/class'
             % (module_path, class_name)
         ) from err
-

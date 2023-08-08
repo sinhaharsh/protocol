@@ -133,7 +133,8 @@ class NumericParameter(BaseParameter):
 
         if value is not Unspecified:
             if not isinstance(value, self.dtype):
-                raise TypeError(f'Input {value} is not of type {self.dtype}')
+                raise TypeError(f'Input {value} is not of type {self.dtype} for'
+                                f' {self.name}')
 
         self.value = float(value)
 
@@ -166,6 +167,7 @@ class CategoricalParameter(BaseParameter):
                  value,
                  dicom_tag,
                  acronym,
+                 dtype=Iterable,
                  required=True,
                  severity='critical',
                  units=None,
@@ -176,7 +178,7 @@ class CategoricalParameter(BaseParameter):
 
         super().__init__(name=name,
                          value=value,
-                         dtype=Iterable,
+                         dtype=dtype,
                          units=units,
                          range=range,
                          required=required,
@@ -187,7 +189,11 @@ class CategoricalParameter(BaseParameter):
         self.allowed_values = allowed_values
 
         if not isinstance(value, self.dtype):
-            raise TypeError(f'Input {value} is not of type {self.dtype}')
+            try:
+                value = self.dtype(value)
+            except TypeError:
+                raise TypeError(f'Got input {value} of type {type(value)}. '
+                                f'Expected {self.dtype} for {self.name}')
 
         # if allowed_values is set, check if input value is allowed
         if self.allowed_values and (value not in self.allowed_values):
@@ -235,14 +241,15 @@ class BaseSequence(MutableMapping):
 
     def __init__(self,
                  name: str = 'Sequence',
-                 params: dict = None):
+                 params: dict = None,
+                 path: str = None,):
         """constructor"""
 
         super().__init__()
 
         self.name = name
         self.params = set()
-
+        self.path = path
         if isinstance(params, dict):
             self.params = set(list(params.keys()))
             self.__dict__.update(params)

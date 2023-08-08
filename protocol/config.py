@@ -129,6 +129,10 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'ShimSetting'                   : 'SHS',
     'MultiSliceMode'                : 'MSM',
     'EchoNumber'                    : 'EN',
+
+    ## Siemens Specific
+    'IPat': 'IPAT',
+    'PhasePolarity': 'PHPL',
     }
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
@@ -162,7 +166,7 @@ SVDict = {
     }
 
 PAT = {
-    "1": 'None',
+    "1": 'Not Selected',
     "2": 'Grappa',
     "3": 'Sense'
     }

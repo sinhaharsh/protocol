@@ -70,7 +70,7 @@ class MagneticFieldStrength(NumericParameter):
 
     def __init__(self, value=Unspecified):
         """Constructor."""
-        if isinstance(value, 'str'):
+        if isinstance(value, str):
             if value.endswith('T'):
                 value = value[:-1]
             try:
@@ -419,11 +419,11 @@ class ShimSetting(NumericParameter):
                          # TODO verify the accuracy of this range
                          required=True,
                          severity='critical',
-                         dicom_tag=DICOM_TAGS[self._name],
+                         dicom_tag=None,
                          acronym=ACRONYMS[self._name])
 
 
-class MultiSliceMode(NumericParameter):
+class MultiSliceMode(CategoricalParameter):
     """Parameter specific class for MultiSliceMode"""
 
     _name = 'MultiSliceMode'
@@ -433,12 +433,9 @@ class MultiSliceMode(NumericParameter):
 
         super().__init__(name=self._name,
                          value=value,
-                         units='NA',
-                         range=(0, 100000),
-                         # TODO verify the accuracy of this range
                          required=True,
                          severity='critical',
-                         dicom_tag=DICOM_TAGS[self._name],
+                         dicom_tag=None,
                          acronym=ACRONYMS[self._name])
 
 
@@ -459,7 +456,7 @@ class EchoNumber(NumericParameter):
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS[self._name])
-        
+
 
 class RepetitionTime(NumericParameter):
     """Parameter specific class for RepetitionTime"""
@@ -517,7 +514,7 @@ class FlipAngle(NumericParameter):
 
 
 class EchoTime(NumericParameter):
-    """Parameter specific class for EffectiveEchoSpacing"""
+    """Parameter specific class for EchoTime"""
 
     _name = "EchoTime"
 
@@ -581,6 +578,35 @@ class ScanningSequence(CategoricalParameter):
                          acronym=ACRONYMS[self._name])
 
 
+class IPat(CategoricalParameter):
+    """Parameter specific class for PhaseEncodingDirection"""
+
+    _name = 'IPat'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=None,
+                         acronym=ACRONYMS[self._name])
+
+
+class PhasePolarity(CategoricalParameter):
+    """Parameter specific class for PhaseEncodingDirection"""
+
+    _name = 'PhasePolarity'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=int,
+                         dicom_tag=None,
+                         acronym=ACRONYMS[self._name])
+
 # # shortcuts
 #
 # TR=RepetitionTime
@@ -609,10 +635,11 @@ class ImagingSequence(BaseSequence, ABC):
     def __init__(self,
                  name='MRI',
                  dicom=None,
-                 imaging_params=None, ):
+                 imaging_params=None,
+                 path=None,):
         """constructor"""
 
-        super().__init__(name=name)
+        super().__init__(name=name, path=path)
 
         self.multi_echo = False
         self.imaging_params = imaging_params
@@ -626,7 +653,10 @@ class ImagingSequence(BaseSequence, ABC):
     def _init_param_classes(self):
         for p in self.imaging_params:
             param_cls_name = f'protocol.imaging.{p}'
-            cls_object = import_string(param_cls_name)
+            try:
+                cls_object = import_string(param_cls_name)
+            except ImportError:
+                raise ImportError(f'Could not import {param_cls_name}')
             self.imaging_params_classes.append(cls_object)
 
     def parse(self, dicom, imaging_params=None):
@@ -648,7 +678,9 @@ class ImagingSequence(BaseSequence, ABC):
 
         for param_class in self.imaging_params_classes:
             pname = param_class._name
-            self[pname] = param_class(get_dicom_param_value(dicom, pname))
+            value = get_dicom_param_value(dicom, pname)
+            if value is not None:
+                self[pname] = param_class(get_dicom_param_value(dicom, pname))
 
     def _parse_private(self, dicom):
         """vendor specific private headers"""
@@ -657,7 +689,12 @@ class ImagingSequence(BaseSequence, ABC):
             csa_header, csa_values = parse_csa_params(dicom)
             for name, val in csa_values.items():
                 param_cls_name = f'protocol.imaging.{name}'
-                param_cls = import_string(param_cls_name)
+
+                try:
+                    param_cls = import_string(param_cls_name)
+                except ImportError:
+                    raise ImportError(f'Could not import {param_cls_name}')
+
                 if name in self.imaging_params:
                     self[name] = param_cls(val)
         else:
@@ -676,6 +713,15 @@ class ImagingSequence(BaseSequence, ABC):
         for param_class in self.imaging_params_classes:
             pname = param_class._name
             self[pname] = param_class(params_dict[pname])
+
+    def set_echo_times(self, echo_times):
+        """Sets the echo times for a multi-echo sequence."""
+        if len(echo_times) > 1:
+            self.multi_echo = True
+            self['EchoTime'] = EchoTime(echo_times)
+        else:
+            self.multi_echo = False
+            self['EchoTime'] = EchoTime(echo_times[0])
 
 
 class SiemensImagingSequence(ImagingSequence):

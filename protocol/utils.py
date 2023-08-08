@@ -98,6 +98,7 @@ def parse_csa_params(dicom: pydicom.FileDataset,
         Contains PED, multi-slice mode, iPAT and shim_mode
 
     """
+    # series_header
     csa_header = csareader.read(get_header(dicom, 'series_header_info'))
     items = safe_get(csa_header, 'tags.MrPhoenixProtocol.items')
     if items:
@@ -106,19 +107,25 @@ def parse_csa_params(dicom: pydicom.FileDataset,
         raise AttributeError('CSA Header exists, but xProtocol is missing')
 
     slice_code = get_csa_props("sKSpace.ucMultiSliceMode", text)
-    slice_mode = config.SLICE_MODE.get(slice_code, not_found_value)
+    slice_mode = config.SLICE_MODE.get(slice_code, slice_code)
 
     ipat_code = get_csa_props("sPat.ucPATMode", text)
-    ipat = config.PAT.get(ipat_code, not_found_value)
+    ipat = config.PAT.get(ipat_code, ipat_code)
 
     shim_code = get_csa_props("sAdjData.uiAdjShimMode", text)
-    shim = config.SHIM.get(shim_code, not_found_value)
+    shim = config.SHIM.get(shim_code, shim_code)
 
-    # ped = get_phase_encoding(dicom, csa_header)
+    # image_header
+    image_header = csareader.read(get_header(dicom, 'image_header_info'))
+    phase_value = safe_get(image_header,
+                           'tags.PhaseEncodingDirectionPositive.items')
+    if phase_value:
+        phpl =  phase_value[0]
 
-    values = {'SliceMode': slice_mode,
-              'iPat': ipat,
-              'Shim': shim}
+    values = {'MultiSliceMode': slice_mode,
+              'IPat': ipat,
+              'ShimSetting': shim,
+              'PhasePolarity': phpl}
 
     return csa_header, values
 

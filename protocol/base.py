@@ -105,6 +105,66 @@ class BaseParameter(ABC):
         return self.__repr__()
 
 
+class VariableNumericParameter(BaseParameter):
+    """Parameter specific class for EchoTime"""
+
+    def __init__(self,
+                 name,
+                 value,
+                 dicom_tag,
+                 acronym,
+                 units=None,
+                 range=None,
+                 steps=None,
+                 required=True,
+                 severity='critical', ):
+        """Constructor."""
+
+        super().__init__(name=name,
+                         value=value,
+                         dtype=Number,
+                         units=units,
+                         range=range,
+                         steps=steps,
+                         required=required,
+                         severity=severity,
+                         dicom_tag=dicom_tag,
+                         acronym=acronym)
+
+        if not isinstance(value, UnspecifiedType):
+            if isinstance(value, Iterable):
+                if not all([isinstance(v, self.dtype) for v in value]):
+                    raise TypeError(f'Input {value} is not of type {self.dtype}'
+                                    f' for {self.name}')
+                self.value = sorted([float(v) for v in value])
+
+            elif isinstance(value, self.dtype):
+                self.value = [float(value)]
+            else:
+                raise TypeError(f'Input {value} is not of type {self.dtype} for'
+                                f' {self.name}')
+
+        # overriding default from parent class
+        self.decimals = 3
+
+    def _check_compliance(self, other):
+        """Method to check if one parameter value is compatible w.r.t another,
+            either in equality or within acceptable range, for that data type.
+        """
+        return self._cmp_value(other) and self._cmp_units(other)
+
+    def _cmp_value(self, other):
+        # tolerance is 1e-N where N = self.decimals
+        for v, o in zip(self.value, other.value):
+            if not np.isclose(v, o, atol=1 ** -self.decimals):
+                return False
+        return True
+
+    def _cmp_units(self, other):
+        # TODO: implement unit conversion
+        return self.units == other.units
+
+
 class NumericParameter(BaseParameter):
     """Parameter specific class for RepetitionTime"""
 

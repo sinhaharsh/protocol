@@ -6,11 +6,11 @@ from pathlib import Path
 import numpy as np
 import pydicom
 from protocol import BaseSequence
-from protocol.base import BaseParameter, NumericParameter, CategoricalParameter
+from protocol.base import BaseParameter, NumericParameter, CategoricalParameter, VariableNumericParameter
 from protocol import config as cfg
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
-                             Unspecified)
+                             Unspecified, UnspecifiedType)
 from protocol.utils import get_dicom_param_value, header_exists, import_string, \
     parse_csa_params
 
@@ -513,10 +513,46 @@ class FlipAngle(NumericParameter):
             return False
 
 
+class VariableEchoTime(VariableNumericParameter):
+    """Parameter specific class for EchoTime"""
+
+    _name = "EchoTime"
+
+    def __init__(self, value=Unspecified):
+        """constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='ms',
+                         range=(0, 10000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS[self._name])
+
+
 class EchoTime(NumericParameter):
     """Parameter specific class for EchoTime"""
 
     _name = "EchoTime"
+
+    def __init__(self, value=Unspecified):
+        """constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='ms',
+                         range=(0, 10000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS[self._name])
+
+
+class VariableEchoNumber(VariableNumericParameter):
+    """Parameter specific class for EchoTime"""
+
+    _name = "EchoNumber"
 
     def __init__(self, value=Unspecified):
         """constructor"""
@@ -606,6 +642,7 @@ class PhasePolarity(CategoricalParameter):
                          dtype=int,
                          dicom_tag=None,
                          acronym=ACRONYMS[self._name])
+
 
 # # shortcuts
 #
@@ -768,24 +805,5 @@ class BodyPartExamined(CategoricalParameter):
 
         super().__init__(name=self._name,
                          value=value,
-                         dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
-
-
-class EchoNumber(NumericParameter):
-    """Parameter specific class for EchoNumber"""
-
-    _name = 'EchoNumber'
-
-    def __init__(self, value=Unspecified):
-        """Constructor."""
-
-        super().__init__(name=self._name,
-                         value=value,
-                         units=None,
-                         range=(0, 100000),
-                         # TODO verify the accuracy of this range
-                         required=True,
-                         severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS[self._name])

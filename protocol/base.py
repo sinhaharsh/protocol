@@ -9,7 +9,8 @@ from typing import Union, List
 from warnings import warn
 
 import numpy as np
-from protocol.config import (Unspecified, SUPPORTED_IMAGING_MODALITIES)
+from protocol.config import (UnspecifiedType, Unspecified,
+                             SUPPORTED_IMAGING_MODALITIES)
 
 
 # A [imaging] Parameter is a container class for a single value, with a name
@@ -59,11 +60,12 @@ class BaseParameter(ABC):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
 
-        If any of the values to be compared are Unspecified, it returns False
+        If any of the values to be compared are UnspecifiedType, it returns False
         """
 
-        if self.value is Unspecified or other.value is Unspecified:
-            warn('one of the values being compared is Unspecified!',
+        if isinstance(self.value, UnspecifiedType) or isinstance(other.value, UnspecifiedType):
+            warn('one of the values being compared is UnspecifiedType'
+                 f'in {self.name}',
                  UserWarning)
             return False
         else:
@@ -191,12 +193,12 @@ class NumericParameter(BaseParameter):
                          dicom_tag=dicom_tag,
                          acronym=acronym)
 
-        if value is not Unspecified:
+        if not isinstance(value, UnspecifiedType):
             if not isinstance(value, self.dtype):
                 raise TypeError(f'Input {value} is not of type {self.dtype} for'
                                 f' {self.name}')
 
-        self.value = float(value)
+            self.value = float(value)
 
         # overriding default from parent class
         self.decimals = 3
@@ -247,13 +249,13 @@ class CategoricalParameter(BaseParameter):
                          acronym=acronym)
 
         self.allowed_values = allowed_values
-
-        if not isinstance(value, self.dtype):
-            try:
-                value = self.dtype(value)
-            except TypeError:
-                raise TypeError(f'Got input {value} of type {type(value)}. '
-                                f'Expected {self.dtype} for {self.name}')
+        if not isinstance(value, UnspecifiedType):
+            if not isinstance(value, self.dtype):
+                try:
+                    value = self.dtype(value)
+                except TypeError:
+                    raise TypeError(f'Got input {value} of type {type(value)}. '
+                                    f'Expected {self.dtype} for {self.name}')
 
         # if allowed_values is set, check if input value is allowed
         if self.allowed_values and (value not in self.allowed_values):

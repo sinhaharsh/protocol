@@ -716,7 +716,9 @@ class ImagingSequence(BaseSequence, ABC):
         for param_class in self.imaging_params_classes:
             pname = param_class._name
             value = get_dicom_param_value(dicom, pname)
-            if value is not None:
+            if value is None:
+                self[pname] = param_class(Unspecified)
+            else:
                 self[pname] = param_class(get_dicom_param_value(dicom, pname))
 
     def _parse_private(self, dicom):
@@ -743,22 +745,30 @@ class ImagingSequence(BaseSequence, ABC):
 
     def from_dict(self, params_dict):
         """Populates the sequence parameters from a dictionary."""
-        if self.imaging_params is None:
-            self.imaging_params = list(params_dict.keys())
-            self._init_param_classes()
+        self.imaging_params = list(params_dict.keys())
+        for pname, value in params_dict.items():
+            if isinstance(value, BaseParameter):
+                self[pname] = value
+            elif isinstance(value, UnspecifiedType):
+                param_cls_name = f'protocol.imaging.{pname}'
+                param_cls = import_string(param_cls_name)
+                self[pname] = param_cls(value)
+            else:
+                param_cls_name = f'protocol.imaging.{pname}'
+                param_cls = import_string(param_cls_name)
+                self[pname] = param_cls(Unspecified)
 
-        for param_class in self.imaging_params_classes:
-            pname = param_class._name
-            self[pname] = param_class(params_dict[pname])
-
-    def set_echo_times(self, echo_times):
+    def set_echo_times(self, echo_times, echo_number=None):
         """Sets the echo times for a multi-echo sequence."""
+
         if len(echo_times) > 1:
             self.multi_echo = True
-            self['EchoTime'] = EchoTime(echo_times)
         else:
             self.multi_echo = False
-            self['EchoTime'] = EchoTime(echo_times[0])
+
+        self['EchoTime'] = VariableEchoTime(echo_times)
+        if echo_number is not None:
+            self['EchoNumber'] = VariableEchoNumber(echo_number)
 
 
 class SiemensImagingSequence(ImagingSequence):

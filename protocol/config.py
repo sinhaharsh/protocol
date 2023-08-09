@@ -2,29 +2,29 @@ from collections import namedtuple
 
 from numpy import nan
 
-Unspecified = nan
 
-# class Unspecified(object):
-#     """Class to denote an unspecified value
-#
-#     Reasons include:
-#         - not specified in the original source e.g., DICOM image header
-#         - enocded as None or similar; or presumed to be default
-#
-#     We need this to correctly inform the downstream users of the source,
-#         to prevent them from assigning default values or imputing them another way!
-#     """
-#
-#     def __init__(self):
-#         """constructor"""
-#
-#         return NotImplemented
-#
-#     def __str__(self):
-#         return 'Unspecified'
-#
-#     def __repr__(self):
-#         return 'Unspecified'
+class UnspecifiedType(object):
+    """Class to denote an unspecified value
+
+    Reasons include:
+        - not specified in the original source e.g., DICOM image header
+        - enocded as None or similar; or presumed to be default
+
+    We need this to correctly inform the downstream users of the source,
+        to prevent them from assigning default values or imputing them another way!
+    """
+
+    def __init__(self):
+        """constructor"""
+
+    def __str__(self):
+        return 'Unspecified'
+
+    def __repr__(self):
+        return 'Unspecified'
+
+
+Unspecified = UnspecifiedType()
 
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation

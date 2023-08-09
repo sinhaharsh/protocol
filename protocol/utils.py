@@ -119,8 +119,9 @@ def parse_csa_params(dicom: pydicom.FileDataset,
     image_header = csareader.read(get_header(dicom, 'image_header_info'))
     phase_value = safe_get(image_header,
                            'tags.PhaseEncodingDirectionPositive.items')
+    phpl = None
     if phase_value:
-        phpl =  phase_value[0]
+        phpl = phase_value[0]
 
     values = {'MultiSliceMode': slice_mode,
               'IPat': ipat,
@@ -221,7 +222,7 @@ def header_exists(dicom: pydicom.FileDataset) -> bool:
         return True
     except Exception as e:
         warnings.warn(f'Expects dicom files from Siemens to be able to'
-                      f' read the private header. For other vendors',
+                      f' read the private header. For other vendors,'
                       f'private header is skipped. '
                       f'{e} in {dicom.filename}')
         # "Use --skip_private_header to create report".format(e))

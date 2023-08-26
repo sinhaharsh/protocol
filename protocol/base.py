@@ -313,12 +313,25 @@ class BaseSequence(MutableMapping):
         self.name = name
         self.params = set()
         self.path = path
+        self.subject_id = None
+        self.session_id = None
+        self.run_id = None
         if isinstance(params, dict):
             self.params = set(list(params.keys()))
             self.__dict__.update(params)
 
         # parameters and their values can be modified
         self._mutable = True
+
+    def set_session_info(self, subject_id: str, session_id: str, run_id: str):
+        """method to add metadata to the sequence"""
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.run_id = run_id
+
+    def get_session_info(self):
+        """method to get metadata to the sequence"""
+        return self.subject_id, self.session_id, self.run_id
 
     def add(self, param_list: Union[BaseParameter, List[BaseParameter]]):
         """method to add new parameters; overwrite previous values if exists."""

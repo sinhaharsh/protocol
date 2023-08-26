@@ -11,6 +11,7 @@ from warnings import warn
 import numpy as np
 from protocol.config import (UnspecifiedType, Unspecified,
                              SUPPORTED_IMAGING_MODALITIES)
+from protocol import logger
 
 
 # A [imaging] Parameter is a container class for a single value, with a name

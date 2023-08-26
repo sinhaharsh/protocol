@@ -388,18 +388,24 @@ class BaseSequence(MutableMapping):
 
         if self.params != other.params:
             diff = self.params.symmetric_difference(other.params)
-            warn('different sets of parameters - '
+            # Don't raise error, just warn. It might be the case that
+            # the two sequences are different. For example, if compliance
+            # is checked only for a subset of parameters.
+            logger.info('different sets of parameters - '
                  'below params exist in one but not the other :\n\t{}'
                  ''.format(diff))
-            return False, diff  # TODO varying dtype: list of names!
+            # return False, diff  # TODO varying dtype: list of names!
 
         non_compliant_params = list()
 
         for pname in self.params:
-            this_param = self.__dict__[pname]
-            that_param = other[pname]
-            if not that_param.compliant(this_param):
-                non_compliant_params.append((this_param, that_param))
+            if pname in other.params:
+                this_param = self.__dict__[pname]
+                that_param = other[pname]
+                if not that_param.compliant(this_param):
+                    non_compliant_params.append((this_param, that_param))
+            else:
+                logger.warn(f'{pname} not found in other sequence {other}')
 
         bool_flag = len(non_compliant_params) < 1
 

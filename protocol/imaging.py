@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pydicom
-from protocol import BaseSequence
+from protocol import BaseSequence, logger
 from protocol.base import BaseParameter, NumericParameter, CategoricalParameter, VariableNumericParameter
 from protocol import config as cfg
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
@@ -673,33 +673,47 @@ class ImagingSequence(BaseSequence, ABC):
                  name='MRI',
                  dicom=None,
                  imaging_params=None,
+                 required_params=None,
                  path=None,):
         """constructor"""
 
         super().__init__(name=name, path=path)
 
         self.multi_echo = False
-        self.imaging_params = imaging_params
-        self.imaging_params_classes = []
-        if self.imaging_params is not None:
+        self.params_classes = []
+
+        if imaging_params is not None:
+            self.imaging_params = imaging_params
+        else:
+            self.imaging_params = []
+
+        if required_params is not None:
+            self.required_params = required_params
+        else:
+            self.required_params = []
+
+        self.parameters = set(self.imaging_params + self.required_params)
+
+        if self.parameters:
             self._init_param_classes()
         if dicom is not None:
             self.parse(dicom)
             self._parse_private(dicom)
 
     def _init_param_classes(self):
-        for p in self.imaging_params:
+        for p in self.parameters:
             param_cls_name = f'protocol.imaging.{p}'
             try:
                 cls_object = import_string(param_cls_name)
             except ImportError:
+                logger.error(f'Could not import {param_cls_name}')
                 raise ImportError(f'Could not import {param_cls_name}')
-            self.imaging_params_classes.append(cls_object)
+            self.params_classes.append(cls_object)
 
-    def parse(self, dicom, imaging_params=None):
+    def parse(self, dicom, params=None):
         """Parses the parameter values from a given DICOM object or file."""
-        if self.imaging_params is None:
-            if imaging_params is None:
+        if self.parameters is None:
+            if params is None:
                 raise ValueError('imaging_params must be provided either during'
                                  ' initialization or during parse() call')
             else:
@@ -713,7 +727,7 @@ class ImagingSequence(BaseSequence, ABC):
                     raise IOError('input dicom path does not exist!')
                 dicom = pydicom.dcmread(dicom)
 
-        for param_class in self.imaging_params_classes:
+        for param_class in self.params_classes:
             pname = param_class._name
             value = get_dicom_param_value(dicom, pname)
             if value is None:
@@ -731,13 +745,12 @@ class ImagingSequence(BaseSequence, ABC):
 
                 try:
                     param_cls = import_string(param_cls_name)
+                    if name in self.parameters:
+                        self[name] = param_cls(val)
                 except ImportError:
-                    raise ImportError(f'Could not import {param_cls_name}')
-
-                if name in self.imaging_params:
-                    self[name] = param_cls(val)
+                    logger.error(f'Could not import {param_cls_name}')
         else:
-            warnings.warn('No private header found in DICOM file')
+            logger.warn('No private header found in DICOM file')
             # TODO: consider throwing a warning when expected header doesnt
             #  exist
             # TODO: need ways to specific parameter could not be read or
@@ -745,7 +758,9 @@ class ImagingSequence(BaseSequence, ABC):
 
     def from_dict(self, params_dict):
         """Populates the sequence parameters from a dictionary."""
-        self.imaging_params = list(params_dict.keys())
+        self.parameters = set(params_dict.keys())
+        self.imaging_params = set(params_dict.keys())
+
         for pname, value in params_dict.items():
             if isinstance(value, BaseParameter):
                 self[pname] = value

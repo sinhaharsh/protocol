@@ -1,18 +1,9 @@
-import warnings
-from abc import ABC
-from numbers import Number
-from pathlib import Path
-
 import numpy as np
-import pydicom
-from protocol import BaseSequence, logger
-from protocol.base import BaseParameter, NumericParameter, CategoricalParameter, VariableNumericParameter
+from protocol.base import NumericParameter, CategoricalParameter, VariableNumericParameter
 from protocol import config as cfg
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
-                             Unspecified, UnspecifiedType)
-from protocol.utils import get_dicom_param_value, header_exists, import_string, \
-    parse_csa_params
+                             Unspecified)
 
 
 class Manufacturer(CategoricalParameter):

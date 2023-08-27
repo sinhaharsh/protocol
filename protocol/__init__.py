@@ -25,4 +25,4 @@ from protocol.base import (BaseParameter, BaseSequence, BaseProtocol,
                            BaseMRImagingProtocol)
 from protocol.config import (BASE_IMAGING_PARAMETER_NAMES,
                              BASE_IMAGING_PARAMS_DICOM_TAGS)
-from protocol.imaging import ImagingSequence
+from protocol.sequence import ImagingSequence

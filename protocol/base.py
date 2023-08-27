@@ -3,15 +3,17 @@
 """Main module containing the core classes."""
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, MutableMapping
+from collections.abc import MutableMapping
 from numbers import Number
-from typing import Union, List
-from warnings import warn
+from typing import Iterable
+from typing import Union
 
 import numpy as np
+
+from protocol import logger
 from protocol.config import (UnspecifiedType, Unspecified,
                              SUPPORTED_IMAGING_MODALITIES)
-from protocol import logger
+from protocol.utils import slugify
 
 
 # A [imaging] Parameter is a container class for a single value, with a name
@@ -32,7 +34,7 @@ class BaseParameter(ABC):
     def __init__(self,
                  name='parameter',
                  value=Unspecified,
-                 dtype=float,
+                 dtype=None,
                  units='ms',
                  steps=1,
                  range=None,
@@ -50,8 +52,9 @@ class BaseParameter(ABC):
         self.units = units
         self.range = range
         self.steps = steps
-
-        self.name = name
+        if not name:
+            raise ValueError('Parameter name cannot be empty!')
+        self.name = slugify(name)
         self.acronym = acronym
         self.dicom_tag = dicom_tag
 
@@ -64,10 +67,11 @@ class BaseParameter(ABC):
         If any of the values to be compared are UnspecifiedType, it returns False
         """
 
-        if isinstance(self.value, UnspecifiedType) or isinstance(other.value, UnspecifiedType):
-            warn('one of the values being compared is UnspecifiedType'
-                 f'in {self.name}',
-                 UserWarning)
+        if isinstance(self.value, UnspecifiedType) or isinstance(other.value,
+                                                                 UnspecifiedType):
+            logger.warning('one of the values being compared is UnspecifiedType'
+                           f'in {self.name}',
+                           UserWarning)
             return False
         else:
             return self._check_compliance(other)
@@ -114,8 +118,8 @@ class VariableNumericParameter(BaseParameter):
     def __init__(self,
                  name,
                  value,
-                 dicom_tag,
-                 acronym,
+                 dicom_tag=None,
+                 acronym=None,
                  units=None,
                  range=None,
                  steps=None,
@@ -174,8 +178,8 @@ class NumericParameter(BaseParameter):
     def __init__(self,
                  name,
                  value,
-                 dicom_tag,
-                 acronym,
+                 dicom_tag=None,
+                 acronym=None,
                  units=None,
                  range=None,
                  steps=None,
@@ -198,7 +202,9 @@ class NumericParameter(BaseParameter):
             if not isinstance(value, self.dtype):
                 raise TypeError(f'Input {value} is not of type {self.dtype} for'
                                 f' {self.name}')
-
+            if np.isnan(value):
+                raise ValueError(f'Input {value} is not a valid number for '
+                                 f'{self.name}')
             self.value = float(value)
 
         # overriding default from parent class
@@ -228,8 +234,8 @@ class CategoricalParameter(BaseParameter):
     def __init__(self,
                  name,
                  value,
-                 dicom_tag,
-                 acronym,
+                 dicom_tag=None,
+                 acronym=None,
                  dtype=Iterable,
                  required=True,
                  severity='critical',
@@ -305,12 +311,12 @@ class BaseSequence(MutableMapping):
     def __init__(self,
                  name: str = 'Sequence',
                  params: dict = None,
-                 path: str = None,):
+                 path: str = None, ):
         """constructor"""
 
         super().__init__()
 
-        self.name = name
+        self.name = slugify(name)
         self.params = set()
         self.path = path
         self.subject_id = None
@@ -333,7 +339,7 @@ class BaseSequence(MutableMapping):
         """method to get metadata to the sequence"""
         return self.subject_id, self.session_id, self.run_id
 
-    def add(self, param_list: Union[BaseParameter, List[BaseParameter]]):
+    def add(self, param_list: Union[BaseParameter, Iterable[BaseParameter]]):
         """method to add new parameters; overwrite previous values if exists."""
 
         if not isinstance(param_list, Iterable):
@@ -363,7 +369,7 @@ class BaseSequence(MutableMapping):
         self.params.add(key)
 
     def get(self, name, not_found_value=None):
-        self.__getitem__(name=name, not_found_value=not_found_value)
+        return self.__getitem__(name=name, not_found_value=not_found_value)
 
     def __getitem__(self, name,
                     not_found_value=None):
@@ -392,8 +398,8 @@ class BaseSequence(MutableMapping):
             # the two sequences are different. For example, if compliance
             # is checked only for a subset of parameters.
             logger.info('different sets of parameters - '
-                 'below params exist in one but not the other :\n\t{}'
-                 ''.format(diff))
+                        'below params exist in one but not the other :\n\t{}'
+                        ''.format(diff))
             # return False, diff  # TODO varying dtype: list of names!
 
         non_compliant_params = list()
@@ -442,7 +448,7 @@ class BaseSequence(MutableMapping):
         return self.__str__()
 
 
-class BaseProtocol():
+class BaseProtocol:
     """
     Base class for all protocols.
 
@@ -453,6 +459,7 @@ class BaseProtocol():
                  name="Protocol"):
         """constructor"""
         self._mutable = False
+        self.name = slugify(name)
 
 
 class BaseImagingProtocol(BaseProtocol):
@@ -482,12 +489,17 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
 
     def __init__(self,
                  name="MRIProtocol",
+                 category='MR',
                  path=None):
         """constructor"""
 
-        super().__init__(name=name, category='MR')
+        super().__init__(name=name, category=category)
 
         self._seq = dict()
+
+    @property
+    def category(self):
+        return self._category
 
     def add(self, seq):
         """Adds a new sequence to the current protocol"""
@@ -517,18 +529,3 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
             return self._seq[name]
         except KeyError:
             raise KeyError(f'{name} has not been set yet')
-
-# MR_protocol = BaseMRImagingProtocol('MRP')
-#
-# MR_protocol['param']
-# MR_protocol['param'] = value
-#
-# MR_protocol.set_param(name, value)
-# MR_protocol.get_param(name)
-#
-# mrds = MRdataset()
-#
-# mrds[subject, session, run] = list()  # list of volumes from different modalities
-# mrds[modality] = list()  # list of all sessions with that modality
-#
-# MRdataset

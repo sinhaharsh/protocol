@@ -1,0 +1,49 @@
+# Write tests for the imaging module
+
+import pytest
+import pydicom
+from pathlib import Path
+from protocol import ImagingSequence, logger
+from protocol.config import Unspecified, UnspecifiedType
+from protocol.imaging import VariableEchoTime, VariableEchoNumber
+from protocol.utils import import_string, get_dicom_param_value, header_exists, \
+    parse_csa_params
+
+import pytest
+from hypothesis import given
+from hypothesis.strategies import dictionaries, text, floats, lists
+
+# Import your class here
+from protocol import ImagingSequence
+
+# Hypothesis strategy for valid DICOM parameters
+dicom_params = dictionaries(
+    keys=text(min_size=1),
+    values=floats(allow_nan=False, allow_infinity=False)
+)
+
+
+# Test parsing DICOM
+def test_parse_dicom(sample_dcm):
+    seq = ImagingSequence(dicom=sample_dcm)
+    assert seq.name == 'MRI'
+    assert not seq.multi_echo
+    assert seq.parameters == set()
+    assert seq.imaging_params == []
+    assert seq.required_params == []
+
+    # Add assertions to check if parameters are correctly parsed
+
+# # Test multi-echo handling
+# def test_multi_echo_handling():
+#     seq = ImagingSequence()
+#     seq.set_echo_times([20.0, 30.0], echo_number=2)
+#     assert seq.multi_echo
+#     assert seq['EchoTime'].values == [20.0, 30.0]
+#     assert seq['EchoNumber'].value == 2
+
+# Add more tests based on the outlined property tests
+
+# Run tests
+if __name__ == '__main__':
+    pytest.main()

@@ -529,3 +529,20 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
             return self._seq[name]
         except KeyError:
             raise KeyError(f'{name} has not been set yet')
+
+    @staticmethod
+    def get_value_unit(v):
+        value, unit = v, None
+        if v.endswith('ms'):
+            value, unit = v.split('ms')[0], 'ms'
+        elif v.endswith('mm'):
+            value, unit = v.split('mm')[0], 'mm'
+        elif v.endswith('deg'):
+            value, unit = v.split('deg')[0], 'deg'
+        elif v.endswith('Hz/Px'):
+            value, unit = v.split('Hz/Px')[0], 'Hz/Px'
+        elif v.endswith('%'):
+            value, unit = v.split('%')[0], '%'
+        return value.strip(), unit
+
+

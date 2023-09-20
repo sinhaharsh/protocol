@@ -1,9 +1,10 @@
-import re
 import functools
+import json
 import re
 import unicodedata
 import warnings
 from importlib import import_module
+from pathlib import Path
 from typing import Optional
 
 import pydicom
@@ -305,3 +306,40 @@ def slugify(value, allow_unicode=False):
             'NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value)
     return re.sub(r'[-\s]+', '-', value).strip('-_')
+
+
+def boolify(s):
+    if s == 'True':
+        return True
+    if s == 'False':
+        return False
+    raise ValueError("huh?")
+
+
+def auto_convert(s):
+    for fn in (boolify, int, float):
+        try:
+            return fn(s)
+        except ValueError:
+            continue
+    if isinstance(s, str):
+        return s.strip()
+    return s
+
+
+def read_json(filepath: Path):
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
+    elif not isinstance(filepath, Path):
+        raise FileNotFoundError(f'Expected str or pathlib.Path, '
+                                f'Got {type(filepath)}')
+
+    if not filepath.is_file():
+        raise FileNotFoundError(f'File not found: {filepath}')
+
+    with open(filepath, 'r') as fp:
+        try:
+            dict_ = json.load(fp)
+        except json.decoder.JSONDecodeError as e:
+            raise ValueError(f'Error while reading {filepath}: {e}')
+    return dict_

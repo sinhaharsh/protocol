@@ -47,7 +47,7 @@ class BaseParameter(ABC):
         self.required = required
         self.severity = severity
 
-        self.value = value
+        self._value = value
         self.dtype = dtype
         self.units = units
         self.range = range
@@ -59,6 +59,10 @@ class BaseParameter(ABC):
         self.dicom_tag = dicom_tag
 
         self.decimals = 2  # numerical tolerance in decimal places
+
+    @property
+    def value(self):
+        return self._value
 
     def compliant(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
@@ -106,7 +110,7 @@ class BaseParameter(ABC):
         """repr"""
 
         name = self.acronym if self.acronym else self.name
-        return f'{name}({self.value})'
+        return f'{name}({self._value})'
 
     def __str__(self):
         return self.__repr__()
@@ -143,16 +147,25 @@ class MultiValueNumericParameter(BaseParameter):
                 if not all([isinstance(v, self.dtype) for v in value]):
                     raise TypeError(f'Input {value} is not of type {self.dtype}'
                                     f' for {self.name}')
-                self.value = sorted([float(v) for v in value])
+                self._value = sorted([float(v) for v in value])
 
             elif isinstance(value, self.dtype):
-                self.value = [float(value)]
+                self._value = [float(value)]
             else:
                 raise TypeError(f'Input {value} is not of type {self.dtype} for'
                                 f' {self.name}')
 
         # overriding default from parent class
         self.decimals = 3
+
+    @property
+    def value(self):
+        if isinstance(self._value, UnspecifiedType):
+            return self._value
+        if len(self._value) == 1:
+            return self._value[0]
+        else:
+            return self._value
 
     def _check_compliance(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
@@ -205,7 +218,7 @@ class NumericParameter(BaseParameter):
             if np.isnan(value):
                 raise ValueError(f'Input {value} is not a valid number for '
                                  f'{self.name}')
-            self.value = float(value)
+            self._value = float(value)
 
         # overriding default from parent class
         self.decimals = 3
@@ -297,7 +310,7 @@ class CategoricalParameter(BaseParameter):
                  value,
                  dicom_tag=None,
                  acronym=None,
-                 dtype=Iterable,
+                 dtype=str,
                  required=True,
                  severity='critical',
                  units=None,
@@ -325,12 +338,15 @@ class CategoricalParameter(BaseParameter):
                     raise TypeError(f'Got input {value} of type {type(value)}. '
                                     f'Expected {self.dtype} for {self.name}')
 
+            if isinstance(value, str):
+                # strip whitespaces if any
+                value = "".join(value.split())
+                self._value = str(value).upper()
+
         # if allowed_values is set, check if input value is allowed
         if self.allowed_values and (value not in self.allowed_values):
             raise ValueError(f'Invalid value for {self.name}. '
                              f'Must be one of {self.allowed_values}')
-
-        self.value = str(value).upper()
 
     def _check_compliance(self, other):
         """Method to check if one parameter value is compatible w.r.t another,

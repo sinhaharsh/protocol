@@ -65,18 +65,21 @@ class BaseParameter(ABC):
         return self._value
 
     def compliant(self, other):
-        """Method to check if one parameter value is compatible w.r.t another,
+        """
+        Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
 
-        If any of the values to be compared are UnspecifiedType, it returns False
+        TODO: if self(reference) is UnspecifiedType, return True. This is to allow
+         for a parameter to be optional, but if self(reference) is specified, and other is not,
+         return False.
         """
 
-        if isinstance(self.value, UnspecifiedType) or isinstance(other.value,
-                                                                 UnspecifiedType):
-            logger.warning('one of the values being compared is UnspecifiedType'
-                           f'in {self.name}',
-                           UserWarning)
-            return False
+        if isinstance(self.value, UnspecifiedType) or isinstance(other.value, UnspecifiedType):
+            logger.warning(f'one of the values being compared is UnspecifiedType'
+                           f'in {self.name}')
+            return True
+        # elif isinstance(other.value, UnspecifiedType):
+        #     return False
         else:
             return self._check_compliance(other)
 
@@ -567,9 +570,9 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
     def __init__(self,
                  name="MRIProtocol",
                  category='MR',
-                 path=None):
+                 filepath=None):
         """constructor"""
-
+        self.filepath = filepath
         super().__init__(name=name, category=category)
 
         self._seq = dict()

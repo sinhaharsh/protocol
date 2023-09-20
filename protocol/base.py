@@ -13,7 +13,7 @@ import numpy as np
 from protocol import logger
 from protocol.config import (UnspecifiedType, Unspecified,
                              SUPPORTED_IMAGING_MODALITIES)
-from protocol.utils import slugify
+from protocol.utils import convert2ascii
 
 
 # A [imaging] Parameter is a container class for a single value, with a name
@@ -54,14 +54,13 @@ class BaseParameter(ABC):
         self.steps = steps
         if not name:
             raise ValueError('Parameter name cannot be empty!')
-        self.name = slugify(name)
+        self.name = convert2ascii(name)
         self.acronym = acronym
         self.dicom_tag = dicom_tag
 
         self.decimals = 2  # numerical tolerance in decimal places
 
-    @property
-    def value(self):
+    def get_value(self):
         return self._value
 
     def compliant(self, other):
@@ -74,7 +73,7 @@ class BaseParameter(ABC):
          return False.
         """
 
-        if isinstance(self.value, UnspecifiedType) or isinstance(other.value, UnspecifiedType):
+        if isinstance(self._value, UnspecifiedType) or isinstance(other._value, UnspecifiedType):
             logger.warning(f'one of the values being compared is UnspecifiedType'
                            f'in {self.name}')
             return True
@@ -90,13 +89,13 @@ class BaseParameter(ABC):
         """
 
     @abstractmethod
-    def _cmp_value(self, other):
+    def _compare_value(self, other):
         """
         Method to compare the values of two parameters
         """
 
     @abstractmethod
-    def _cmp_units(self, other):
+    def _compare_units(self, other):
         """
         Method to compare the units of two parameters
         """
@@ -162,7 +161,7 @@ class MultiValueNumericParameter(BaseParameter):
         self.decimals = 3
 
     @property
-    def value(self):
+    def get_value(self):
         if isinstance(self._value, UnspecifiedType):
             return self._value
         if len(self._value) == 1:
@@ -174,16 +173,16 @@ class MultiValueNumericParameter(BaseParameter):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
-        return self._cmp_value(other) and self._cmp_units(other)
+        return self._compare_value(other) and self._compare_units(other)
 
-    def _cmp_value(self, other):
+    def _compare_value(self, other):
         # tolerance is 1e-N where N = self.decimals
-        for v, o in zip(self.value, other.value):
+        for v, o in zip(self._value, other._value):
             if not np.isclose(v, o, atol=1 ** -self.decimals):
                 return False
         return True
 
-    def _cmp_units(self, other):
+    def _compare_units(self, other):
         # TODO: implement unit conversion
         return self.units == other.units
 
@@ -230,16 +229,16 @@ class NumericParameter(BaseParameter):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
-        return self._cmp_value(other) and self._cmp_units(other)
+        return self._compare_value(other) and self._compare_units(other)
 
-    def _cmp_value(self, other):
+    def _compare_value(self, other):
         # tolerance is 1e-N where N = self.decimals
-        if np.isclose(self.value, other.value, atol=1 ** -self.decimals):
+        if np.isclose(self._value, other._value, atol=1 ** -self.decimals):
             return True
         else:
             return False
 
-    def _cmp_units(self, other):
+    def _compare_units(self, other):
         # TODO: implement unit conversion
         return self.units == other.units
 
@@ -290,19 +289,19 @@ class MultiValueCategoricalParameter(BaseParameter):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
-        return self._cmp_value(other) and self._cmp_units(other)
+        return self._compare_value(other) and self._compare_units(other)
 
-    def _cmp_units(self, other):
+    def _compare_units(self, other):
         # TODO: implement unit conversion
         return self.units == other.units
 
-    def _cmp_value(self, other):
-        if isinstance(other.value, self.dtype):
-            value_to_compare = other.value
+    def _compare_value(self, other):
+        if isinstance(other._value, self.dtype):
+            value_to_compare = other._value
         else:
             raise TypeError(f'Invalid type. Must be an instance of '
                             f'{self.dtype} or {self}')
-        return set(self.value) == set(other.value)
+        return set(self._value) == set(other._value)
 
 
 class CategoricalParameter(BaseParameter):
@@ -355,15 +354,15 @@ class CategoricalParameter(BaseParameter):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
-        return self._cmp_value(other) and self._cmp_units(other)
+        return self._compare_value(other) and self._compare_units(other)
 
-    def _cmp_units(self, other):
+    def _compare_units(self, other):
         # TODO: implement unit conversion
         return self.units == other.units
 
-    def _cmp_value(self, other):
+    def _compare_value(self, other):
         if isinstance(other, type(self)):
-            value_to_compare = other.value
+            value_to_compare = other._value
         elif isinstance(other, self.dtype):
             value_to_compare = other
         else:
@@ -396,24 +395,19 @@ class BaseSequence(MutableMapping):
 
         super().__init__()
 
-        self.name = slugify(name)
+        self.name = convert2ascii(name)
         self.params = set()
         self.path = path
         self.subject_id = None
         self.session_id = None
         self.run_id = None
+        self.timestamp = None
         if isinstance(params, dict):
             self.params = set(list(params.keys()))
             self.__dict__.update(params)
 
         # parameters and their values can be modified
         self._mutable = True
-
-    def set_session_info(self, subject_id: str, session_id: str, run_id: str):
-        """method to add metadata to the sequence"""
-        self.subject_id = subject_id
-        self.session_id = session_id
-        self.run_id = run_id
 
     def get_session_info(self):
         """method to get metadata to the sequence"""
@@ -520,7 +514,7 @@ class BaseSequence(MutableMapping):
         for key in self.params:
             param = self.__dict__[key]
             name = param.acronym if param.acronym else param.name
-            plist.append(f'{name}={param.value}')
+            plist.append(f'{name}={param._value}')
 
         return '{}({})'.format(self.name, ','.join(plist))
 
@@ -539,7 +533,7 @@ class BaseProtocol:
                  name="Protocol"):
         """constructor"""
         self._mutable = False
-        self.name = slugify(name)
+        self.name = convert2ascii(name)
 
 
 class BaseImagingProtocol(BaseProtocol):
@@ -611,7 +605,7 @@ class BaseMRImagingProtocol(BaseImagingProtocol):
             raise KeyError(f'{name} has not been set yet')
 
     @staticmethod
-    def get_value_unit(v):
+    def get_value_and_unit(v):
         value, unit = v, None
         if v.endswith('ms'):
             value, unit = v.split('ms')[0], 'ms'

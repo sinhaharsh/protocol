@@ -135,6 +135,19 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'PhasePolarity': 'PHPL',
     }
 
+ACRONYMS_SESSION_INFO = {
+    "SeriesInstanceUID": "SIUID",
+    "PatientName"       : "PN",
+    "PatientID"         : "PID",
+    "StudyID"           : "SID",
+    "SeriesDescription" : "SD",
+    "SeriesNumber"      : "SN",
+    "ProtocolName"      : "PN",
+    "SequenceName"      : "SQNM",
+    "ContentDate"       : "CD",
+    "ContentTime"       : "CT",
+}
+
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
 
 # Constant dicom Identifiers used to extract dicom headers

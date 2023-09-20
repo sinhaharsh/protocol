@@ -9,10 +9,11 @@ from lxml import objectify
 from protocol import config as cfg, BaseMRImagingProtocol, logger, BaseSequence, BaseParameter
 from protocol.base import (NumericParameter, CategoricalParameter, MultiValueNumericParameter,
                            MultiValueCategoricalParameter)
-from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
+from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              Unspecified, UnspecifiedType)
-from protocol.utils import slugify, auto_convert, import_string, get_dicom_param_value, header_exists, parse_csa_params
+from protocol.utils import convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists, parse_csa_params, \
+    get_sequence_name
 
 
 class Manufacturer(CategoricalParameter):
@@ -28,7 +29,7 @@ class Manufacturer(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class ManufacturersModelName(CategoricalParameter):
@@ -44,7 +45,7 @@ class ManufacturersModelName(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class SoftwareVersions(CategoricalParameter):
@@ -60,7 +61,7 @@ class SoftwareVersions(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MagneticFieldStrength(NumericParameter):
@@ -86,7 +87,7 @@ class MagneticFieldStrength(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class ReceiveCoilName(CategoricalParameter):
@@ -102,7 +103,7 @@ class ReceiveCoilName(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MRTransmitCoilSequence(CategoricalParameter):
@@ -118,7 +119,7 @@ class MRTransmitCoilSequence(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class SequenceVariant(MultiValueCategoricalParameter):
@@ -134,7 +135,7 @@ class SequenceVariant(MultiValueCategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class ScanOptions(CategoricalParameter):
@@ -150,7 +151,7 @@ class ScanOptions(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class SequenceName(CategoricalParameter):
@@ -166,7 +167,7 @@ class SequenceName(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class NonLinearGradientCorrection(CategoricalParameter):
@@ -182,7 +183,7 @@ class NonLinearGradientCorrection(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MRAcquisitionType(CategoricalParameter):
@@ -198,7 +199,7 @@ class MRAcquisitionType(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MTState(CategoricalParameter):
@@ -214,7 +215,7 @@ class MTState(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class SpoilingState(CategoricalParameter):
@@ -230,7 +231,7 @@ class SpoilingState(CategoricalParameter):
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class ParallelReductionFactorInPlane(NumericParameter):
@@ -249,7 +250,7 @@ class ParallelReductionFactorInPlane(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class ParallelAcquisitionTechnique(NumericParameter):
@@ -268,7 +269,7 @@ class ParallelAcquisitionTechnique(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class PartialFourier(NumericParameter):
@@ -287,7 +288,7 @@ class PartialFourier(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class PartialFourierDirection(NumericParameter):
@@ -306,7 +307,7 @@ class PartialFourierDirection(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class DwellTime(NumericParameter):
@@ -325,7 +326,7 @@ class DwellTime(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MultiBandAccelerationFactor(NumericParameter):
@@ -344,7 +345,7 @@ class MultiBandAccelerationFactor(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class EchoTrainLength(NumericParameter):
@@ -363,7 +364,7 @@ class EchoTrainLength(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class PixelBandwidth(NumericParameter):
@@ -382,7 +383,7 @@ class PixelBandwidth(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class PhaseEncodingSteps(NumericParameter):
@@ -401,7 +402,7 @@ class PhaseEncodingSteps(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class ShimSetting(NumericParameter):
@@ -420,7 +421,7 @@ class ShimSetting(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=None,
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MultiSliceMode(CategoricalParameter):
@@ -436,7 +437,7 @@ class MultiSliceMode(CategoricalParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=None,
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class EchoNumber(NumericParameter):
@@ -455,7 +456,7 @@ class EchoNumber(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class RepetitionTime(NumericParameter):
@@ -474,7 +475,7 @@ class RepetitionTime(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class FlipAngle(NumericParameter):
@@ -492,7 +493,7 @@ class FlipAngle(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
         # overriding default from parent class
         self.decimals = 0
@@ -507,7 +508,7 @@ class FlipAngle(NumericParameter):
             either in equality or within acceptable range, for that data type.
         """
 
-        if np.isclose(self.value, other.value, atol=self.abs_tolerance):
+        if np.isclose(self._value, other._value, atol=self.abs_tolerance):
             return True
         else:
             return False
@@ -528,7 +529,7 @@ class MultiValueEchoTime(MultiValueNumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class EchoTime(MultiValueNumericParameter):
@@ -546,7 +547,7 @@ class EchoTime(MultiValueNumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MultiValueEchoNumber(MultiValueNumericParameter):
@@ -564,7 +565,7 @@ class MultiValueEchoNumber(MultiValueNumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class EffectiveEchoSpacing(NumericParameter):
@@ -582,7 +583,7 @@ class EffectiveEchoSpacing(NumericParameter):
                          required=False,
                          severity='critical',
                          dicom_tag=None,
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class PhaseEncodingDirection(CategoricalParameter):
@@ -596,12 +597,12 @@ class PhaseEncodingDirection(CategoricalParameter):
         super().__init__(name=self._name,
                          value=value,
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name],
+                         acronym=ACRONYMS_IMG[self._name],
                          allowed_values=cfg.allowed_values_PED)
 
 
 class ScanningSequence(CategoricalParameter):
-    """Parameter specific class for PhaseEncodingDirection"""
+    """Parameter specific class for """
 
     _name = 'ScanningSequence'
 
@@ -611,11 +612,11 @@ class ScanningSequence(CategoricalParameter):
         super().__init__(name=self._name,
                          value=value,
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class IPat(CategoricalParameter):
-    """Parameter specific class for PhaseEncodingDirection"""
+    """Parameter specific class for """
 
     _name = 'IPat'
 
@@ -626,11 +627,11 @@ class IPat(CategoricalParameter):
                          value=value,
                          dtype=str,
                          dicom_tag=None,
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class PhasePolarity(CategoricalParameter):
-    """Parameter specific class for PhaseEncodingDirection"""
+    """Parameter specific class for """
 
     _name = 'PhasePolarity'
 
@@ -641,7 +642,7 @@ class PhasePolarity(CategoricalParameter):
                          value=value,
                          dtype=int,
                          dicom_tag=None,
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class InversionTime(NumericParameter):
@@ -660,7 +661,7 @@ class InversionTime(NumericParameter):
                          required=True,
                          severity='critical',
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class BodyPartExamined(CategoricalParameter):
@@ -788,7 +789,7 @@ class SiemensMRImagingProtocol(BaseMRImagingProtocol):
                     self.programs[program_name] = {}
                     # get the sequences for each program
                     for protocol in program.getchildren():
-                        sequence_name = slugify(protocol.get('name'))
+                        sequence_name = convert2ascii(protocol.get('name'))
                         self.programs[program_name][sequence_name] = dict(protocol.attrib)
             elif child.tag == 'PrintProtocol':
                 # The protocol is organized into cards. Each card contains a set of parameters
@@ -798,13 +799,13 @@ class SiemensMRImagingProtocol(BaseMRImagingProtocol):
                         header_path = step.ProtHeaderInfo.HeaderProtPath.text
                         header_property = step.ProtHeaderInfo.HeaderProperty.text
                         program_name = header_path.split('\\')[-2]
-                        sequence_name = slugify(header_path.split('\\')[-1])
+                        sequence_name = convert2ascii(header_path.split('\\')[-1])
                         self.programs[program_name][sequence_name]['header_property'] = header_property
                         for card in step.getchildren():
                             if card.tag == 'Card':
                                 for parameter in card.getchildren():
                                     label = parameter.Label.text.strip()
-                                    value, _ = self.get_value_unit(parameter.ValueAndUnit.text.strip())
+                                    value, _ = self.get_value_and_unit(parameter.ValueAndUnit.text.strip())
                                     card_name = card.get('name')
                                     if card_name not in self.programs[program_name][sequence_name]:
                                         self.programs[program_name][sequence_name][card_name] = {}
@@ -848,6 +849,30 @@ class ImagingSequence(BaseSequence, ABC):
         if dicom is not None:
             self.parse(dicom)
             self._parse_private(dicom)
+            self.set_session_info(dicom)
+
+    def set_session_info(self, dicom):
+        if not isinstance(dicom, pydicom.FileDataset):
+            raise TypeError('Input must be a pre-read pydicom object.')
+
+        #   name: SeriesNumber_Suffix
+        #   priority order: SeriesDescription, SequenceName, ProtocolName
+        self.name = get_sequence_name(dicom)
+        self.subject_id = str(dicom.get('PatientID', None))
+        # series number is a proxy for session?
+        # session_id = str(dicom.get('SeriesNumber', None))
+        self.session_id = str(dicom.get('StudyInstanceUID', None))
+        self.run_id = dicom.get('SeriesInstanceUID', None)
+
+        date = self['ContentDate'].get_value
+        time = self['ContentTime'].get_value
+        if not isinstance(date, UnspecifiedType):
+            if not isinstance(time, UnspecifiedType):
+                datetime_obj = datetime.strptime(f'{date} {time}', '%Y%m%d %H%M%S.%f')
+                self.timestamp = datetime_obj.strftime('%m_%d_%Y_%H_%M_%S')
+            else:
+                datetime_obj = datetime.strptime(f'{date}', '%Y%m%d')
+                self.timestamp = datetime_obj.strftime('%m_%d_%Y')
 
     def _init_param_classes(self):
         for p in self.parameters:

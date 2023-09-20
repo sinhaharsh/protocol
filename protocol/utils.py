@@ -290,7 +290,7 @@ def import_string(dotted_path):
         ) from err
 
 
-def slugify(value, allow_unicode=False):
+def convert2ascii(value, allow_unicode=False):
     """
     Taken from https://github.com/django/django/blob/master/django/utils/text.py
     Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated

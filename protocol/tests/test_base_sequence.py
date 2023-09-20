@@ -4,7 +4,7 @@ from hypothesis import given, assume
 from hypothesis.strategies import text, dictionaries, floats
 from protocol import BaseSequence, BaseParameter  # Replace with actual import path
 from protocol.base import NumericParameter
-from protocol.utils import slugify
+from protocol.utils import convert2ascii
 
 
 # Test initialization and defaults
@@ -122,9 +122,9 @@ def test_string_representation(parameter_name1, parameter_value1,
     sequence.add(parameter1)
     sequence.add(parameter2)
     if parameter_name1 == parameter_name2:
-        assert str(sequence) == f"Sequence({slugify(parameter_name1)}={parameter_value2})"
+        assert str(sequence) == f"Sequence({convert2ascii(parameter_name1)}={parameter_value2})"
     else:
         try:
-            assert str(sequence) == f"Sequence({slugify(parameter_name1)}={parameter_value1},{slugify(parameter_name2)}={parameter_value2})"
+            assert str(sequence) == f"Sequence({convert2ascii(parameter_name1)}={parameter_value1},{convert2ascii(parameter_name2)}={parameter_value2})"
         except AssertionError:
-            assert str(sequence) == f"Sequence({slugify(parameter_name2)}={parameter_value2},{slugify(parameter_name1)}={parameter_value1})"
+            assert str(sequence) == f"Sequence({convert2ascii(parameter_name2)}={parameter_value2},{convert2ascii(parameter_name1)}={parameter_value1})"

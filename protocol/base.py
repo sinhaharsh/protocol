@@ -112,7 +112,7 @@ class BaseParameter(ABC):
         return self.__repr__()
 
 
-class VariableNumericParameter(BaseParameter):
+class MultiValueNumericParameter(BaseParameter):
     """Parameter specific class for EchoTime"""
 
     def __init__(self,
@@ -226,6 +226,67 @@ class NumericParameter(BaseParameter):
     def _cmp_units(self, other):
         # TODO: implement unit conversion
         return self.units == other.units
+
+
+class MultiValueCategoricalParameter(BaseParameter):
+    """Parameter specific class for PhaseEncodingDirection"""
+
+    def __init__(self,
+                 name,
+                 value,
+                 dicom_tag=None,
+                 acronym=None,
+                 dtype=Iterable,
+                 required=True,
+                 severity='critical',
+                 units=None,
+                 range=None,
+                 allowed_values=tuple()):
+
+        """Constructor."""
+
+        super().__init__(name=name,
+                         value=value,
+                         dtype=dtype,
+                         units=units,
+                         range=range,
+                         required=required,
+                         severity=severity,
+                         dicom_tag=dicom_tag,
+                         acronym=acronym)
+
+        self.allowed_values = allowed_values
+        if not isinstance(value, UnspecifiedType):
+            if not isinstance(value, self.dtype):
+                try:
+                    value = self.dtype(value)
+                except TypeError:
+                    raise TypeError(f'Got input {value} of type {type(value)}. '
+                                    f'Expected {self.dtype} for {self.name}')
+            self._value = [str(v).upper() for v in value]
+
+        # if allowed_values is set, check if input value is allowed
+        if self.allowed_values and (value not in self.allowed_values):
+            raise ValueError(f'Invalid value for {self.name}. '
+                             f'Must be one of {self.allowed_values}')
+
+    def _check_compliance(self, other):
+        """Method to check if one parameter value is compatible w.r.t another,
+            either in equality or within acceptable range, for that data type.
+        """
+        return self._cmp_value(other) and self._cmp_units(other)
+
+    def _cmp_units(self, other):
+        # TODO: implement unit conversion
+        return self.units == other.units
+
+    def _cmp_value(self, other):
+        if isinstance(other.value, self.dtype):
+            value_to_compare = other.value
+        else:
+            raise TypeError(f'Invalid type. Must be an instance of '
+                            f'{self.dtype} or {self}')
+        return set(self.value) == set(other.value)
 
 
 class CategoricalParameter(BaseParameter):

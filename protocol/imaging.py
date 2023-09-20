@@ -1,9 +1,18 @@
+from abc import ABC
+from copy import deepcopy
+from pathlib import Path
+
 import numpy as np
-from protocol.base import NumericParameter, CategoricalParameter, VariableNumericParameter
-from protocol import config as cfg
+import pydicom
+from lxml import objectify
+
+from protocol import config as cfg, BaseMRImagingProtocol, logger, BaseSequence, BaseParameter
+from protocol.base import (NumericParameter, CategoricalParameter, MultiValueNumericParameter,
+                           MultiValueCategoricalParameter)
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
-                             Unspecified)
+                             Unspecified, UnspecifiedType)
+from protocol.utils import slugify, auto_convert, import_string, get_dicom_param_value, header_exists, parse_csa_params
 
 
 class Manufacturer(CategoricalParameter):
@@ -112,7 +121,7 @@ class MRTransmitCoilSequence(CategoricalParameter):
                          acronym=ACRONYMS[self._name])
 
 
-class SequenceVariant(CategoricalParameter):
+class SequenceVariant(MultiValueCategoricalParameter):
     """Parameter specific class for SequenceVariant"""
 
     _name = 'SequenceVariant'
@@ -504,7 +513,7 @@ class FlipAngle(NumericParameter):
             return False
 
 
-class VariableEchoTime(VariableNumericParameter):
+class MultiValueEchoTime(MultiValueNumericParameter):
     """Parameter specific class for EchoTime"""
 
     _name = "EchoTime"
@@ -522,7 +531,7 @@ class VariableEchoTime(VariableNumericParameter):
                          acronym=ACRONYMS[self._name])
 
 
-class EchoTime(NumericParameter):
+class EchoTime(MultiValueNumericParameter):
     """Parameter specific class for EchoTime"""
 
     _name = "EchoTime"
@@ -540,7 +549,7 @@ class EchoTime(NumericParameter):
                          acronym=ACRONYMS[self._name])
 
 
-class VariableEchoNumber(VariableNumericParameter):
+class MultiValueEchoNumber(MultiValueNumericParameter):
     """Parameter specific class for EchoTime"""
 
     _name = "EchoNumber"

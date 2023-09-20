@@ -5,7 +5,7 @@ import pydicom
 from pathlib import Path
 from protocol import ImagingSequence, logger
 from protocol.config import Unspecified, UnspecifiedType
-from protocol.imaging import VariableEchoTime, VariableEchoNumber
+from protocol.imaging import MultiValueEchoTime, MultiValueEchoNumber
 from protocol.utils import import_string, get_dicom_param_value, header_exists, \
     parse_csa_params
 

@@ -1,5 +1,6 @@
 from abc import ABC
 from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,8 @@ from protocol.base import (NumericParameter, CategoricalParameter, MultiValueNum
                            MultiValueCategoricalParameter)
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
+                             SESSION_INFO_DICOM_TAGS as SESSION_INFO,
+                             ACRONYMS_SESSION_INFO as ACRONYMS_SI,
                              Unspecified, UnspecifiedType)
 from protocol.utils import convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists, parse_csa_params, \
     get_sequence_name
@@ -675,7 +678,37 @@ class BodyPartExamined(CategoricalParameter):
         super().__init__(name=self._name,
                          value=value,
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS[self._name])
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class ContentDate(CategoricalParameter):
+    """Parameter specific class for BodyPartExamined"""
+
+    _name = 'ContentDate'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=SESSION_INFO[self._name],
+                         acronym=ACRONYMS_SI[self._name])
+
+
+class ContentTime(CategoricalParameter):
+    """Parameter specific class for BodyPartExamined"""
+
+    _name = 'ContentTime'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=SESSION_INFO[self._name],
+                         acronym=ACRONYMS_SI[self._name])
 
 
 class SiemensMRImagingProtocol(BaseMRImagingProtocol):

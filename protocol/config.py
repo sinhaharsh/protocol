@@ -44,6 +44,8 @@ SESSION_INFO = {
     "te"                 : [0x18, 0x81],
     "patient_sex"        : [0x10, 0x40],
     "patient_age"        : [0x10, 0x1010],
+    "ContentDate"        : [0x08, 0x0023],
+    "ContentTime"        : [0x08, 0x0033],
     }
 
 BASE_IMAGING_PARAMS_DICOM_TAGS = {

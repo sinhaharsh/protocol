@@ -63,7 +63,7 @@ class BaseParameter(ABC):
     def get_value(self):
         return self._value
 
-    def compliant(self, other):
+    def compliant(self, other, *args, **kwargs):
         """
         Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
@@ -80,16 +80,16 @@ class BaseParameter(ABC):
         # elif isinstance(other.value, UnspecifiedType):
         #     return False
         else:
-            return self._check_compliance(other)
+            return self._check_compliance(other, *args, **kwargs)
 
     @abstractmethod
-    def _check_compliance(self, other):
+    def _check_compliance(self, other, *args, **kwargs):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
 
     @abstractmethod
-    def _compare_value(self, other):
+    def _compare_value(self, other, *args, **kwargs):
         """
         Method to compare the values of two parameters
         """
@@ -160,7 +160,6 @@ class MultiValueNumericParameter(BaseParameter):
         # overriding default from parent class
         self.decimals = 3
 
-    @property
     def get_value(self):
         if isinstance(self._value, UnspecifiedType):
             return self._value
@@ -169,16 +168,21 @@ class MultiValueNumericParameter(BaseParameter):
         else:
             return self._value
 
-    def _check_compliance(self, other):
+    def _check_compliance(self, other, rel_tol=0, decimals=self.decimals):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
-        return self._compare_value(other) and self._compare_units(other)
+        return self._compare_value(other, rel_tol=rel_tol, decimals=decimals) and self._compare_units(other)
 
-    def _compare_value(self, other):
+    def _compare_value(self, other, rel_tol=0, decimals=decimals):
         # tolerance is 1e-N where N = self.decimals
         for v, o in zip(self._value, other._value):
-            if not np.isclose(v, o, atol=1 ** -self.decimals):
+            # Numpy adds a warning : The default atol is not appropriate for comparing numbers that
+            # are much smaller than one (see Notes). Keeping relative tolerance for now.
+            # if not np.isclose(v, o, atol=1 ** -self.decimals):
+            v = np.round(v, decimals=decimals)
+            o = np.round(o, decimals=decimals)
+            if not np.isclose(v, o, rel_tol=rel_tol):
                 return False
         return True
 
@@ -225,15 +229,20 @@ class NumericParameter(BaseParameter):
         # overriding default from parent class
         self.decimals = 3
 
-    def _check_compliance(self, other):
+    def _check_compliance(self, other, rel_tol=0, decimals=self.decimals):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
-        return self._compare_value(other) and self._compare_units(other)
+        return self._compare_value(other, rel_tol=rel_tol, decimals=decimals) and self._compare_units(other)
 
-    def _compare_value(self, other):
+    def _compare_value(self, other, rel_tol=0, decimals=decimals):
         # tolerance is 1e-N where N = self.decimals
-        if np.isclose(self._value, other._value, atol=1 ** -self.decimals):
+        # Numpy adds a warning : The default atol is not appropriate for comparing numbers that
+        # are much smaller than one (see Notes). Keeping relative tolerance for now.
+        # if np.isclose(self._value, other._value, atol=1 ** -self.decimals):
+        v = np.round(self._value, decimals=decimals)
+        o = np.round(other._value, decimals=decimals)
+        if np.isclose(v, o, rel_tol=rel_tol):
             return True
         else:
             return False
@@ -295,7 +304,7 @@ class MultiValueCategoricalParameter(BaseParameter):
         # TODO: implement unit conversion
         return self.units == other.units
 
-    def _compare_value(self, other):
+    def _compare_value(self, other, rel_tol=0):
         if isinstance(other._value, self.dtype):
             value_to_compare = other._value
         else:
@@ -369,7 +378,7 @@ class CategoricalParameter(BaseParameter):
             raise TypeError(f'Invalid type. Must be an instance of '
                             f'{self.dtype} or {self}')
 
-        return self.value == value_to_compare
+        return self._value == value_to_compare
 
 
 class BaseSequence(MutableMapping):
@@ -457,7 +466,7 @@ class BaseSequence(MutableMapping):
             else:
                 raise KeyError(f'{name} has not been set yet')
 
-    def compliant(self, other):
+    def compliant(self, other, rel_tol=0, decimals=decimals):
         """Method to check if one sequence is compatible w.r.t another,
             either in equality or within acceptable range, for each parameter.
         """
@@ -482,7 +491,14 @@ class BaseSequence(MutableMapping):
             if pname in other.params:
                 this_param = self.__dict__[pname]
                 that_param = other[pname]
-                if not that_param.compliant(this_param):
+
+                if isinstance(this_param, NumericParameter) or \
+                        isinstance(this_param, MultiValueNumericParameter):
+                    compliant = that_param.compliant(this_param, rel_tol=rel_tol, decimals=decimals)
+                else:
+                    compliant = this_param.compliant(that_param)
+
+                if not compliant:
                     non_compliant_params.append((this_param, that_param))
             else:
                 logger.warn(f'{pname} not found in other sequence {other}')

@@ -28,7 +28,7 @@ Unspecified = UnspecifiedType()
 
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation
-SESSION_INFO = {
+SESSION_INFO_DICOM_TAGS = {
     "series_instance_uid": (0x20, 0x0e),
     "sequence"           : (0x18, 0x20),
     "variant"            : (0x18, 0x21),

@@ -810,9 +810,9 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
         self.convert_ped = convert_ped
         if filepath is not None:
             self.from_xml(filepath)
-            self._add_sequences()
+            self._add_sequences_from_file()
 
-    def _add_sequences(self):
+    def _add_sequences_from_file(self):
         if self.program_name is None:
             self.program_name = list(self.programs.keys())[0]
             # raise ValueError('Program name not set. Use set_program_name() to set it')
@@ -820,7 +820,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             seq = ImagingSequence(name=sequence_name)
             parameters = {}
             for param_name in self._parameter_map.keys():
-                parameters[param_name] = self.get_parameter(sequence_name, param_name)
+                parameters[param_name] = self._get_parameter(sequence_name, param_name)
             seq.from_dict(parameters)
             self.add(seq)
 
@@ -833,26 +833,26 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
     def get_program_names(self):
         return self.programs.keys()
 
-    def get_value(self, program_name, sequence_name, access_keys):
-        # recursively get the value
-        access_keys = deepcopy(access_keys)
-        root_ = self.programs[program_name][sequence_name]
-        while access_keys:
-            key = access_keys.pop(0)
-            try:
-                root_ = root_[key]
-            except KeyError as e:
-                logger.warn(f'Parameter not found in the sequence {sequence_name}.')
-                raise e
-        return root_
+    def _get_parameter(self, sequence_name, parameter_name):
+        def get_value(programs, program_name, sequence_name, access_keys):
+            # recursively get the value
+            access_keys = deepcopy(access_keys)
+            root_ = programs[program_name][sequence_name]
+            while access_keys:
+                key = access_keys.pop(0)
+                try:
+                    root_ = root_[key]
+                except KeyError as e:
+                    logger.warn(f'Parameter not found in the sequence {sequence_name}.')
+                    raise e
+            return root_
 
-    def get_parameter(self, sequence_name, parameter_name):
         if self.program_name is None:
             raise ValueError('Program name not set. Use set_program_name() to set it')
 
         try:
             access_keys = self._parameter_map[parameter_name]
-            value = self.get_value(self.program_name, sequence_name, access_keys)
+            value = get_value(self.programs, self.program_name, sequence_name, access_keys)
         except KeyError:
             logger.warn(f'Parameter not found : {parameter_name}')
             return Unspecified
@@ -975,8 +975,8 @@ class ImagingSequence(BaseSequence, ABC):
         self.session_id = str(dicom.get('StudyInstanceUID', None))
         self.run_id = dicom.get('SeriesInstanceUID', None)
 
-        date = self['ContentDate'].get_value
-        time = self['ContentTime'].get_value
+        date = self['ContentDate'].get_value()
+        time = self['ContentTime'].get_value()
         if not isinstance(date, UnspecifiedType):
             if not isinstance(time, UnspecifiedType):
                 datetime_obj = datetime.strptime(f'{date} {time}', '%Y%m%d %H%M%S.%f')

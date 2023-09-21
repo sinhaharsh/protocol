@@ -711,7 +711,85 @@ class ContentTime(CategoricalParameter):
                          acronym=ACRONYMS_SI[self._name])
 
 
-class SiemensMRImagingProtocol(BaseMRImagingProtocol):
+class MRImagingProtocol(BaseImagingProtocol):
+    """Base class for all MR imaging protocols, including neuroimaging datasets
+    """
+
+    def __init__(self,
+                 name="MRIProtocol",
+                 category='MR',
+                 filepath=None):
+        """constructor"""
+        self.filepath = filepath
+        super().__init__(name=name, category=category)
+
+        self._seq = dict()
+
+    @property
+    def category(self):
+        return self._category
+
+    def add(self, seq):
+        """Adds a new sequence to the current protocol"""
+
+        if not isinstance(seq, BaseSequence):
+            raise TypeError(
+                'Invalid type! Must be a valid instance of BaseSequence')
+
+        if seq.name in self._seq:
+            raise ValueError(
+                'This sequence already exists! Double check or rename!')
+
+        self._seq[seq.name] = seq
+
+    def __bool__(self):
+        """Checks if the protocol is empty"""
+
+        if len(self._seq) < 1:
+            return False
+        else:
+            return True
+
+    def __getitem__(self, name):
+        """getter"""
+
+        try:
+            return self._seq[name]
+        except KeyError:
+            raise KeyError(f'{name} has not been set yet')
+
+    @staticmethod
+    def get_value_and_unit(v):
+        value, unit = v, None
+        if v.endswith('ms'):
+            value, unit = v.split('ms')[0], 'ms'
+        elif v.endswith('mm'):
+            value, unit = v.split('mm')[0], 'mm'
+        elif v.endswith('deg'):
+            value, unit = v.split('deg')[0], 'deg'
+        elif v.endswith('Hz/Px'):
+            value, unit = v.split('Hz/Px')[0], 'Hz/Px'
+        elif v.endswith('%'):
+            value, unit = v.split('%')[0], '%'
+        return value.strip(), unit
+
+    def add_sequences_from_dict(self, dict_):
+        """
+        Adds sequences from a dictionary
+        Dict should be of the form:
+        {
+            'sequence_name': {
+                'parameter_name': 'parameter_value'
+            }
+        }
+        """
+        for seq_name, params in dict_.items():
+            seq = ImagingSequence(name=seq_name)
+            seq.from_dict(dict_[seq_name])
+            self.add(seq)
+
+
+class SiemensMRImagingProtocol(MRImagingProtocol):
     def __init__(self, filepath, program_name=None, convert_ped=True):
         super().__init__(name='SiemensMRProtocol', category='MR', filepath=filepath)
         self.programs = {}

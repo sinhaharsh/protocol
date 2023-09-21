@@ -9,6 +9,7 @@ from typing import Optional
 
 import pydicom
 
+from protocol import logger
 from protocol import config
 from protocol.config import BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS, \
     Unspecified
@@ -223,7 +224,7 @@ def header_exists(dicom: pydicom.FileDataset) -> bool:
         series_header['tags']['MrPhoenixProtocol']['items'][0].split('\n')
         return True
     except Exception as e:
-        warnings.warn(f'Expects dicom files from Siemens to be able to'
+        logger.warn(f'Expects dicom files from Siemens to be able to'
                       f' read the private header. For other vendors,'
                       f'private header is skipped. '
                       f'{e} in {dicom.filename}')

@@ -21,8 +21,7 @@ logger.addHandler(_ch)
 init_log_files(logger, mode='w')
 
 
-from protocol.base import (BaseParameter, BaseSequence, BaseProtocol,
-                           BaseMRImagingProtocol)
+from protocol.base import (BaseParameter, BaseSequence, BaseProtocol)
 from protocol.config import (BASE_IMAGING_PARAMETER_NAMES,
                              BASE_IMAGING_PARAMS_DICOM_TAGS)
-from protocol.imaging import ImagingSequence, SiemensMRImagingProtocol
+from protocol.imaging import ImagingSequence, SiemensMRImagingProtocol, MRImagingProtocol

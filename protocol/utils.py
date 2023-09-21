@@ -307,6 +307,35 @@ def convert2ascii(value, allow_unicode=False):
     value = re.sub(r'[^\w\s-]', '', value)
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
+def get_sequence_name(dicom: pydicom.FileDataset) -> str:
+    """
+    Infer modality through dicom tags. In most cases series_description
+    should explain the modality of the volume, otherwise either use sequence
+    name or protocol name from DICOM metadata
+
+    Parameters
+    ----------
+    dicom : pydicom.FileDataset
+        dicom object read from pydicom.read_file
+
+    Returns
+    -------
+    str
+    """
+
+    value = dicom.get('SeriesDescription', None)
+    if value is None:
+        value = dicom.get('SequenceName', None)
+    if value is None:
+        value = dicom.get('ProtocolName', None)
+
+    if value is None:
+        raise ValueError('Could not query either '
+                         'SequenceName or SeriesDescription or ProtocolName')
+
+    value = str(value.replace(" ", "_"))
+
+    return value
 
 def boolify(s):
     if s == 'True':

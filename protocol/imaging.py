@@ -7,9 +7,9 @@ import numpy as np
 import pydicom
 from lxml import objectify
 
-from protocol import config as cfg, BaseMRImagingProtocol, logger, BaseSequence, BaseParameter
+from protocol import config as cfg, logger
 from protocol.base import (NumericParameter, CategoricalParameter, MultiValueNumericParameter,
-                           MultiValueCategoricalParameter)
+                           MultiValueCategoricalParameter, BaseSequence, BaseParameter, BaseImagingProtocol)
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              SESSION_INFO_DICOM_TAGS as SESSION_INFO,
@@ -521,17 +521,6 @@ class FlipAngle(NumericParameter):
         #   from +/- 5 degrees to +/- 20 degrees
         self.abs_tolerance = 0  # degrees
 
-    # overriding base class method
-    def _check_compliance(self, other):
-        """Method to check if one parameter value is compatible w.r.t another,
-            either in equality or within acceptable range, for that data type.
-        """
-
-        if np.isclose(self._value, other._value, atol=self.abs_tolerance):
-            return True
-        else:
-            return False
-
 
 class MultiValueEchoTime(MultiValueNumericParameter):
     """Parameter specific class for EchoTime"""
@@ -759,6 +748,9 @@ class MRImagingProtocol(BaseImagingProtocol):
                 'This sequence already exists! Double check or rename!')
 
         self._seq[seq.name] = seq
+
+    def get_sequence_ids(self):
+        return self._seq.keys()
 
     def __bool__(self):
         """Checks if the protocol is empty"""
@@ -1038,7 +1030,7 @@ class ImagingSequence(BaseSequence, ABC):
             if value is None:
                 self[pname] = param_class(Unspecified)
             else:
-                self[pname] = param_class(get_dicom_param_value(dicom, pname))
+                self[pname] = param_class(value)
 
     def _parse_private(self, dicom):
         """vendor specific private headers"""

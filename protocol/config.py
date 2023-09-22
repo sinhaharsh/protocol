@@ -30,18 +30,18 @@ Unspecified = UnspecifiedType()
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation
 SESSION_INFO_DICOM_TAGS = {
-    "series_instance_uid": (0x20, 0x0e),
-    "sequence"           : (0x18, 0x20),
-    "variant"            : (0x18, 0x21),
-    "patient_name"       : (0x10, 0x10),
-    "patient_id"         : (0x10, 0x20),
-    "study_id"           : (0x08, 0x1030),
-    "series_description" : (0x08, 0x103E),
-    "series_number"      : (0x20, 0x11),
-    "protocol_name"      : (0x18, 0x1030),
-    "sequence_name"      : (0x18, 0x24),
-    "image_type"         : (0x08, 0x08),
-    "echo_number"        : (0x18, 0x86),
+    "series_instance_uid": [0x20, 0x0e],
+    "sequence"           : [0x18, 0x20],
+    "variant"            : [0x18, 0x21],
+    "patient_name"       : [0x10, 0x10],
+    "patient_id"         : [0x10, 0x20],
+    "study_id"           : [0x08, 0x1030],
+    "series_description" : [0x08, 0x103E],
+    "series_number"      : [0x20, 0x11],
+    "protocol_name"      : [0x18, 0x1030],
+    "sequence_name"      : [0x18, 0x24],
+    "image_type"         : [0x08, 0x08],
+    "echo_number"        : [0x18, 0x86],
     "te"                 : [0x18, 0x81],
     "patient_sex"        : [0x10, 0x40],
     "patient_age"        : [0x10, 0x1010],
@@ -94,6 +94,10 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'PixelBandwidth'                : [0x18, 0x95],
     'PhaseEncodingSteps'            : [0x18, 0x89],
     'EchoNumber'                    : [0x18, 0x86],
+
+    ## Session Info
+    "ContentDate"                   : [0x08, 0x0023],
+    "ContentTime"                   : [0x08, 0x0033],
     }
 
 ACRONYMS_IMAGING_PARAMETERS = {

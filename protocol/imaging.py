@@ -14,7 +14,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              SESSION_INFO_DICOM_TAGS as SESSION_INFO,
                              ACRONYMS_SESSION_INFO as ACRONYMS_SI,
-                             Unspecified, UnspecifiedType)
+                             Unspecified, UnspecifiedType, ProtocolType)
 from protocol.utils import convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists, parse_csa_params, \
     get_sequence_name
 
@@ -734,9 +734,11 @@ class MRImagingProtocol(BaseImagingProtocol):
     def __init__(self,
                  name="MRIProtocol",
                  category='MR',
-                 filepath=None):
+                 filepath=None,
+                 type=ProtocolType.INFERRED_FROM_DATASET):
         """constructor"""
         self.filepath = filepath
+        self.type = type
         super().__init__(name=name, category=category)
 
         self._seq = dict()
@@ -806,8 +808,10 @@ class MRImagingProtocol(BaseImagingProtocol):
 
 
 class SiemensMRImagingProtocol(MRImagingProtocol):
-    def __init__(self, filepath, program_name=None, convert_ped=True):
-        super().__init__(name='SiemensMRProtocol', category='MR', filepath=filepath)
+    def __init__(self, name='SiemensMRProtocol', category='MR',
+                 filepath=None, type=ProtocolType.USER_DEFINED,
+                 program_name=None, convert_ped=True):
+        super().__init__(name=name, category=category, filepath=filepath, type=type)
         self.programs = {}
         self.header_title = None
         self._parameter_map = {

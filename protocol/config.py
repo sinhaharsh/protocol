@@ -55,6 +55,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'SoftwareVersions'              : [0x18, 0x1020],
     'MagneticFieldStrength'         : [0x18, 0x87],
     'ReceiveCoilName'               : [0x18, 0x1250],
+    'RecieveCoilActiveElements'     : [0x51, 0x100F],
     'MRTransmitCoilSequence'        : [0x18, 0x9049],
 
     ## Sequence Specifics
@@ -100,6 +101,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'SoftwareVersions'              : 'SV',
     'MagneticFieldStrength'         : 'MFS',
     'ReceiveCoilName'               : 'RCN',
+    'RecieveCoilActiveElements'     : 'RCAE',
     'MRTransmitCoilSequence'        : 'MTCS',
     'ScanningSequence'              : 'SSEQ',
     'SequenceVariant'               : 'SEQV',

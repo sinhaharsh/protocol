@@ -109,6 +109,22 @@ class ReceiveCoilName(CategoricalParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
+class ReceiveCoilActiveElements(CategoricalParameter):
+    """Parameter specific class for ReceiveCoilName"""
+
+    _name = 'ReceiveCoilActiveElements'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         required=True,
+                         severity='optional',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
 class MRTransmitCoilSequence(CategoricalParameter):
     """Parameter specific class for MRTransmitCoilSequence"""
 

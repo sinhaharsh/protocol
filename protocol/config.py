@@ -56,7 +56,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'SoftwareVersions'              : [0x18, 0x1020],
     'MagneticFieldStrength'         : [0x18, 0x87],
     'ReceiveCoilName'               : [0x18, 0x1250],
-    'RecieveCoilActiveElements'     : [0x51, 0x100F],
+    'ReceiveCoilActiveElements'     : [0x51, 0x100F],
     'MRTransmitCoilSequence'        : [0x18, 0x9049],
 
     ## Sequence Specifics
@@ -86,7 +86,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'FlipAngle'                     : [0x18, 0x1314],
 
     ## Slice Acceleration Parameters
-    'MultibandAccelerationFactor'   : [0x43, 0x1083],
+    'MultiBandAccelerationFactor'   : [0x43, 0x1083],
 
     ## Misc Parameters
     'BodyPartExamined'              : [0x18, 0x15],
@@ -106,7 +106,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'SoftwareVersions'              : 'SV',
     'MagneticFieldStrength'         : 'MFS',
     'ReceiveCoilName'               : 'RCN',
-    'RecieveCoilActiveElements'     : 'RCAE',
+    'ReceiveCoilActiveElements'     : 'RCAE',
     'MRTransmitCoilSequence'        : 'MTCS',
     'ScanningSequence'              : 'SSEQ',
     'SequenceVariant'               : 'SEQV',
@@ -126,7 +126,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'DwellTime'                     : 'DT',
     'RepetitionTime'                : 'TR',
     'FlipAngle'                     : 'FA',
-    'MultibandAccelerationFactor'   : 'MAF',
+    'MultiBandAccelerationFactor'   : 'MAF',
     'BodyPartExamined'              : 'BPE',
     'EchoTrainLength'               : 'ETL',
     'PixelBandwidth'                : 'PBW',

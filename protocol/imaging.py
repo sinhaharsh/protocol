@@ -1064,7 +1064,7 @@ class ImagingSequence(BaseSequence, ABC):
             elif isinstance(value, UnspecifiedType):
                 param_cls_name = f'protocol.imaging.{pname}'
                 param_cls = import_string(param_cls_name)
-                self[pname] = param_cls(Unspecified)
+                self[pname] = param_cls(value)
             else:
                 param_cls_name = f'protocol.imaging.{pname}'
                 param_cls = import_string(param_cls_name)

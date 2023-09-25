@@ -362,7 +362,10 @@ class CategoricalParameter(BaseParameter):
             if isinstance(value, str):
                 # strip whitespaces if any
                 value = "".join(value.split())
-                self._value = str(value).upper()
+                if value:
+                    self._value = value.upper()
+                else:
+                    self._value = Unspecified
 
         # if allowed_values is set, check if input value is allowed
         if self.allowed_values and (value not in self.allowed_values):

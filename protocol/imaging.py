@@ -952,18 +952,7 @@ class ImagingSequence(BaseSequence, ABC):
 
         self.multi_echo = False
         self.params_classes = []
-
-        if imaging_params is not None:
-            self.imaging_params = imaging_params
-        else:
-            self.imaging_params = []
-
-        if required_params is not None:
-            self.required_params = required_params
-        else:
-            self.required_params = []
-
-        self.parameters = set(self.imaging_params + self.required_params)
+        self.parameters = set(DICOM_TAGS.keys())
 
         super().__init__(name=name, path=path)
 
@@ -1056,7 +1045,6 @@ class ImagingSequence(BaseSequence, ABC):
     def from_dict(self, params_dict):
         """Populates the sequence parameters from a dictionary."""
         self.parameters = set(params_dict.keys())
-        self.imaging_params = set(params_dict.keys())
 
         for pname, value in params_dict.items():
             if isinstance(value, BaseParameter):

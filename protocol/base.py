@@ -479,7 +479,7 @@ class BaseSequence(MutableMapping):
             else:
                 raise KeyError(f'{name} has not been set yet')
 
-    def compliant(self, other, rtol=0, decimals=None):
+    def compliant(self, other, rtol=0, decimals=None, include_params=None):
         """Method to check if one sequence is compatible w.r.t another,
             either in equality or within acceptable range, for each parameter.
         """
@@ -498,8 +498,9 @@ class BaseSequence(MutableMapping):
             # return False, diff  # TODO varying dtype: list of names!
 
         non_compliant_params = list()
-
-        for pname in self.params:
+        if include_params is None:
+            include_params = self.params
+        for pname in include_params:
             if pname in other.params:
                 this_param = self.__dict__[pname]
                 that_param = other[pname]

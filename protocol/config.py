@@ -118,6 +118,12 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     ## Session Info
     "ContentDate"                   : [0x08, 0x0023],
     "ContentTime"                   : [0x08, 0x0033],
+    "PercentPhaseFOV"               : [0x18, 0x0094],
+    "PercentSampling"               : [0x18, 0x0093],
+    "VariableFlipAngleFlag"         : [0x18, 0x1315],
+    "ImageOrientationPatient"       : [0x20, 0x37],
+    "SliceThickness"                : [0x18, 0x0050],
+    "NumberOfAverages"              : [0x18, 0x0083],
     }
 
 ACRONYMS_IMAGING_PARAMETERS = {
@@ -155,6 +161,12 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'MultiSliceMode'                : 'MSM',
     'EchoNumber'                    : 'EN',
     'PhasePolarity'                 : 'PHPL',
+    'PercentPhaseFOV'               : 'PPFOV',
+    'PercentSampling'               : 'PS',
+    'VariableFlipAngleFlag'         : 'VFAF',
+    'ImageOrientationPatient'       : 'IOP',
+    'SliceThickness'                : 'ST',
+    'NumberOfAverages'              : 'NAV',
     "ContentDate"                   : "CD",
     "ContentTime"                   : "CT",
     }

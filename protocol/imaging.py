@@ -6,17 +6,15 @@ from pathlib import Path
 import numpy as np
 import pydicom
 from lxml import objectify
-
 from protocol import config as cfg, logger
 from protocol.base import (NumericParameter, CategoricalParameter, MultiValueNumericParameter,
                            MultiValueCategoricalParameter, BaseSequence, BaseParameter, BaseImagingProtocol)
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
-                             SESSION_INFO_DICOM_TAGS as SESSION_INFO,
-                             ACRONYMS_SESSION_INFO as ACRONYMS_SI,
                              Unspecified, UnspecifiedType, ProtocolType, Invalid)
-from protocol.utils import convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists, parse_csa_params, \
-    get_sequence_name
+from protocol.utils import (convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists,
+                            parse_csa_params,
+                            get_sequence_name)
 
 
 class Manufacturer(CategoricalParameter):
@@ -624,7 +622,6 @@ class ScanningSequence(CategoricalParameter):
 
 
 class ParallelAcquisitionTechnique(CategoricalParameter):
-
     """Parameter specific class for """
 
     _name = 'ParallelAcquisitionTechnique'
@@ -683,6 +680,98 @@ class BodyPartExamined(CategoricalParameter):
 
         super().__init__(name=self._name,
                          value=value,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PercentPhaseFOV(NumericParameter):
+    """Parameter specific class for PercentPhaseFOV"""
+
+    _name = 'PercentPhaseFOV'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='%',
+                         range=(0, 100),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class NumberOfAverages(NumericParameter):
+    _name = 'NumberOfAverages'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SliceThickness(NumericParameter):
+    _name = 'SliceThickness'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='mm',
+                         range=(0, 1000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PercentSampling(NumericParameter):
+    _name = 'PercentSampling'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='%',
+                         range=(0, 100),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class VariableFlipAngleFlag(CategoricalParameter):
+    _name = 'VariableFlipAngleFlag'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class ImageOrientationPatient(CategoricalParameter):
+    _name = 'ImageOrientationPatient'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
 
@@ -815,6 +904,12 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             'ParallelAcquisitionTechnique': ['Resolution - iPAT', 'Accel. mode'],
             'MultiSliceMode': ['Sequence - Part 1', 'Multi-slice mode'],
             'PixelBandwidth': ['Sequence - Part 1', 'Bandwidth'],
+            'RecieveCoilActiveElements': ['Routine', 'Coil elements'],
+            'InversionTime': ['Contrast - Common', 'TI'],
+            'MRAcquisitionType': ['Sequence - Part 1', 'Dimension'],
+            'PercentPhaseFOV': ['Geometry - Common', 'FoV phase'],
+            'NumberOfAverages': ['Routine', 'Averages'],
+            'SliceThickness': ['Geometry - Common', 'Slice thickness'],
         }
         self.program_name = program_name
 
@@ -929,7 +1024,8 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                             if card.tag == 'Card':
                                 for parameter in card.getchildren():
                                     label = parameter.Label.text.strip()
-                                    value, _ = self.get_value_and_unit(parameter.ValueAndUnit.text.strip())
+                                    # TODO: Also add unit to the reference protocol
+                                    value, unit = self.get_value_and_unit(parameter.ValueAndUnit.text.strip())
                                     card_name = card.get('name')
                                     if card_name not in self.programs[program_name][sequence_name]:
                                         self.programs[program_name][sequence_name][card_name] = {}
@@ -954,7 +1050,6 @@ class ImagingSequence(BaseSequence, ABC):
         self.multi_echo = False
         self.params_classes = []
         self.parameters = set(ACRONYMS_IMG.keys())
-
 
         super().__init__(name=name, path=path)
 
@@ -1048,7 +1143,14 @@ class ImagingSequence(BaseSequence, ABC):
             #  queryable etc
 
     def from_dict(self, params_dict):
-        """Populates the sequence parameters from a dictionary."""
+        """
+        Populates the sequence parameters from a dictionary.
+
+        Parameters
+        ----------
+        params_dict : dict
+            Dictionary containing the parameter names and values as key, value pairs.
+        """
         self.parameters = set(params_dict.keys())
 
         for pname, value in params_dict.items():
@@ -1064,6 +1166,7 @@ class ImagingSequence(BaseSequence, ABC):
                     self[pname] = param_cls(value)
                 except TypeError or ValueError:
                     self[pname] = param_cls(Invalid)
+
     def set_echo_times(self, echo_times, echo_number=None):
         """Sets the echo times for a multi-echo sequence."""
 

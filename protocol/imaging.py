@@ -424,7 +424,7 @@ class PhaseEncodingSteps(NumericParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class ShimSetting(NumericParameter):
+class ShimSetting(CategoricalParameter):
     """Parameter specific class for ShimSetting"""
 
     _name = 'ShimSetting'
@@ -623,10 +623,11 @@ class ScanningSequence(CategoricalParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class IPat(CategoricalParameter):
+class ParallelAcquisitionTechnique(CategoricalParameter):
+
     """Parameter specific class for """
 
-    _name = 'IPat'
+    _name = 'ParallelAcquisitionTechnique'
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -697,8 +698,8 @@ class ContentDate(CategoricalParameter):
         super().__init__(name=self._name,
                          value=value,
                          dtype=str,
-                         dicom_tag=SESSION_INFO[self._name],
-                         acronym=ACRONYMS_SI[self._name])
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class ContentTime(CategoricalParameter):
@@ -712,8 +713,8 @@ class ContentTime(CategoricalParameter):
         super().__init__(name=self._name,
                          value=value,
                          dtype=str,
-                         dicom_tag=SESSION_INFO[self._name],
-                         acronym=ACRONYMS_SI[self._name])
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
 
 
 class MRImagingProtocol(BaseImagingProtocol):
@@ -811,7 +812,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             'EchoTime': ['Routine', 'TE'],
             'RepetitionTime': ['Routine', 'TR'],
             'FlipAngle': ['Contrast - Common', 'Flip angle'],
-            'IPat': ['Resolution - iPAT', 'Accel. mode'],
+            'ParallelAcquisitionTechnique': ['Resolution - iPAT', 'Accel. mode'],
             'MultiSliceMode': ['Sequence - Part 1', 'Multi-slice mode'],
             'PixelBandwidth': ['Sequence - Part 1', 'Bandwidth'],
         }
@@ -952,7 +953,8 @@ class ImagingSequence(BaseSequence, ABC):
 
         self.multi_echo = False
         self.params_classes = []
-        self.parameters = set(DICOM_TAGS.keys())
+        self.parameters = set(ACRONYMS_IMG.keys())
+
 
         super().__init__(name=name, path=path)
 

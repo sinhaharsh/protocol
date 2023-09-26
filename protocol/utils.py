@@ -127,7 +127,7 @@ def parse_csa_params(dicom: pydicom.FileDataset,
         phpl = phase_value[0]
 
     values = {'MultiSliceMode': slice_mode,
-              'IPat': ipat,
+              'ParallelAcquisitionTechnique': ipat,
               'ShimSetting': shim,
               'PhasePolarity': phpl}
 

@@ -131,17 +131,12 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'EchoTrainLength'               : 'ETL',
     'PixelBandwidth'                : 'PBW',
     'PhaseEncodingSteps'            : 'PES',
-    'GradientSetType'               : 'GST',
-    'MatrixCoilMode'                : 'MCM',
-    'CoilCombinationMethod'         : 'CCM',
-    'EffectiveEchoSpacing'          : 'EES',
     'ShimSetting'                   : 'SHS',
     'MultiSliceMode'                : 'MSM',
     'EchoNumber'                    : 'EN',
-
-    ## Siemens Specific
-    'IPat': 'IPAT',
-    'PhasePolarity': 'PHPL',
+    'PhasePolarity'                 : 'PHPL',
+    "ContentDate"                   : "CD",
+    "ContentTime"                   : "CT",
     }
 
 ACRONYMS_SESSION_INFO = {
@@ -153,8 +148,7 @@ ACRONYMS_SESSION_INFO = {
     "SeriesNumber"      : "SN",
     "ProtocolName"      : "PN",
     "SequenceName"      : "SQNM",
-    "ContentDate"       : "CD",
-    "ContentTime"       : "CT",
+
 }
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())

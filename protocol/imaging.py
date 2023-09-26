@@ -1047,6 +1047,9 @@ class ImagingSequence(BaseSequence, ABC):
         self.parameters = set(params_dict.keys())
 
         for pname, value in params_dict.items():
+            if isinstance(value, float) and np.isnan(value):
+                value = Unspecified
+
             if isinstance(value, BaseParameter):
                 self[pname] = value
             elif isinstance(value, UnspecifiedType):

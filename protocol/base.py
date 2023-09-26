@@ -501,20 +501,26 @@ class BaseSequence(MutableMapping):
         if include_params is None:
             include_params = self.params
         for pname in include_params:
-            if pname in other.params:
+            # if pname in other.params:
+            try:
                 this_param = self.__dict__[pname]
                 that_param = other[pname]
+            except KeyError:
+                # If the parameter is not found in either of the sequences,
+                #   skip it and move on to the next one. That means, the
+                #   parameter is not required for compliance. And the parameter
+                #   is not tagged as non-compliant.
+                logger.warn(f'{pname} not found in either of the sequences {other}')
+                continue
 
-                if isinstance(this_param, NumericParameter) or \
-                        isinstance(this_param, MultiValueNumericParameter):
-                    compliant = that_param.compliant(this_param, rtol=rtol, decimals=decimals)
-                else:
-                    compliant = this_param.compliant(that_param)
-
-                if not compliant:
-                    non_compliant_params.append((this_param, that_param))
+            if isinstance(this_param, NumericParameter) or \
+                    isinstance(this_param, MultiValueNumericParameter):
+                compliant = that_param.compliant(this_param, rtol=rtol, decimals=decimals)
             else:
-                logger.warn(f'{pname} not found in other sequence {other}')
+                compliant = this_param.compliant(that_param)
+
+            if not compliant:
+                non_compliant_params.append((this_param, that_param))
 
         bool_flag = len(non_compliant_params) < 1
 

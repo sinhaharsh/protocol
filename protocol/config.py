@@ -24,9 +24,29 @@ class UnspecifiedType(object):
     def __repr__(self):
         return 'Unspecified'
 
+class InvalidType(UnspecifiedType):
+    """Class to denote an invalid value
+
+    Reasons include:
+        - not specified in the original source e.g., DICOM image header
+        - enocded as None or similar; or presumed to be default
+
+    We need this to correctly inform the downstream users of the source,
+        to prevent them from assigning default values or imputing them another way!
+    """
+
+    def __init__(self):
+        """constructor"""
+
+    def __str__(self):
+        return 'InvalidType'
+
+    def __repr__(self):
+        return 'InvalidType'
+
 
 Unspecified = UnspecifiedType()
-
+Invalid = InvalidType()
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation
 SESSION_INFO_DICOM_TAGS = {

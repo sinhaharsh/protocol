@@ -14,7 +14,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              SESSION_INFO_DICOM_TAGS as SESSION_INFO,
                              ACRONYMS_SESSION_INFO as ACRONYMS_SI,
-                             Unspecified, UnspecifiedType, ProtocolType)
+                             Unspecified, UnspecifiedType, ProtocolType, Invalid)
 from protocol.utils import convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists, parse_csa_params, \
     get_sequence_name
 
@@ -980,13 +980,11 @@ class ImagingSequence(BaseSequence, ABC):
 
         date = self['ContentDate'].get_value()
         time = self['ContentTime'].get_value()
+        # TODO: time format varies across datasets. Find a way to
+        #   reconcile differences and use it in timestamp
         if not isinstance(date, UnspecifiedType):
-            if not isinstance(time, UnspecifiedType):
-                datetime_obj = datetime.strptime(f'{date} {time}', '%Y%m%d %H%M%S.%f')
-                self.timestamp = datetime_obj.strftime('%m_%d_%Y_%H_%M_%S')
-            else:
-                datetime_obj = datetime.strptime(f'{date}', '%Y%m%d')
-                self.timestamp = datetime_obj.strftime('%m_%d_%Y')
+            datetime_obj = datetime.strptime(date, '%Y%m%d')
+            self.timestamp = datetime_obj.strftime('%m_%d_%Y')
 
     def _init_param_classes(self):
         for p in self.parameters:
@@ -1021,7 +1019,10 @@ class ImagingSequence(BaseSequence, ABC):
             if value is None:
                 self[pname] = param_class(Unspecified)
             else:
-                self[pname] = param_class(value)
+                try:
+                    self[pname] = param_class(value)
+                except TypeError or ValueError:
+                    self[pname] = param_class(Invalid)
 
     def _parse_private(self, dicom):
         """vendor specific private headers"""
@@ -1037,6 +1038,8 @@ class ImagingSequence(BaseSequence, ABC):
                         self[name] = param_cls(val)
                 except ImportError:
                     logger.error(f'Could not import {param_cls_name}')
+                except TypeError or ValueError:
+                    self[pname] = param_class(Invalid)
         else:
             logger.warn('No private header found in DICOM file')
             # TODO: consider throwing a warning when expected header doesnt
@@ -1054,15 +1057,13 @@ class ImagingSequence(BaseSequence, ABC):
 
             if isinstance(value, BaseParameter):
                 self[pname] = value
-            elif isinstance(value, UnspecifiedType):
-                param_cls_name = f'protocol.imaging.{pname}'
-                param_cls = import_string(param_cls_name)
-                self[pname] = param_cls(value)
             else:
                 param_cls_name = f'protocol.imaging.{pname}'
                 param_cls = import_string(param_cls_name)
-                self[pname] = param_cls(value)
-
+                try:
+                    self[pname] = param_cls(value)
+                except TypeError or ValueError:
+                    self[pname] = param_cls(Invalid)
     def set_echo_times(self, echo_times, echo_number=None):
         """Sets the echo times for a multi-echo sequence."""
 

@@ -763,18 +763,31 @@ class VariableFlipAngleFlag(CategoricalParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class ImageOrientationPatient(CategoricalParameter):
+class ImageOrientationPatient(MultiValueNumericParameter):
     _name = 'ImageOrientationPatient'
 
     def __init__(self, value=Unspecified):
         """Constructor."""
+        if not isinstance(value, UnspecifiedType):
+            value = list(value)
 
         super().__init__(name=self._name,
                          value=value,
-                         dtype=str,
                          dicom_tag=DICOM_TAGS[self._name],
-                         acronym=ACRONYMS_IMG[self._name])
+                         acronym=ACRONYMS_IMG[self._name],
+                         ordered=True)
 
+    def __repr__(self):
+        """repr"""
+
+        name = self.acronym if self.acronym else self.name
+        return f'{name}{self.get_value()})'
+
+    def get_value(self):
+        """getter"""
+        if not isinstance(self._value, UnspecifiedType):
+            return [np.round(v, self.decimals) for v in self._value]
+        return self._value
 
 class ContentDate(CategoricalParameter):
     """Parameter specific class for BodyPartExamined"""
@@ -1134,7 +1147,7 @@ class ImagingSequence(BaseSequence, ABC):
                 except ImportError:
                     logger.error(f'Could not import {param_cls_name}')
                 except TypeError or ValueError:
-                    self[pname] = param_class(Invalid)
+                    self[name] = param_cls(Invalid)
         else:
             logger.warn('No private header found in DICOM file')
             # TODO: consider throwing a warning when expected header doesnt

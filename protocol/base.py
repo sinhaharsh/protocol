@@ -130,8 +130,14 @@ class MultiValueNumericParameter(BaseParameter):
                  range=None,
                  steps=None,
                  required=True,
-                 severity='critical', ):
-        """Constructor."""
+                 severity='critical',
+                 ordered=False):
+        """
+        Constructor.
+        some array types don't have any order like EchoTime, and EchoNumber.
+        So they can be sorted. But others cannot like ImageOrientation, ShimSetting etc.
+        have an order, they cannot be sorted.
+        """
 
         super().__init__(name=name,
                          value=value,
@@ -149,14 +155,15 @@ class MultiValueNumericParameter(BaseParameter):
                 if not all([isinstance(v, self.dtype) for v in value]):
                     raise TypeError(f'Input {value} is not of type {self.dtype}'
                                     f' for {self.name}')
-                self._value = sorted([float(v) for v in value])
+                self._value = [float(v) for v in value]
 
             elif isinstance(value, self.dtype):
                 self._value = [float(value)]
             else:
                 raise TypeError(f'Input {value} is not of type {self.dtype} for'
                                 f' {self.name}')
-
+            if not ordered:
+                self._value = sorted(self._value)
         # overriding default from parent class
         self.decimals = 3
 

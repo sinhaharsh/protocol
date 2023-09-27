@@ -300,11 +300,19 @@ class MultiValueCategoricalParameter(BaseParameter):
         if not isinstance(value, UnspecifiedType):
             if not isinstance(value, self.dtype):
                 try:
-                    value = self.dtype(value)
+                    value = list(value)
                 except TypeError:
                     raise TypeError(f'Got input {value} of type {type(value)}. '
                                     f'Expected {self.dtype} for {self.name}')
-            self._value = [str(v).upper() for v in value]
+            if isinstance(value, str):
+                # strip whitespaces if any
+                value = "".join(value.split())
+                if value:
+                    self._value = [value.upper()]
+                else:
+                    self._value = Unspecified
+            else:
+                self._value = [str(v).upper() for v in value]
 
         # if allowed_values is set, check if input value is allowed
         if self.allowed_values and (value not in self.allowed_values):

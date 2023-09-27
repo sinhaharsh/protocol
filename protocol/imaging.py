@@ -792,6 +792,7 @@ class ImageOrientationPatient(MultiValueNumericParameter):
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name],
                          ordered=True)
+        self.decimals = 0
 
     def __repr__(self):
         """repr"""

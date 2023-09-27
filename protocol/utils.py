@@ -350,7 +350,7 @@ def get_sequence_name(dicom: pydicom.FileDataset) -> str:
 
     value = str(value.replace(" ", "_"))
 
-    return value
+    return convert2ascii(value)
 
 def boolify(s):
     if s == 'True':

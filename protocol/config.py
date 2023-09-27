@@ -157,6 +157,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'EchoTrainLength'               : 'ETL',
     'PixelBandwidth'                : 'PBW',
     'PhaseEncodingSteps'            : 'PES',
+    'ShimMode'                      : 'SHM',
     'ShimSetting'                   : 'SHS',
     'MultiSliceMode'                : 'MSM',
     'EchoNumber'                    : 'EN',

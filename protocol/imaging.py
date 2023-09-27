@@ -422,7 +422,7 @@ class PhaseEncodingSteps(NumericParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class ShimSetting(CategoricalParameter):
+class ShimSetting(MultiValueNumericParameter):
     """Parameter specific class for ShimSetting"""
 
     _name = 'ShimSetting'
@@ -435,6 +435,22 @@ class ShimSetting(CategoricalParameter):
                          units='NA',
                          range=(0, 100000),
                          # TODO verify the accuracy of this range
+                         required=True,
+                         severity='critical',
+                         dicom_tag=None,
+                         acronym=ACRONYMS_IMG[self._name],
+                         ordered=True)
+
+class ShimMode(CategoricalParameter):
+    """Parameter specific class for ShimSetting"""
+
+    _name = 'ShimMode'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
                          required=True,
                          severity='critical',
                          dicom_tag=None,

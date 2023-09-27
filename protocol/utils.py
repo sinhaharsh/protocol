@@ -118,6 +118,18 @@ def parse_csa_params(dicom: pydicom.FileDataset,
     shim_code = get_csa_props("sAdjData.uiAdjShimMode", text)
     shim = config.SHIM.get(shim_code, shim_code)
 
+    shim_first_order = []
+    for i in ['X', 'Y', 'Z']:
+        value = get_csa_props(f"sGRADSPEC.asGPAData[0].lOffset{i}", text)
+        shim_first_order.append(float(value))
+
+    shim_second_order = []
+    for i in range(5):
+        value = get_csa_props(f"sGRADSPEC.alShimCurrent[{i}]", text)
+        shim_second_order.append(float(value))
+
+    shim_setting = shim_first_order + shim_second_order
+
     # image_header
     image_header = csareader.read(get_header(dicom, 'image_header_info'))
     phase_value = safe_get(image_header,
@@ -128,7 +140,8 @@ def parse_csa_params(dicom: pydicom.FileDataset,
 
     values = {'MultiSliceMode': slice_mode,
               'ParallelAcquisitionTechnique': ipat,
-              'ShimSetting': shim,
+              'ShimSetting': shim_setting,
+              'ShimMode': shim,
               'PhasePolarity': phpl}
 
     return csa_header, values
@@ -168,13 +181,14 @@ def get_csa_props(parameter, corpus):
     if index == -1:
         return -1
 
+    # checks for atleast one character after equal sign
     shift = len(parameter) + 6
     if index + shift > len(corpus):
         print(f"#WARNING: {parameter} in CSA too short: '{corpus[index:]}'")
         return -1
 
-    # 6 chars after parameter text, 3rd value
-    param_val = corpus[index:index + shift]
+    # 1st value -  parameter name, 2nd value - equals sign, 3rd value - parameter value
+    param_val = corpus[index:]
     code_parts = re.split('[\t\n]', param_val)
     if len(code_parts) >= 3:
         return code_parts[2]

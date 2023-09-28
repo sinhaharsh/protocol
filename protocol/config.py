@@ -50,80 +50,80 @@ Invalid = InvalidType()
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation
 SESSION_INFO_DICOM_TAGS = {
-    "series_instance_uid": [0x20, 0x0e],
-    "sequence"           : [0x18, 0x20],
-    "variant"            : [0x18, 0x21],
-    "patient_name"       : [0x10, 0x10],
-    "patient_id"         : [0x10, 0x20],
-    "study_id"           : [0x08, 0x1030],
-    "series_description" : [0x08, 0x103E],
-    "series_number"      : [0x20, 0x11],
-    "protocol_name"      : [0x18, 0x1030],
-    "sequence_name"      : [0x18, 0x24],
-    "image_type"         : [0x08, 0x08],
-    "echo_number"        : [0x18, 0x86],
-    "te"                 : [0x18, 0x81],
-    "patient_sex"        : [0x10, 0x40],
-    "patient_age"        : [0x10, 0x1010],
-    "ContentDate"        : [0x08, 0x0023],
-    "ContentTime"        : [0x08, 0x0033],
+    "series_instance_uid": (0x20, 0x0e),
+    "sequence"           : (0x18, 0x20),
+    "variant"            : (0x18, 0x21),
+    "patient_name"       : (0x10, 0x10),
+    "patient_id"         : (0x10, 0x20),
+    "study_id"           : (0x08, 0x1030),
+    "series_description" : (0x08, 0x103E),
+    "series_number"      : (0x20, 0x11),
+    "protocol_name"      : (0x18, 0x1030),
+    "sequence_name"      : (0x18, 0x24),
+    "image_type"         : (0x08, 0x08),
+    "echo_number"        : (0x18, 0x86),
+    "te"                 : (0x18, 0x81),
+    "patient_sex"        : (0x10, 0x40),
+    "patient_age"        : (0x10, 0x1010),
+    "ContentDate"        : (0x08, 0x0023),
+    "ContentTime"        : (0x08, 0x0033),
     }
 
 BASE_IMAGING_PARAMS_DICOM_TAGS = {
     ## Hardware Parameters
-    'Manufacturer'                  : [0x08, 0x70],
-    'ManufacturersModelName'        : [0x08, 0x1090],
-    'SoftwareVersions'              : [0x18, 0x1020],
-    'MagneticFieldStrength'         : [0x18, 0x87],
-    'ReceiveCoilName'               : [0x18, 0x1250],
-    'ReceiveCoilActiveElements'     : [0x51, 0x100F],
-    'MRTransmitCoilSequence'        : [0x18, 0x9049],
+    'Manufacturer'                  : (0x08, 0x70),
+    'ManufacturersModelName'        : (0x08, 0x1090),
+    'SoftwareVersions'              : (0x18, 0x1020),
+    'MagneticFieldStrength'         : (0x18, 0x87),
+    'ReceiveCoilName'               : (0x18, 0x1250),
+    'ReceiveCoilActiveElements'     : (0x51, 0x100F),
+    'MRTransmitCoilSequence'        : (0x18, 0x9049),
 
     ## Sequence Specifics
-    'ScanningSequence'              : [0x18, 0x20],
-    'SequenceVariant'               : [0x18, 0x21],
-    'ScanOptions'                   : [0x18, 0x22],
-    'SequenceName'                  : [0x18, 0x24],
-    'NonLinearGradientCorrection'   : [0x08, 0x08],
-    'MRAcquisitionType'             : [0x18, 0x23],
-    'MTState'                       : [0x18, 0x9020],
-    'SpoilingState'                 : [0x18, 0x9016],
+    'ScanningSequence'              : (0x18, 0x20),
+    'SequenceVariant'               : (0x18, 0x21),
+    'ScanOptions'                   : (0x18, 0x22),
+    'SequenceName'                  : (0x18, 0x24),
+    'NonLinearGradientCorrection'   : (0x08, 0x08),
+    'MRAcquisitionType'             : (0x18, 0x23),
+    'MTState'                       : (0x18, 0x9020),
+    'SpoilingState'                 : (0x18, 0x9016),
 
     ## In-Plane Spatial Encoding
-    'ParallelReductionFactorInPlane': [0x18, 0x9069],
-    'ParallelAcquisitionTechnique'  : [0x18, 0x9078],
-    'PartialFourier'                : [0x18, 0x9081],
-    'PartialFourierDirection'       : [0x18, 0x9036],
-    'PhaseEncodingDirection'        : [0x18, 0x1312],
+    'ParallelReductionFactorInPlane': (0x18, 0x9069),
+    'ParallelAcquisitionTechnique'  : (0x18, 0x9078),
+    'PartialFourier'                : (0x18, 0x9081),
+    'PartialFourierDirection'       : (0x18, 0x9036),
+    'PhaseEncodingDirection'        : (0x18, 0x1312),
 
     ## Timing Parameters
-    'EchoTime'                      : [0x18, 0x81],
-    'InversionTime'                 : [0x18, 0x82],
-    'DwellTime'                     : [0x19, 0x1018],
-    'RepetitionTime'                : [0x18, 0x80],
+    'EchoTime'                      : (0x18, 0x81),
+    'InversionTime'                 : (0x18, 0x82),
+    'DwellTime'                     : (0x19, 0x1018),
+    'RepetitionTime'                : (0x18, 0x80),
 
     ## RF & Contrast Parameters
-    'FlipAngle'                     : [0x18, 0x1314],
+    'FlipAngle'                     : (0x18, 0x1314),
 
     ## Slice Acceleration Parameters
-    'MultiBandAccelerationFactor'   : [0x43, 0x1083],
+    'MultiBandAccelerationFactor'   : (0x43, 0x1083),
 
     ## Misc Parameters
-    'BodyPartExamined'              : [0x18, 0x15],
-    'EchoTrainLength'               : [0x18, 0x0091],
-    'PixelBandwidth'                : [0x18, 0x95],
-    'PhaseEncodingSteps'            : [0x18, 0x89],
-    'EchoNumber'                    : [0x18, 0x86],
+    'BodyPartExamined'              : (0x18, 0x15),
+    'EchoTrainLength'               : (0x18, 0x0091),
+    'PixelBandwidth'                : (0x18, 0x95),
+    'PhaseEncodingSteps'            : (0x18, 0x89),
+    'EchoNumber'                    : (0x18, 0x86),
 
     ## Session Info
-    "ContentDate"                   : [0x08, 0x0023],
-    "ContentTime"                   : [0x08, 0x0033],
-    "PercentPhaseFOV"               : [0x18, 0x0094],
-    "PercentSampling"               : [0x18, 0x0093],
-    "VariableFlipAngleFlag"         : [0x18, 0x1315],
-    "ImageOrientationPatient"       : [0x20, 0x37],
-    "SliceThickness"                : [0x18, 0x0050],
-    "NumberOfAverages"              : [0x18, 0x0083],
+    "ContentDate"                   : (0x08, 0x0023),
+    "ContentTime"                   : (0x08, 0x0033),
+    "PercentPhaseFOV"               : (0x18, 0x0094),
+    "PercentSampling"               : (0x18, 0x0093),
+    "VariableFlipAngleFlag"         : (0x18, 0x1315),
+    "ImageOrientationPatient"       : (0x20, 0x37),
+    "SliceThickness"                : (0x18, 0x0050),
+    "NumberOfAverages"              : (0x18, 0x0083),
     }
 
 ACRONYMS_IMAGING_PARAMETERS = {
@@ -188,8 +188,8 @@ BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
 
 # Constant dicom Identifiers used to extract dicom headers
 HEADER_TAGS = {
-    "image_header_info" : [0x29, 0x1010],
-    "series_header_info": [0x29, 0x1020],
+    "image_header_info" : (0x29, 0x1010),
+    "series_header_info": (0x29, 0x1020),
     }
 SLICE_MODE = {
     "1": "sequential",

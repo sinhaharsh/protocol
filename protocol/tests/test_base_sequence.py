@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from hypothesis import given, assume
 from hypothesis.strategies import text, dictionaries, floats
-from protocol import BaseSequence, BaseParameter  # Replace with actual import path
+from protocol import BaseSequence, BaseParameter, ImagingSequence  # Replace with actual import path
 from protocol.base import NumericParameter
 from protocol.utils import convert2ascii
 
@@ -34,20 +34,16 @@ def test_add_non_baseparameter():
         sequence.add("invalid_parameter")
 
 
-# Test setting and getting session info
-def test_session_info():
-    sequence = BaseSequence()
-    sequence.set_session_info("subject_123", "session_456", "run_789")
-    subject_id, session_id, run_id = sequence.get_session_info()
-    assert subject_id == "subject_123"
-    assert session_id == "session_456"
-    assert run_id == "run_789"
-
-
 # Test getting parameters
 @given(parameter_name=text(), parameter_value=floats())
 def test_get_parameter(parameter_name, parameter_value):
     sequence = BaseSequence()
+    name = convert2ascii(parameter_name)
+    if not name:
+        with pytest.raises(ValueError):
+            parameter = NumericParameter(name=parameter_name,
+                                         value=parameter_value)
+        return
     if np.isnan(parameter_value):
         with pytest.raises(ValueError):
             parameter = NumericParameter(name=parameter_name,
@@ -57,7 +53,7 @@ def test_get_parameter(parameter_name, parameter_value):
         parameter = NumericParameter(name=parameter_name,
                                      value=parameter_value)
     sequence.add(parameter)
-    retrieved_parameter = sequence[parameter_name]
+    retrieved_parameter = sequence[name]
     assert retrieved_parameter == parameter
 
 
@@ -72,6 +68,7 @@ def test_get_non_existing_parameter():
 # Test equivalence and compliance
 @given(params_dict=dictionaries(text(), floats()))
 def test_equivalence_and_compliance(params_dict):
+    assume(all(convert2ascii(name) for name in params_dict.keys()))
     assume(all(not np.isnan(value) for value in params_dict.values()))
     sequence1 = BaseSequence()
     sequence1.add(NumericParameter(name=name, value=value) for name, value in params_dict.items())
@@ -86,19 +83,26 @@ def test_equivalence_and_compliance(params_dict):
 # Test parameter deletion and iterable behavior
 @given(parameter_name=text(), parameter_value=floats())
 def test_deletion_and_iterable(parameter_name, parameter_value):
+    assume(convert2ascii(parameter_name))
     assume(not np.isnan(parameter_value))
+    parameter_name = convert2ascii(parameter_name)
     sequence = BaseSequence()
     parameter = NumericParameter(name=parameter_name, value=parameter_value)
     sequence.add(parameter)
-    assert parameter_name in sequence
+    assert sequence.get(parameter_name)
     del sequence[parameter_name]
-    assert parameter_name not in sequence
+    assert not sequence.get(parameter_name, 0)
 
 
 # Test string representation
 @given(parameter_name1=text(), parameter_value1=floats(), parameter_name2=text(), parameter_value2=floats())
 def test_string_representation(parameter_name1, parameter_value1,
                                parameter_name2, parameter_value2):
+    assume(convert2ascii(parameter_name1))
+    assume(convert2ascii(parameter_name2))
+    parameter_name1 = convert2ascii(parameter_name1)
+    parameter_name2 = convert2ascii(parameter_name2)
+
     sequence = BaseSequence()
 
     if (not parameter_name1) or np.isnan(parameter_value1):

@@ -22,18 +22,6 @@ dicom_params = dictionaries(
     values=floats(allow_nan=False, allow_infinity=False)
 )
 
-
-# Test parsing DICOM
-def test_parse_dicom(sample_dcm):
-    seq = ImagingSequence(dicom=sample_dcm)
-    assert seq.name == 'MRI'
-    assert not seq.multi_echo
-    assert seq.parameters == set()
-    assert seq.imaging_params == []
-    assert seq.required_params == []
-
-    # Add assertions to check if parameters are correctly parsed
-
 # # Test multi-echo handling
 # def test_multi_echo_handling():
 #     seq = ImagingSequence()

@@ -52,6 +52,7 @@ class BaseParameter(ABC):
         self.units = units
         self.range = range
         self.steps = steps
+        name = convert2ascii(name)
         if not name:
             raise ValueError('Parameter name cannot be empty!')
         self.name = convert2ascii(name)
@@ -432,7 +433,12 @@ class BaseSequence(MutableMapping):
 
         super().__init__()
 
-        self.name = convert2ascii(name)
+        name = convert2ascii(name)
+        if name:
+            self.name =  name
+        else:
+            raise ValueError("Sequence name is invalid")
+
         self.params = set()
         self.path = path
         self.subject_id = None

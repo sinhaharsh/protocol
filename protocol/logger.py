@@ -1,22 +1,21 @@
 import logging
 from pathlib import Path
 
-
-DEBUG_FORMATTER = '%(filename)s:%(name)s:%(funcName)s:%(lineno)d: %(message)s'
+INFO_FORMATTER = '%(filename)s:%(name)s:%(funcName)s:%(lineno)d: %(message)s'
 """Debug file formatter."""
 
-INFO_FORMATTER = '%(asctime)s - %(levelname)s - %(message)s'
+ERROR_FORMATTER = '%(asctime)s - %(levelname)s - %(message)s'
 """Log file and stream output formatter."""
 
-ROOT_FOLDER = Path.home()/'.mrqa'
+ROOT_FOLDER = Path.home() / '.protocol'
 """Root folder for mrQA."""
 if not ROOT_FOLDER.exists():
     ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
-DEBUG_FILE = ROOT_FOLDER/'debug.log'
+WARN_FILE = ROOT_FOLDER / 'warn.log'
 """Debug file name."""
 
-INFO_FILE = ROOT_FOLDER/'info.log'
+ERROR_FILE = ROOT_FOLDER / 'error.log'
 """Log file name."""
 
 
@@ -32,13 +31,13 @@ def init_log_files(log, mode='w'):
         The writing mode to the log files.
         Defaults to ``'w'``, overwrites previous files.    """
 
-    db = logging.FileHandler(DEBUG_FILE, mode=mode)
-    db.setLevel(logging.DEBUG)
-    db.setFormatter(logging.Formatter(DEBUG_FORMATTER))
+    # db = logging.FileHandler(WARN_FILE, mode=mode)
+    # db.setLevel(logging.DEBUG)
+    # db.setFormatter(logging.Formatter(INFO_FORMATTER))
 
-    info = logging.FileHandler(INFO_FILE, mode=mode)
-    info.setLevel(logging.INFO)
-    info.setFormatter(logging.Formatter(INFO_FORMATTER))
+    error = logging.FileHandler(ERROR_FILE, mode=mode)
+    error.setLevel(logging.ERROR)
+    error.setFormatter(logging.Formatter(ERROR_FORMATTER))
 
-    log.addHandler(db)
-    log.addHandler(info)
+    # log.addHandler(db)
+    log.addHandler(error)

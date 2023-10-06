@@ -8,14 +8,15 @@ __version__ = '0.1.0'
 
 import logging
 
-from protocol.logger import INFO_FORMATTER, init_log_files
+from protocol.logger import ERROR_FORMATTER, init_log_files
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 # defines the stream handler
 _ch = logging.StreamHandler()  # creates the handler
 _ch.setLevel(logging.ERROR)  # sets the handler info
 # sets the handler formatting
-_ch.setFormatter(logging.Formatter(INFO_FORMATTER))
+_ch.setFormatter(logging.Formatter(ERROR_FORMATTER))
 # adds the handler to the global variable: log
 logger.addHandler(_ch)
 init_log_files(logger, mode='w')

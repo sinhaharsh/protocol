@@ -1,7 +1,4 @@
-from collections import namedtuple
 from enum import Enum
-
-from numpy import nan
 
 
 class UnspecifiedType(object):
@@ -116,14 +113,43 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'EchoNumber'                    : (0x18, 0x86),
 
     ## Session Info
-    "ContentDate"                   : (0x08, 0x0023),
-    "ContentTime"                   : (0x08, 0x0033),
     "PercentPhaseFOV"               : (0x18, 0x0094),
     "PercentSampling"               : (0x18, 0x0093),
     "VariableFlipAngleFlag"         : (0x18, 0x1315),
     "ImageOrientationPatient"       : (0x20, 0x37),
     "SliceThickness"                : (0x18, 0x0050),
     "NumberOfAverages"              : (0x18, 0x0083),
+    "AngioFlag": (0x18, 0x0025),
+    "ImagingFrequency": (0x18, 0x0084),
+    "ImagedNucleus": (0x18, 0x0085),
+    "SpacingBetweenSlices": (0x18, 0x0088),
+    "TransmitCoilName": (0x18, 0x1251),
+    "AcquisitionMatrix": (0x18, 0x1310),
+    "SAR": (0x18, 0x1316),
+    "SliceMeasurementDuration": (0x19, 0x100b),
+    "GradientMode": (0x19, 0x100f),
+    "FlowCompensation": (0x19, 0x1011),
+    "SliceResolution": (0x19, 0x1017),
+    "ImagePositionPatient": (0x20, 0x32),
+    "PatientPosition": (0x18, 0x5100),
+    "SliceLocation": (0x20, 0x1041),
+    "SamplesPerPixel": (0x28, 0x0002),
+    "PhotometricInterpretation": (0x28, 0x0004),
+    "Rows": (0x28, 0x0010),
+    "Columns": (0x28, 0x0011),
+    "PixelSpacing": (0x28, 0x0030),
+    "BitsAllocated": (0x28, 0x0100),
+    "BitsStored": (0x28, 0x0101),
+    "HighBit": (0x28, 0x0102),
+    "PixelRepresentation": (0x28, 0x0103),
+    "SmallestImagePixelValue": (0x28, 0x0106),
+    "LargestImagePixelValue": (0x28, 0x0107),
+    "WindowCenter": (0x28, 0x1050),
+    "WindowWidth": (0x28, 0x1051),
+    "WindowCenterWidthExplanation": (0x28, 0x1055),
+    "CoilString": (0x51, 0x100f),
+    "PATMode": (0x51, 0x1011),
+    "PositivePCSDirections": (0x51, 0x1013),
     }
 
 ACRONYMS_IMAGING_PARAMETERS = {
@@ -168,8 +194,37 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'ImageOrientationPatient'       : 'IOP',
     'SliceThickness'                : 'ST',
     'NumberOfAverages'              : 'NAV',
-    "ContentDate"                   : "CD",
-    "ContentTime"                   : "CT",
+    'AngioFlag': 'AF',
+    'ImagingFrequency': 'IF',
+    'ImagedNucleus': 'IN',
+    'SpacingBetweenSlices': 'SBS',
+    'TransmitCoilName': 'TCN',
+    'AcquisitionMatrix': 'ACQM',
+    'SAR': 'SAR',
+    'SliceMeasurementDuration': 'SMD',
+    'GradientMode': 'GM',
+    'FlowCompensation': 'FC',
+    'SliceResolution': 'SR',
+    'ImagePositionPatient': 'IPP',
+    'PatientPosition': 'PP',
+    'SliceLocation': 'SL',
+    'SamplesPerPixel': 'SPP',
+    'PhotometricInterpretation': 'PI',
+    'Rows': 'R',
+    'Columns': 'C',
+    'PixelSpacing': 'PS',
+    'BitsAllocated': 'BA',
+    'BitsStored': 'BS',
+    'HighBit': 'HB',
+    'PixelRepresentation': 'PR',
+    'SmallestImagePixelValue': 'SIPV',
+    'LargestImagePixelValue': 'LIPV',
+    'WindowCenter': 'WC',
+    'WindowWidth': 'WW',
+    'WindowCenterWidthExplanation': 'WCWE',
+    'CoilString': 'CS',
+    'PATMode': 'PATM',
+    'PositivePCSDirections': 'PPCSD',
     }
 
 ACRONYMS_SESSION_INFO = {

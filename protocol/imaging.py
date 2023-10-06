@@ -11,6 +11,7 @@ from protocol.base import (NumericParameter, CategoricalParameter, MultiValueNum
                            MultiValueCategoricalParameter, BaseSequence, BaseParameter, BaseImagingProtocol)
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
+                             SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
                              Unspecified, UnspecifiedType, ProtocolType, Invalid)
 from protocol.utils import (convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists,
                             parse_csa_params,
@@ -441,6 +442,7 @@ class ShimSetting(MultiValueNumericParameter):
                          acronym=ACRONYMS_IMG[self._name],
                          ordered=True)
 
+
 class ShimMode(CategoricalParameter):
     """Parameter specific class for ShimSetting"""
 
@@ -766,6 +768,469 @@ class PercentSampling(NumericParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
+class AngioFlag(CategoricalParameter):
+    _name = 'AngioFlag'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class ImagingFrequency(NumericParameter):
+    _name = 'ImagingFrequency'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='Hz',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class ImagedNucleus(CategoricalParameter):
+    _name = 'ImagedNucleus'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SpacingBetweenSlices(NumericParameter):
+    _name = 'SpacingBetweenSlices'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='mm',
+                         range=(0, 1000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class TransmitCoilName(CategoricalParameter):
+    _name = 'TransmitCoilName'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class AcquisitionMatrix(MultiValueNumericParameter):
+    _name = 'AcquisitionMatrix'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SAR(NumericParameter):
+    _name = 'SAR'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='W/kg',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SliceMeasurementDuration(NumericParameter):
+    _name = 'SliceMeasurementDuration'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='s',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class GradientMode(CategoricalParameter):
+    _name = 'GradientMode'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class FlowCompensation(CategoricalParameter):
+    _name = 'FlowCompensation'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SliceResolution(NumericParameter):
+    _name = 'SliceResolution'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=None,
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class ImagePositionPatient(MultiValueNumericParameter):
+    _name = 'ImagePositionPatient'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=None,
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PatientPosition(CategoricalParameter):
+    _name = 'PatientPosition'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SliceLocation(NumericParameter):
+    _name = 'SliceLocation'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SamplesPerPixel(NumericParameter):
+    _name = 'SamplesPerPixel'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PhotometricInterpretation(CategoricalParameter):
+    _name = 'PhotometricInterpretation'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class Rows(NumericParameter):
+    _name = 'Rows'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class Columns(NumericParameter):
+    _name = 'Columns'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PixelSpacing(MultiValueNumericParameter):
+    _name = 'PixelSpacing'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='mm',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class BitsAllocated(NumericParameter):
+    _name = 'BitsAllocated'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class BitsStored(NumericParameter):
+    _name = 'BitsStored'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 100),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class HighBit(NumericParameter):
+    _name = 'HighBit'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='',
+                         range=(0, 100),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PixelRepresentation(NumericParameter):
+    _name = 'PixelRepresentation'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='',
+                         range=(0, 100),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class SmallestImagePixelValue(NumericParameter):
+    _name = 'SmallestImagePixelValue'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class LargestImagePixelValue(NumericParameter):
+    _name = 'LargestImagePixelValue'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class WindowCenter(NumericParameter):
+    _name = 'WindowCenter'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class WindowWidth(NumericParameter):
+    _name = 'WindowWidth'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         units='',
+                         range=(0, 100000),
+                         required=True,
+                         severity='critical',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class WindowCenterWidthExplanation(CategoricalParameter):
+    _name = 'WindowCenterWidthExplanation'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class CoilString(CategoricalParameter):
+    _name = 'CoilString'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PATMode(CategoricalParameter):
+    _name = 'PATMode'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class PositivePCSDirections(CategoricalParameter):
+    _name = 'PositivePCSDirections'
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+
 class VariableFlipAngleFlag(CategoricalParameter):
     _name = 'VariableFlipAngleFlag'
 
@@ -806,6 +1271,7 @@ class ImageOrientationPatient(MultiValueNumericParameter):
             return [np.round(v, self.decimals) for v in self._value]
         return self._value
 
+
 class ContentDate(CategoricalParameter):
     """Parameter specific class for BodyPartExamined"""
 
@@ -817,7 +1283,7 @@ class ContentDate(CategoricalParameter):
         super().__init__(name=self._name,
                          value=value,
                          dtype=str,
-                         dicom_tag=DICOM_TAGS[self._name],
+                         dicom_tag=SESSION_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
 
 
@@ -832,7 +1298,7 @@ class ContentTime(CategoricalParameter):
         super().__init__(name=self._name,
                          value=value,
                          dtype=str,
-                         dicom_tag=DICOM_TAGS[self._name],
+                         dicom_tag=SESSION_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
 
 
@@ -1103,8 +1569,8 @@ class ImagingSequence(BaseSequence, ABC):
         self.session_id = str(dicom.get('StudyInstanceUID', None))
         self.run_id = dicom.get('SeriesInstanceUID', None)
 
-        date = self['ContentDate'].get_value()
-        time = self['ContentTime'].get_value()
+        date = dicom.get('ContentDate', None)
+        time = dicom.get('ContentTime', None)
         # TODO: time format varies across datasets. Find a way to
         #   reconcile differences and use it in timestamp
         if not isinstance(date, UnspecifiedType):

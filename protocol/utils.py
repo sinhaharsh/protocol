@@ -8,9 +8,8 @@ from pathlib import Path
 from typing import Optional
 
 import pydicom
-
-from protocol import logger
 from protocol import config
+from protocol import logger
 from protocol.config import BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS, \
     Unspecified
 

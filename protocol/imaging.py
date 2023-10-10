@@ -1565,10 +1565,11 @@ class ImagingSequence(BaseSequence, ABC):
         self.name = get_sequence_name(dicom)
         self.subject_id = str(dicom.get('PatientID', None))
         # series number is a proxy for session?
-        # session_id = str(dicom.get('SeriesNumber', None))
+        self.series_number = str(dicom.get('SeriesNumber', None))
         self.session_id = str(dicom.get('StudyInstanceUID', None))
         self.run_id = dicom.get('SeriesInstanceUID', None)
-
+        if self.series_number:
+            self.name = f'{self.name}_{self.series_number}'
         date = dicom.get('ContentDate', None)
         time = dicom.get('ContentTime', None)
         # TODO: time format varies across datasets. Find a way to

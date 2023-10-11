@@ -582,22 +582,23 @@ class BaseSequence(MutableMapping):
     --------
 
     .. code :: python
-    from protocol import BaseSequence, BaseParameter
-    # adding a parameter to a sequence
-    seq = BaseSequence()
-    parameter = BaseParameter(name='RepetitionTime', value=2.0)
-    seq.add(parameter)
 
-    # Checking if parameters of two sequences are same
-    if seq1.compliant(seq2):
-        # they are compliant
-    else:
-        # not compliant
+        from protocol import BaseSequence, BaseParameter
+        # adding a parameter to a sequence
+        seq = BaseSequence()
+        parameter = BaseParameter(name='RepetitionTime', value=2.0)
+        seq.add(parameter)
 
-    # Retrieving a parameter value
-    param = seq['RepetitionTime']
-    # print the value
-    print(param.get_value())
+        # Checking if parameters of two sequences are same
+        if seq1.compliant(seq2):
+            # they are compliant
+        else:
+            # not compliant
+
+        # Retrieving a parameter value
+        param = seq['RepetitionTime']
+        # print the value
+        print(param.get_value())
     """
 
     def __init__(self,

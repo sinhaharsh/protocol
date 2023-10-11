@@ -1369,21 +1369,13 @@ class MRImagingProtocol(BaseImagingProtocol):
             value, unit = v.split('%')[0], '%'
         return value.strip(), unit
 
-    def add_sequences_from_dict(self, dict_):
+    def add_sequence_from_dict(self, seq_name, param_dict):
         """
-        Adds sequences from a dictionary
-        Dict should be of the form:
-        {
-            'sequence_name': {
-                'parameter_name': 'parameter_value'
-            }
-        }
+        Adds a sequence to the protocol from a dictionary
         """
-        for seq_name, params in dict_.items():
-            seq = ImagingSequence(name=seq_name)
-            seq.from_dict(dict_[seq_name])
-            self.add(seq)
-
+        seq = ImagingSequence(name=seq_name)
+        seq.from_dict(param_dict)
+        self.add(seq)
 
 class SiemensMRImagingProtocol(MRImagingProtocol):
     def __init__(self, name='SiemensMRProtocol', category='MR',
@@ -1521,7 +1513,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                                 for parameter in card.getchildren():
                                     label = parameter.Label.text.strip()
                                     # TODO: Also add unit to the reference protocol
-                                    value, unit = self.get_value_and_unit(parameter.ValueAndUnit.text.strip())
+                                    value, unit = self._get_value_and_unit(parameter.ValueAndUnit.text.strip())
                                     card_name = card.get('name')
                                     if card_name not in self.programs[program_name][sequence_name]:
                                         self.programs[program_name][sequence_name][card_name] = {}

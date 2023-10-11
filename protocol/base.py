@@ -9,7 +9,6 @@ from typing import Iterable
 from typing import Union
 
 import numpy as np
-
 from protocol import logger
 from protocol.config import (UnspecifiedType, Unspecified,
                              SUPPORTED_IMAGING_MODALITIES)
@@ -27,8 +26,36 @@ from protocol.utils import convert2ascii
 
 class BaseParameter(ABC):
     """
-    Container class to support various parameter data types
-      including numerical continuous (time), categorical (site), or an array of them
+    Base class for all parameters. A parameter is a container class for a single value (or a list of values),
+    with a name, with methods to check for compliance and validity. For example, a parameter may
+    represent imaging acquisition parameters of a sequence, e.g. RepetitionTime,
+    EchoTime, PhaseEncodingDirection, etc.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : object
+        Value of the parameter.
+    dtype : type
+        Data type of the parameter.
+    units : str
+        Units of the parameter. For example, 'ms' for milliseconds, 's' for seconds, etc.
+    steps : int
+        Incremental steps of the parameter. For example, 10 for a parameter that can take
+        values such as 10, 20, 30, 40, etc.
+    range : tuple
+        Range of the parameter. For example, (0, 100) for a parameter that can take values
+        between 0 and 100.
+    required : bool
+        Whether the parameter is required or not.
+    severity : str
+        Importance of the parameter. For example, 'critical' for a parameter that is
+        critical for acquisition, 'optional' for a parameter that is optional for acquisition.
+    dicom_tag : str
+        DICOM tag of the parameter. For example, '0018,0080' for RepetitionTime.
+    acronym : str
+        Acronym of the parameter. For example, 'TR' for RepetitionTime.
     """
 
     def __init__(self,
@@ -62,18 +89,26 @@ class BaseParameter(ABC):
         self.decimals = 2  # numerical tolerance in decimal places
 
     def get_value(self):
+        """Getter for the value of the parameter."""
         return self._value
 
     def compliant(self, other, **kwargs):
         """
         Method to check if one parameter value is compatible w.r.t another,
-            either in equality or within acceptable range, for that data type.
+        either in equality or within acceptable range, for that data type.
 
-        TODO: if self(reference) is UnspecifiedType, return True. This is to allow
-         for a parameter to be optional, but if self(reference) is specified, and other is not,
-         return False.
+        Parameters
+        ----------
+        other : BaseParameter
+            The other parameter to compare with.
+        kwargs : dict
+            Additional keyword arguments to be passed.
+
         """
 
+        # TODO: if self(reference) is UnspecifiedType, return True. This is to allow
+        #  for a parameter to be optional, but if self(reference) is specified, and other is not,
+        #  return False.
         if isinstance(self._value, UnspecifiedType) or isinstance(other._value, UnspecifiedType):
             logger.warning(f'one of the values being compared is UnspecifiedType'
                            f'in {self.name}')
@@ -120,7 +155,42 @@ class BaseParameter(ABC):
 
 
 class MultiValueNumericParameter(BaseParameter):
-    """Parameter specific class for EchoTime"""
+    """
+    Parameter subclass for parameters that can take multiple values, such as
+    EchoTime, ImageOrientationPatient etc.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : object
+        Value of the parameter.
+    dtype : type
+        Data type of the parameter.
+    units : str
+        Units of the parameter. For example, 'ms' for milliseconds, 's' for seconds, etc.
+    steps : int
+        Incremental steps of the parameter. For example, 10 for a parameter that can take
+        values such as 10, 20, 30, 40, etc.
+    range : tuple
+        Range of the parameter. For example, (0, 100) for a parameter that can take values
+        between 0 and 100.
+    required : bool
+        Whether the parameter is required or not.
+    severity : str
+        Importance of the parameter. For example, 'critical' for a parameter that is
+        critical for acquisition, 'optional' for a parameter that is optional for acquisition.
+    dicom_tag : str
+        DICOM tag of the parameter. For example, '0018,0080' for RepetitionTime.
+    acronym : str
+        Acronym of the parameter. For example, 'TR' for RepetitionTime.
+    ordered : bool
+        Whether the parameter values are ordered or not. Some array types don't have any
+        order like SequenceName, and SequenceVariant. Therefore ordered=False.
+        as the values can be sorted.
+        But others like ImageOrientation, ShimSetting etc. have an order, they cannot be sorted.
+        Therefore ordered=True.
+    """
 
     def __init__(self,
                  name,
@@ -169,6 +239,10 @@ class MultiValueNumericParameter(BaseParameter):
         self.decimals = 3
 
     def get_value(self):
+        """
+        Getter for the value of the parameter. If the parameter has only one value,
+        return that value, else return the list of values.
+        """
         if isinstance(self._value, UnspecifiedType):
             return self._value
         if len(self._value) == 1:
@@ -185,6 +259,7 @@ class MultiValueNumericParameter(BaseParameter):
         return self._compare_value(other, rtol=rtol, decimals=decimals) and self._compare_units(other)
 
     def _compare_value(self, other, rtol=0, decimals=None):
+        """Method to compare the values of two parameters"""
         if decimals is None:
             decimals = self.decimals
 
@@ -205,7 +280,34 @@ class MultiValueNumericParameter(BaseParameter):
 
 
 class NumericParameter(BaseParameter):
-    """Parameter specific class for RepetitionTime"""
+    """Parameter specific class for Numeric parameters such as RepetitionTime etc.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : object
+        Value of the parameter.
+    dtype : type
+        Data type of the parameter.
+    units : str
+        Units of the parameter. For example, 'ms' for milliseconds, 's' for seconds, etc.
+    steps : int
+        Incremental steps of the parameter. For example, 10 for a parameter that can take
+        values such as 10, 20, 30, 40, etc.
+    range : tuple
+        Range of the parameter. For example, (0, 100) for a parameter that can take values
+        between 0 and 100.
+    required : bool
+        Whether the parameter is required or not.
+    severity : str
+        Importance of the parameter. For example, 'critical' for a parameter that is
+        critical for acquisition, 'optional' for a parameter that is optional for acquisition.
+    dicom_tag : str
+        DICOM tag of the parameter. For example, '0018,0080' for RepetitionTime.
+    acronym : str
+        Acronym of the parameter. For example, 'TR' for RepetitionTime.
+    """
 
     def __init__(self,
                  name,
@@ -271,7 +373,37 @@ class NumericParameter(BaseParameter):
 
 
 class MultiValueCategoricalParameter(BaseParameter):
-    """Parameter specific class for PhaseEncodingDirection"""
+    """Parameter specific class for parameters that can take multiple string values, such as
+    SequenceVariant, ImageType etc.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : object
+        Value of the parameter.
+    dtype : type
+        Data type of the parameter.
+    units : str
+        Units of the parameter. For example, 'ms' for milliseconds, 's' for seconds, etc.
+    steps : int
+    Incremental steps of the parameter. For example, 10 for a parameter that can take
+        values such as 10, 20, 30, 40, etc.
+    range : tuple
+        Range of the parameter. For example, (0, 100) for a parameter that can take values
+        between 0 and 100.
+    required : bool
+        Whether the parameter is required or not.
+    severity : str
+        Importance of the parameter. For example, 'critical' for a parameter that is
+        critical for acquisition, 'optional' for a parameter that is optional for acquisition.
+    dicom_tag : str
+        DICOM tag of the parameter. For example, '0018,0080' for RepetitionTime.
+    acronym : str
+        Acronym of the parameter. For example, 'TR' for RepetitionTime.
+    allowed_values : tuple
+        Valid values for the parameter.
+    """
 
     def __init__(self,
                  name,
@@ -340,7 +472,31 @@ class MultiValueCategoricalParameter(BaseParameter):
 
 
 class CategoricalParameter(BaseParameter):
-    """Parameter specific class for PhaseEncodingDirection"""
+    """Parameter specific class for parameters that can take a single string value, such as
+    SeriesDescription, ProtocolName, PhaseEncodingDirection etc.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : object
+        Value of the parameter.
+    dtype : type
+        Data type of the parameter.
+    units : str
+        Units of the parameter. For example, 'ms' for milliseconds, 's' for seconds, etc.
+    dicom_tag : str
+        DICOM tag of the parameter. For example, '0018,0080' for RepetitionTime.
+    acronym : str
+        Acronym of the parameter. For example, 'TR' for RepetitionTime.
+    required : bool
+        Whether the parameter is required or not.
+    severity : str
+        Importance of the parameter. For example, 'critical' for a parameter that is
+        critical for acquisition, 'optional' for a parameter that is optional for acquisition.
+    allowed_values : tuple
+        Valid values for the parameter.
+    """
 
     def __init__(self,
                  name,
@@ -351,7 +507,6 @@ class CategoricalParameter(BaseParameter):
                  required=True,
                  severity='critical',
                  units=None,
-                 range=None,
                  allowed_values=tuple()):
 
         """Constructor."""
@@ -360,7 +515,6 @@ class CategoricalParameter(BaseParameter):
                          value=value,
                          dtype=dtype,
                          units=units,
-                         range=range,
                          required=required,
                          severity=severity,
                          dicom_tag=dicom_tag,
@@ -411,18 +565,39 @@ class CategoricalParameter(BaseParameter):
 
 
 class BaseSequence(MutableMapping):
-    """Container to capture imaging parameter values for a given sequence.
+    """
+    Container to capture imaging parameter values for a given sequence. A sequence is defined as a set of parameters
+    implemented as a dict. A sequence is mutable, i.e. parameters and their values can be modified.
 
-    Intended usage:
+    Parameters
+    ----------
+    name : str
+        Name of the sequence.
+    params : dict
+        Dictionary of parameters and their values.
+    path : str
+        Path to the sequence on disk.
 
-    seq = Sequence()
-    seq.params['name'] = value
+    Examples
+    --------
 
+    .. code :: python
+    from protocol import BaseSequence, BaseParameter
+    # adding a parameter to a sequence
+    seq = BaseSequence()
+    parameter = BaseParameter(name='RepetitionTime', value=2.0)
+    seq.add(parameter)
+
+    # Checking if parameters of two sequences are same
     if seq1.compliant(seq2):
         # they are compliant
     else:
         # not compliant
 
+    # Retrieving a parameter value
+    param = seq['RepetitionTime']
+    # print the value
+    print(param.get_value())
     """
 
     def __init__(self,
@@ -435,7 +610,7 @@ class BaseSequence(MutableMapping):
 
         name = convert2ascii(name)
         if name:
-            self.name =  name
+            self.name = name
         else:
             raise ValueError("Sequence name is invalid")
 
@@ -501,9 +676,27 @@ class BaseSequence(MutableMapping):
                 raise KeyError(f'{name} has not been set yet')
 
     def compliant(self, other, rtol=0, decimals=None, include_params=None):
-        """Method to check if one sequence is compatible w.r.t another,
-            either in equality or within acceptable range, for each parameter.
         """
+        Method to check if one sequence is compatible w.r.t another,
+        either in equality or within acceptable range, for each parameter.
+
+        Parameters
+        ----------
+        other : BaseSequence
+            The other sequence to compare with.
+        rtol : float
+            Relative tolerance. The relative difference is equal to
+            ``rtol * abs(b)``. Default is 0.
+        decimals : int
+            Number of decimal places to consider for comparison. Default is 3.
+        include_params : list
+            List of parameters to include while comparing two sequences. Default is all parameters.
+        """
+
+        # TODO: Split the method into compliant and diff
+        #  to return differences between two sequences
+        #  something similar to diff in bash
+
         if not isinstance(other, BaseSequence):
             raise TypeError(f'Sequence to compare {other} is not of type '
                             f'BaseSequence')
@@ -535,7 +728,7 @@ class BaseSequence(MutableMapping):
                 continue
 
             if isinstance(this_param, NumericParameter) or \
-                    isinstance(this_param, MultiValueNumericParameter):
+                isinstance(this_param, MultiValueNumericParameter):
                 compliant = that_param.compliant(this_param, rtol=rtol, decimals=decimals)
             else:
                 compliant = this_param.compliant(that_param)
@@ -578,11 +771,16 @@ class BaseSequence(MutableMapping):
         return self.__str__()
 
 
-class BaseProtocol:
+class BaseProtocol(ABC):
     """
     Base class for all protocols.
 
     A protocol is a sequence, except it is not mutable, to serve as a reference.
+
+    Parameters
+    ----------
+    name : str
+        Name of the protocol.
     """
 
     def __init__(self,
@@ -594,6 +792,14 @@ class BaseProtocol:
 
 class BaseImagingProtocol(BaseProtocol):
     """Base class for all imaging protocols such as MRI / neuroimaging.
+
+    Parameters
+    ----------
+    name : str
+        Name of the protocol.
+    category : str
+        Category of the protocol. For example, 'MR' for MRI, 'CT' for CT, etc.
+        It should be one of the supported imaging modalities.
     """
 
     def __init__(self,
@@ -611,6 +817,3 @@ class BaseImagingProtocol(BaseProtocol):
                             f'Choose one of {SUPPORTED_IMAGING_MODALITIES}')
         else:
             self._category = category
-
-
-

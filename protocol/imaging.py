@@ -19,7 +19,9 @@ from protocol.utils import (convert2ascii, auto_convert, import_string, get_dico
 
 
 class Manufacturer(CategoricalParameter):
-    """Parameter specific class for Manufacturer"""
+    """
+    Parameter specific class for Manufacturer
+    """
 
     _name = 'Manufacturer'
 
@@ -1336,7 +1338,8 @@ class MRImagingProtocol(BaseImagingProtocol):
         self._seq[seq.name] = seq
 
     def get_sequence_ids(self):
-        return self._seq.keys()
+        """Returns the list of sequence ids in the protocol"""
+        return list(self._seq.keys())
 
     def __bool__(self):
         """Checks if the protocol is empty"""
@@ -1355,7 +1358,7 @@ class MRImagingProtocol(BaseImagingProtocol):
             raise KeyError(f'{name} has not been set yet')
 
     @staticmethod
-    def get_value_and_unit(v):
+    def _get_value_and_unit(v):
         value, unit = v, None
         if v.endswith('ms'):
             value, unit = v.split('ms')[0], 'ms'
@@ -1523,8 +1526,8 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
 class ImagingSequence(BaseSequence, ABC):
     """Class representing an Imaging sequence
 
-    Although we would use it mostly for MR imaging sequences to start with,
-      it should be able to store any sequence captured by DICOM: CT, XRAY etc
+    Although we would use it mostly for MR imaging sequences to start with
+    it should be able to store any sequence captured by DICOM: CT, XRAY etc
     """
 
     def __init__(self,
@@ -1549,6 +1552,10 @@ class ImagingSequence(BaseSequence, ABC):
             self.set_session_info(dicom)
 
     def set_session_info(self, dicom):
+        """
+        Sets the session information from the DICOM header. This is used to
+        set the session_id, subject_id, run_id and timestamp
+        """
         if not isinstance(dicom, pydicom.FileDataset):
             raise TypeError('Input must be a pre-read pydicom object.')
 
@@ -1560,8 +1567,8 @@ class ImagingSequence(BaseSequence, ABC):
         self.series_number = str(dicom.get('SeriesNumber', None))
         self.session_id = str(dicom.get('StudyInstanceUID', None))
         self.run_id = dicom.get('SeriesInstanceUID', None)
-        if self.series_number:
-            self.name = f'{self.name}_{self.series_number}'
+        # if self.series_number:
+        #     self.name = f'{self.name}_{self.series_number}'
         date = dicom.get('ContentDate', None)
         time = dicom.get('ContentTime', None)
         # TODO: time format varies across datasets. Find a way to
@@ -1571,6 +1578,9 @@ class ImagingSequence(BaseSequence, ABC):
             self.timestamp = datetime_obj.strftime('%m_%d_%Y')
 
     def _init_param_classes(self):
+        """
+        Initializes the parameter classes for the sequence.
+        """
         for p in self.parameters:
             param_cls_name = f'protocol.imaging.{p}'
             try:

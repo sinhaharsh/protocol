@@ -41,7 +41,8 @@ numpydoc_class_members_toctree = False
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
 add_module_names = False
-
+# if automatically documented members are sorted alphabetical
+autodoc_member_order = 'bysource'
 # Automatically extract typehints when specified and place them in
 # descriptions of the relevant function/method.
 # autodoc_typehints = "description"

@@ -11,8 +11,7 @@ The high-level API is the most convenient way to add new parameters and acquisit
 It is based on the core API and provides a simple interface to add new parameters and protocols.
 
 .. automodule:: protocol.imaging
-   :members:
-   :undoc-members:
+   :members: ImagingSequence, SiemensMRImagingProtocol, MRImagingProtocol, RepetitionTime, EchoTime, PhaseEncodingDirection
    :show-inheritance:
 
 

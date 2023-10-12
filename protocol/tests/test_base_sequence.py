@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from hypothesis import given, assume
 from hypothesis.strategies import text, dictionaries, floats
-from protocol import BaseSequence, BaseParameter, ImagingSequence  # Replace with actual import path
+from protocol import BaseSequence  # Replace with actual import path
 from protocol.base import NumericParameter
 from protocol.utils import convert2ascii
 
@@ -69,7 +69,11 @@ def test_get_non_existing_parameter():
 @given(params_dict=dictionaries(text(), floats()))
 def test_equivalence_and_compliance(params_dict):
     assume(all(convert2ascii(name) for name in params_dict.keys()))
-    assume(all(not np.isnan(value) for value in params_dict.values()))
+    if any(np.isnan(value) for value in params_dict.values()):
+        with pytest.raises(ValueError):
+            sequence1 = BaseSequence()
+            sequence1.add(NumericParameter(name=name, value=value) for name, value in params_dict.items())
+        return
     sequence1 = BaseSequence()
     sequence1.add(NumericParameter(name=name, value=value) for name, value in params_dict.items())
     sequence2 = BaseSequence()

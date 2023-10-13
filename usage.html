@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Contributing" href="contributing.html" /><link rel="prev" title="Installation" href="installation.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <!-- Generated with Sphinx 7.1.0 and Furo 2023.09.10 -->
-        <title>Usage - protocol 0.1.0 documentation</title>
+        <title>&lt;no title&gt; - protocol 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -155,14 +155,11 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">protocol</a></li>
+  <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
-<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
 </ul>
 
 </div>
@@ -197,39 +194,36 @@
           </label>
         </div>
         <article role="main">
-          <section id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h1>
-<p>To use protocol in a project:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">protocol</span>
+          <p>The protocol library provides a simple API for creating sequences and acquisition protocols. You can check if
+acquisition parameters for two imaging sequences are same. Sequences can also be checked for
+compliance against a reference protocol (XML) generated from Siemens scanners.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">protocol</span> <span class="kn">import</span> <span class="n">ImagingSequence</span>
+<span class="kn">from</span> <span class="nn">pydicom</span> <span class="kn">import</span> <span class="n">dcmread</span>
+<span class="kn">from</span> <span class="nn">protocol</span> <span class="kn">import</span> <span class="n">SiemensMRImagingProtocol</span>
+
+<span class="n">dcm_seq1</span> <span class="o">=</span> <span class="n">dcmread</span><span class="p">(</span><span class="s1">&#39;path/to/dicom&#39;</span><span class="p">)</span>
+<span class="n">dcm_seq2</span> <span class="o">=</span> <span class="n">dcmread</span><span class="p">(</span><span class="s1">&#39;path/to/dicom&#39;</span><span class="p">)</span>
+<span class="n">seq1</span> <span class="o">=</span> <span class="n">ImagingSequence</span><span class="p">(</span><span class="n">dicom</span><span class="o">=</span><span class="n">my_dicom</span><span class="p">)</span>
+<span class="n">seq2</span> <span class="o">=</span> <span class="n">ImagingSequence</span><span class="p">(</span><span class="n">dicom</span><span class="o">=</span><span class="n">sub2_dicom</span><span class="p">)</span>
+<span class="n">is_compliant</span> <span class="o">=</span> <span class="n">seq1</span><span class="o">.</span><span class="n">compliant</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
+
+<span class="n">reference_protocol</span> <span class="o">=</span> <span class="n">SiemensMRImagingProtocol</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;path/to/xml&#39;</span><span class="p">)</span>
+<span class="c1"># Get sequence from the protocol with the same name, e.g. t1w</span>
+<span class="n">reference_sequence</span> <span class="o">=</span> <span class="n">reference_protocol</span><span class="p">[</span><span class="n">seq1</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+<span class="n">compliant_flag</span><span class="p">,</span> <span class="n">non_compliant_parameters</span> <span class="o">=</span> <span class="n">reference_sequence</span><span class="o">.</span><span class="n">compliant</span><span class="p">(</span><span class="n">seq1</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
+<p>The <code class="docutils literal notranslate"><span class="pre">non_compliant_parameters</span></code> is a list of tuples containing the parameters that are not same as in
+the <code class="docutils literal notranslate"><span class="pre">reference_sequence</span></code>. The first element of the tuple is the parameter in the <code class="docutils literal notranslate"><span class="pre">reference_sequence</span></code> and
+the second element is the parameter in the <code class="docutils literal notranslate"><span class="pre">seq1</span></code>.</p>
 
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="contributing.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">Contributing</div>
-              </div>
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-            </a>
-          <a class="prev-page" href="installation.html">
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-              <div class="page-info">
-                <div class="context">
-                  <span>Previous</span>
-                </div>
-                
-                <div class="title">Installation</div>
-                
-              </div>
-            </a>
+          
+          
         </div>
         <div class="bottom-of-page">
           <div class="left-details">

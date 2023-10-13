@@ -13,6 +13,7 @@ dependencies = [
     "pydicom",
     "numpy",
     "lxml",
+    "nibabel"
 ]
 authors = [
     { name = "Pradeep Reddy Raamana", email = "raamana@gmail.com" },

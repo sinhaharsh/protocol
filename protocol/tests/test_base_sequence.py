@@ -108,8 +108,8 @@ def test_deletion_and_iterable(parameter_name, parameter_value):
 @given(parameter_name1=text(), parameter_value1=floats(), parameter_name2=text(), parameter_value2=floats())
 def test_string_representation(parameter_name1, parameter_value1,
                                parameter_name2, parameter_value2):
-    assume(convert2ascii(parameter_name1))
-    assume(convert2ascii(parameter_name2))
+    # assume(convert2ascii(parameter_name1))
+    # assume(convert2ascii(parameter_name2))
     parameter_name1 = convert2ascii(parameter_name1)
     parameter_name2 = convert2ascii(parameter_name2)
 

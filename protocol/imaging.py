@@ -1380,10 +1380,14 @@ class MRImagingProtocol(BaseImagingProtocol):
         seq.from_dict(param_dict)
         self.add(seq)
 
+
 class SiemensMRImagingProtocol(MRImagingProtocol):
-    def __init__(self, name='SiemensMRProtocol', category='MR',
-                 filepath=None, type=ProtocolType.USER_DEFINED,
-                 program_name=None, convert_ped=True):
+    def __init__(self, name='SiemensMRProtocol',
+                 category='MR',
+                 filepath=None,
+                 type=ProtocolType.USER_DEFINED,
+                 program_name=None,
+                 convert_ped=True):
         super().__init__(name=name, category=category, filepath=filepath, type=type)
         self.programs = {}
         self.header_title = None
@@ -1413,6 +1417,9 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
 
     def _add_sequences_from_file(self):
         if self.program_name is None:
+            # there is more than one protocol file in the XML
+            # specify the number of protocol
+            # we are taking the first one, assuming it is the latest
             self.program_name = list(self.programs.keys())[0]
             # raise ValueError('Program name not set. Use set_program_name() to set it')
         for sequence_name in self.programs[self.program_name].keys():

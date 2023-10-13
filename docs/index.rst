@@ -1,9 +1,11 @@
 ========================================================
-Protocol: Generic Framework for MR Acquisition Protocols
+Protocol: Generic Framework for Acquisition Protocols
 ========================================================
 
+.. image:: https://app.travis-ci.com/sinhaharsh/protocol.svg?token=dhf2uxzgF7oMFYHhshvx&branch=master
+    :target: https://app.travis-ci.com/sinhaharsh/protocol
 
-* Documentation: https://sinhaharsh.github.io/protocol/
+* Documentation: https://raamana.github.io/protocol/
 
 .. include:: ./usage.rst
 

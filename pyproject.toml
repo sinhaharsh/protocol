@@ -54,3 +54,4 @@ exclude = [
   "/.github",
   "/docs",
 ]
+strict-naming = false

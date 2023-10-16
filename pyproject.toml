@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "protocol"
 dynamic = ["version"]
-description = "generic framework to develop protocols"
+description = "generic framework to develop protocols with implementations in neuroscience"
 readme = "README.rst"
 license = "Apache-2.0"
 requires-python = ">=3.8"
@@ -17,6 +17,7 @@ dependencies = [
 ]
 authors = [
     { name = "Pradeep Reddy Raamana", email = "raamana@gmail.com" },
+    { name = "Harsh Sinha", email = "sinha.harsh@pitt.edu" },
 ]
 keywords = [
     "protocol",

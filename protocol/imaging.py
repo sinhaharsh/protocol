@@ -1605,13 +1605,15 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
         # 2. PrintProtocol : this is the actual protocol
         for child in root.getchildren():
             if child.tag == 'PrintTOC':
-                for program in child.TOC.root.region.NormalExam_dot_engine.getchildren():
-                    program_name = program.get('name')
-                    self.programs[program_name] = {}
+                for program in \
+                        child.TOC.root.region.NormalExam_dot_engine.getchildren():
+                    prog_name = program.get('name')
+                    self.programs[prog_name] = {}
                     # get the sequences for each program
                     for protocol in program.getchildren():
-                        sequence_name = convert2ascii(protocol.get('name'))
-                        self.programs[program_name][sequence_name] = dict(protocol.attrib)
+                        seq_name = convert2ascii(protocol.get('name'))
+                        self.programs[prog_name][seq_name] = dict(
+                            protocol.attrib)
             elif child.tag == 'PrintProtocol':
                 # The protocol is organized into cards. Each card contains a set
                 # of parameters
@@ -1620,9 +1622,10 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                     if step.tag == 'SubStep':
                         header_path = step.ProtHeaderInfo.HeaderProtPath.text
                         header_property = step.ProtHeaderInfo.HeaderProperty.text
-                        program_name = header_path.split('\\')[-2]
-                        sequence_name = convert2ascii(header_path.split('\\')[-1])
-                        self.programs[program_name][sequence_name]['header_property'] = header_property
+                        prog_name = header_path.split('\\')[-2]
+                        seq_name = convert2ascii(header_path.split('\\')[-1])
+                        self.programs[prog_name][seq_name][
+                            'header_property'] = header_property
                         for card in step.getchildren():
                             if card.tag == 'Card':
                                 for parameter in card.getchildren():
@@ -1631,9 +1634,9 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                                     value, unit = self._get_value_and_unit(
                                         parameter.ValueAndUnit.text.strip())
                                     card_name = card.get('name')
-                                    if card_name not in self.programs[program_name][sequence_name]:
-                                        self.programs[program_name][sequence_name][card_name] = {}
-                                    self.programs[program_name][sequence_name][card_name][label] = auto_convert(value)
+                                    if card_name not in self.programs[prog_name][seq_name]:
+                                        self.programs[prog_name][seq_name][card_name] = {}
+                                    self.programs[prog_name][seq_name][card_name][label] = auto_convert(value)
 
 
 class ImagingSequence(BaseSequence, ABC):
@@ -1754,10 +1757,9 @@ class ImagingSequence(BaseSequence, ABC):
                     self[name] = param_cls(Invalid)
         else:
             logger.warn('No private header found in DICOM file')
-            # TODO: consider throwing a warning when expected header doesnt
-            #  exist
-            # TODO: need ways to specific parameter could not be read or
-            #  queryable etc
+            # TODO: throw a warning when expected header doesnt exist
+            # TODO: warn if specific parameter couldn't be read or queryable etc
+
 
     def from_dict(self, params_dict):
         """

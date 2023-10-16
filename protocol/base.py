@@ -410,8 +410,10 @@ class NumericParameter(BaseParameter):
 
 
 class MultiValueCategoricalParameter(BaseParameter):
-    """Parameter specific class for parameters that can take multiple string values, such as
-    SequenceVariant, ImageType etc.
+    """
+    Parameter specific class for parameters that can take multiple string values,
+    such as e.g., SequenceVariant = ['SK', 'SP'],
+    ImageType = ['ORIGINAL', 'PRIMARY', 'AXIAL'] etc.
 
     Parameters
     ----------
@@ -506,7 +508,8 @@ class MultiValueCategoricalParameter(BaseParameter):
         # TODO: implement unit conversion
         return self.units == other.units
 
-    def _compare_value(self, other, rtol=0):
+
+    def _compare_value(self, other):
         if isinstance(other._value, self.dtype):
             value_to_compare = other._value
         else:

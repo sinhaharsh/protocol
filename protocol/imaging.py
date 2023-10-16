@@ -6,16 +6,19 @@ from pathlib import Path
 import numpy as np
 import pydicom
 from lxml import objectify
+
 from protocol import config as cfg, logger
-from protocol.base import (NumericParameter, CategoricalParameter, MultiValueNumericParameter,
-                           MultiValueCategoricalParameter, BaseSequence, BaseParameter, BaseImagingProtocol)
+from protocol.base import (BaseImagingProtocol, BaseParameter, BaseSequence,
+                           CategoricalParameter, MultiValueCategoricalParameter,
+                           MultiValueNumericParameter, NumericParameter)
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
-                             Unspecified, UnspecifiedType, ProtocolType, Invalid)
-from protocol.utils import (convert2ascii, auto_convert, import_string, get_dicom_param_value, header_exists,
-                            parse_csa_params,
-                            get_sequence_name)
+                             Invalid, Unspecified, UnspecifiedType,
+                             ProtocolType)
+from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
+                            get_sequence_name, header_exists, import_string,
+                            parse_csa_params)
 
 
 class Manufacturer(CategoricalParameter):
@@ -24,6 +27,7 @@ class Manufacturer(CategoricalParameter):
     """
 
     _name = 'Manufacturer'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -41,6 +45,7 @@ class ManufacturersModelName(CategoricalParameter):
 
     _name = 'ManufacturersModelName'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -57,6 +62,7 @@ class SoftwareVersions(CategoricalParameter):
 
     _name = 'SoftwareVersions'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -72,6 +78,7 @@ class MagneticFieldStrength(NumericParameter):
     """Parameter specific class for MagneticFieldStrength"""
 
     _name = 'MagneticFieldStrength'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -99,6 +106,7 @@ class ReceiveCoilName(CategoricalParameter):
 
     _name = 'ReceiveCoilName'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -114,6 +122,7 @@ class ReceiveCoilActiveElements(CategoricalParameter):
     """Parameter specific class for ReceiveCoilName"""
 
     _name = 'ReceiveCoilActiveElements'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -131,6 +140,7 @@ class MRTransmitCoilSequence(CategoricalParameter):
 
     _name = 'MRTransmitCoilSequence'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -146,6 +156,7 @@ class SequenceVariant(MultiValueCategoricalParameter):
     """Parameter specific class for SequenceVariant"""
 
     _name = 'SequenceVariant'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -163,6 +174,7 @@ class ScanOptions(CategoricalParameter):
 
     _name = 'ScanOptions'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -178,6 +190,7 @@ class SequenceName(CategoricalParameter):
     """Parameter specific class for SequenceName"""
 
     _name = 'SequenceName'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -195,6 +208,7 @@ class NonLinearGradientCorrection(CategoricalParameter):
 
     _name = 'NonLinearGradientCorrection'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -210,6 +224,7 @@ class MRAcquisitionType(CategoricalParameter):
     """Parameter specific class for MRAcquisitionType"""
 
     _name = 'MRAcquisitionType'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -227,6 +242,7 @@ class MTState(CategoricalParameter):
 
     _name = 'MTState'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -243,6 +259,7 @@ class SpoilingState(CategoricalParameter):
 
     _name = 'SpoilingState'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -258,6 +275,7 @@ class ParallelReductionFactorInPlane(NumericParameter):
     """Parameter specific class for ParallelReductionFactorInPlane"""
 
     _name = 'ParallelReductionFactorInPlane'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -278,6 +296,7 @@ class ParallelAcquisitionTechnique(NumericParameter):
 
     _name = 'ParallelAcquisitionTechnique'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -296,6 +315,7 @@ class PartialFourier(NumericParameter):
     """Parameter specific class for PartialFourier"""
 
     _name = 'PartialFourier'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -316,6 +336,7 @@ class PartialFourierDirection(NumericParameter):
 
     _name = 'PartialFourierDirection'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -334,6 +355,7 @@ class DwellTime(NumericParameter):
     """Parameter specific class for DwellTime"""
 
     _name = 'DwellTime'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -354,6 +376,7 @@ class MultiBandAccelerationFactor(NumericParameter):
 
     _name = 'MultiBandAccelerationFactor'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -372,6 +395,7 @@ class EchoTrainLength(NumericParameter):
     """Parameter specific class for EchoTrainLength"""
 
     _name = 'EchoTrainLength'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -392,6 +416,7 @@ class PixelBandwidth(NumericParameter):
 
     _name = 'PixelBandwidth'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -411,6 +436,7 @@ class PhaseEncodingSteps(NumericParameter):
 
     _name = 'PhaseEncodingSteps'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -429,6 +455,7 @@ class ShimSetting(MultiValueNumericParameter):
     """Parameter specific class for ShimSetting"""
 
     _name = 'ShimSetting'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -450,6 +477,7 @@ class ShimMode(CategoricalParameter):
 
     _name = 'ShimMode'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -466,6 +494,7 @@ class MultiSliceMode(CategoricalParameter):
 
     _name = 'MultiSliceMode'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -481,6 +510,7 @@ class EchoNumber(NumericParameter):
     """Parameter specific class for EchoNumber"""
 
     _name = 'EchoNumber'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -501,6 +531,7 @@ class RepetitionTime(NumericParameter):
 
     _name = 'RepetitionTime'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -519,6 +550,7 @@ class FlipAngle(NumericParameter):
     """Parameter specific class for FlipAngle"""
 
     _name = "FlipAngle"
+
 
     def __init__(self, value=Unspecified):
         """constructor"""
@@ -545,6 +577,7 @@ class MultiValueEchoTime(MultiValueNumericParameter):
 
     _name = "EchoTime"
 
+
     def __init__(self, value=Unspecified):
         """constructor"""
 
@@ -562,6 +595,7 @@ class EchoTime(MultiValueNumericParameter):
     """Parameter specific class for EchoTime"""
 
     _name = "EchoTime"
+
 
     def __init__(self, value=Unspecified):
         """constructor"""
@@ -581,6 +615,7 @@ class MultiValueEchoNumber(MultiValueNumericParameter):
 
     _name = "EchoNumber"
 
+
     def __init__(self, value=Unspecified):
         """constructor"""
 
@@ -598,6 +633,7 @@ class EffectiveEchoSpacing(NumericParameter):
     """Parameter specific class for EffectiveEchoSpacing"""
 
     _name = "EffectiveEchoSpacing"
+
 
     def __init__(self, value=Unspecified):
         """constructor"""
@@ -617,6 +653,7 @@ class PhaseEncodingDirection(CategoricalParameter):
 
     _name = 'PhaseEncodingDirection'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -632,6 +669,7 @@ class ScanningSequence(CategoricalParameter):
 
     _name = 'ScanningSequence'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -645,6 +683,7 @@ class ParallelAcquisitionTechnique(CategoricalParameter):
     """Parameter specific class for """
 
     _name = 'ParallelAcquisitionTechnique'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -661,6 +700,7 @@ class PhasePolarity(CategoricalParameter):
 
     _name = 'PhasePolarity'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -675,6 +715,7 @@ class InversionTime(NumericParameter):
     """Parameter specific class for InversionTime"""
 
     _name = 'InversionTime'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -695,6 +736,7 @@ class BodyPartExamined(CategoricalParameter):
 
     _name = 'BodyPartExamined'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -708,6 +750,7 @@ class PercentPhaseFOV(NumericParameter):
     """Parameter specific class for PercentPhaseFOV"""
 
     _name = 'PercentPhaseFOV'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -725,6 +768,7 @@ class PercentPhaseFOV(NumericParameter):
 class NumberOfAverages(NumericParameter):
     _name = 'NumberOfAverages'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -740,6 +784,7 @@ class NumberOfAverages(NumericParameter):
 
 class SliceThickness(NumericParameter):
     _name = 'SliceThickness'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -757,6 +802,7 @@ class SliceThickness(NumericParameter):
 class PercentSampling(NumericParameter):
     _name = 'PercentSampling'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -773,6 +819,7 @@ class PercentSampling(NumericParameter):
 class AngioFlag(CategoricalParameter):
     _name = 'AngioFlag'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -785,6 +832,7 @@ class AngioFlag(CategoricalParameter):
 
 class ImagingFrequency(NumericParameter):
     _name = 'ImagingFrequency'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -802,6 +850,7 @@ class ImagingFrequency(NumericParameter):
 class ImagedNucleus(CategoricalParameter):
     _name = 'ImagedNucleus'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -814,6 +863,7 @@ class ImagedNucleus(CategoricalParameter):
 
 class SpacingBetweenSlices(NumericParameter):
     _name = 'SpacingBetweenSlices'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -831,6 +881,7 @@ class SpacingBetweenSlices(NumericParameter):
 class TransmitCoilName(CategoricalParameter):
     _name = 'TransmitCoilName'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -843,6 +894,7 @@ class TransmitCoilName(CategoricalParameter):
 
 class AcquisitionMatrix(MultiValueNumericParameter):
     _name = 'AcquisitionMatrix'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -860,6 +912,7 @@ class AcquisitionMatrix(MultiValueNumericParameter):
 class SAR(NumericParameter):
     _name = 'SAR'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -875,6 +928,7 @@ class SAR(NumericParameter):
 
 class SliceMeasurementDuration(NumericParameter):
     _name = 'SliceMeasurementDuration'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -892,6 +946,7 @@ class SliceMeasurementDuration(NumericParameter):
 class GradientMode(CategoricalParameter):
     _name = 'GradientMode'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -905,6 +960,7 @@ class GradientMode(CategoricalParameter):
 class FlowCompensation(CategoricalParameter):
     _name = 'FlowCompensation'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -917,6 +973,7 @@ class FlowCompensation(CategoricalParameter):
 
 class SliceResolution(NumericParameter):
     _name = 'SliceResolution'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -934,6 +991,7 @@ class SliceResolution(NumericParameter):
 class ImagePositionPatient(MultiValueNumericParameter):
     _name = 'ImagePositionPatient'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -950,6 +1008,7 @@ class ImagePositionPatient(MultiValueNumericParameter):
 class PatientPosition(CategoricalParameter):
     _name = 'PatientPosition'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -962,6 +1021,7 @@ class PatientPosition(CategoricalParameter):
 
 class SliceLocation(NumericParameter):
     _name = 'SliceLocation'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -979,6 +1039,7 @@ class SliceLocation(NumericParameter):
 class SamplesPerPixel(NumericParameter):
     _name = 'SamplesPerPixel'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -995,6 +1056,7 @@ class SamplesPerPixel(NumericParameter):
 class PhotometricInterpretation(CategoricalParameter):
     _name = 'PhotometricInterpretation'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1007,6 +1069,7 @@ class PhotometricInterpretation(CategoricalParameter):
 
 class Rows(NumericParameter):
     _name = 'Rows'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1024,6 +1087,7 @@ class Rows(NumericParameter):
 class Columns(NumericParameter):
     _name = 'Columns'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1039,6 +1103,7 @@ class Columns(NumericParameter):
 
 class PixelSpacing(MultiValueNumericParameter):
     _name = 'PixelSpacing'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1056,6 +1121,7 @@ class PixelSpacing(MultiValueNumericParameter):
 class BitsAllocated(NumericParameter):
     _name = 'BitsAllocated'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1071,6 +1137,7 @@ class BitsAllocated(NumericParameter):
 
 class BitsStored(NumericParameter):
     _name = 'BitsStored'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1088,6 +1155,7 @@ class BitsStored(NumericParameter):
 class HighBit(NumericParameter):
     _name = 'HighBit'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1103,6 +1171,7 @@ class HighBit(NumericParameter):
 
 class PixelRepresentation(NumericParameter):
     _name = 'PixelRepresentation'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1120,6 +1189,7 @@ class PixelRepresentation(NumericParameter):
 class SmallestImagePixelValue(NumericParameter):
     _name = 'SmallestImagePixelValue'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1135,6 +1205,7 @@ class SmallestImagePixelValue(NumericParameter):
 
 class LargestImagePixelValue(NumericParameter):
     _name = 'LargestImagePixelValue'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1152,6 +1223,7 @@ class LargestImagePixelValue(NumericParameter):
 class WindowCenter(NumericParameter):
     _name = 'WindowCenter'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1167,6 +1239,7 @@ class WindowCenter(NumericParameter):
 
 class WindowWidth(NumericParameter):
     _name = 'WindowWidth'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1184,6 +1257,7 @@ class WindowWidth(NumericParameter):
 class WindowCenterWidthExplanation(CategoricalParameter):
     _name = 'WindowCenterWidthExplanation'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1196,6 +1270,7 @@ class WindowCenterWidthExplanation(CategoricalParameter):
 
 class CoilString(CategoricalParameter):
     _name = 'CoilString'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1210,6 +1285,7 @@ class CoilString(CategoricalParameter):
 class PATMode(CategoricalParameter):
     _name = 'PATMode'
 
+
     def __init__(self, value=Unspecified):
         """Constructor"""
 
@@ -1222,6 +1298,7 @@ class PATMode(CategoricalParameter):
 
 class PositivePCSDirections(CategoricalParameter):
     _name = 'PositivePCSDirections'
+
 
     def __init__(self, value=Unspecified):
         """Constructor"""
@@ -1236,6 +1313,7 @@ class PositivePCSDirections(CategoricalParameter):
 class VariableFlipAngleFlag(CategoricalParameter):
     _name = 'VariableFlipAngleFlag'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -1249,6 +1327,7 @@ class VariableFlipAngleFlag(CategoricalParameter):
 class ImageOrientationPatient(MultiValueNumericParameter):
     _name = 'ImageOrientationPatient'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
         if not isinstance(value, UnspecifiedType):
@@ -1261,11 +1340,13 @@ class ImageOrientationPatient(MultiValueNumericParameter):
                          ordered=True)
         self.decimals = 0
 
+
     def __repr__(self):
         """repr"""
 
         name = self.acronym if self.acronym else self.name
         return f'{name}{self.get_value()})'
+
 
     def get_value(self):
         """getter"""
@@ -1278,6 +1359,7 @@ class ContentDate(CategoricalParameter):
     """Parameter specific class for BodyPartExamined"""
 
     _name = 'ContentDate'
+
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -1294,6 +1376,7 @@ class ContentTime(CategoricalParameter):
 
     _name = 'ContentTime'
 
+
     def __init__(self, value=Unspecified):
         """Constructor."""
 
@@ -1308,6 +1391,7 @@ class MRImagingProtocol(BaseImagingProtocol):
     """Base class for all MR imaging protocols, including neuroimaging datasets
     """
 
+
     def __init__(self,
                  name="MRIProtocol",
                  category='MR',
@@ -1320,9 +1404,11 @@ class MRImagingProtocol(BaseImagingProtocol):
 
         self._seq = dict()
 
+
     @property
     def category(self):
         return self._category
+
 
     def add(self, seq):
         """Adds a new sequence to the current protocol"""
@@ -1337,9 +1423,11 @@ class MRImagingProtocol(BaseImagingProtocol):
 
         self._seq[seq.name] = seq
 
+
     def get_sequence_ids(self):
         """Returns the list of sequence ids in the protocol"""
         return list(self._seq.keys())
+
 
     def __bool__(self):
         """Checks if the protocol is empty"""
@@ -1349,6 +1437,7 @@ class MRImagingProtocol(BaseImagingProtocol):
         else:
             return True
 
+
     def __getitem__(self, name):
         """getter"""
 
@@ -1356,6 +1445,7 @@ class MRImagingProtocol(BaseImagingProtocol):
             return self._seq[name]
         except KeyError:
             raise KeyError(f'{name} has not been set yet')
+
 
     @staticmethod
     def _get_value_and_unit(v):
@@ -1371,6 +1461,7 @@ class MRImagingProtocol(BaseImagingProtocol):
         elif v.endswith('%'):
             value, unit = v.split('%')[0], '%'
         return value.strip(), unit
+
 
     def add_sequence_from_dict(self, seq_name, param_dict):
         """
@@ -1392,28 +1483,30 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
         self.programs = {}
         self.header_title = None
         self._parameter_map = {
-            'PhaseEncodingDirection': ['Routine', 'Phase enc. dir.'],
-            'EchoTime': ['Routine', 'TE'],
-            'RepetitionTime': ['Routine', 'TR'],
-            'FlipAngle': ['Contrast - Common', 'Flip angle'],
+            'PhaseEncodingDirection'      : ['Routine', 'Phase enc. dir.'],
+            'EchoTime'                    : ['Routine', 'TE'],
+            'RepetitionTime'              : ['Routine', 'TR'],
+            'FlipAngle'                   : ['Contrast - Common', 'Flip angle'],
             'ParallelAcquisitionTechnique': ['Resolution - iPAT', 'Accel. mode'],
-            'MultiSliceMode': ['Sequence - Part 1', 'Multi-slice mode'],
-            'PixelBandwidth': ['Sequence - Part 1', 'Bandwidth'],
-            'RecieveCoilActiveElements': ['Routine', 'Coil elements'],
-            'InversionTime': ['Contrast - Common', 'TI'],
-            'MRAcquisitionType': ['Sequence - Part 1', 'Dimension'],
-            'PercentPhaseFOV': ['Geometry - Common', 'FoV phase'],
-            'NumberOfAverages': ['Routine', 'Averages'],
-            'SliceThickness': ['Geometry - Common', 'Slice thickness'],
-        }
+            'MultiSliceMode'              : ['Sequence - Part 1', 'Multi-slice mode'],
+            'PixelBandwidth'              : ['Sequence - Part 1', 'Bandwidth'],
+            'RecieveCoilActiveElements'   : ['Routine', 'Coil elements'],
+            'InversionTime'               : ['Contrast - Common', 'TI'],
+            'MRAcquisitionType'           : ['Sequence - Part 1', 'Dimension'],
+            'PercentPhaseFOV'             : ['Geometry - Common', 'FoV phase'],
+            'NumberOfAverages'            : ['Routine', 'Averages'],
+            'SliceThickness'              : ['Geometry - Common', 'Slice thickness'],
+            }
         self.program_name = program_name
 
-        # If PED is A >> P or P >> A, R >> L or L >> R, then use this flag to convert to ROW/COL
+        # If PED is A >> P or P >> A, R >> L or L >> R, then use this flag to
+        # convert to ROW/COL
         # This is because DICOM tags are ROW/COL, but Siemens uses A >> P, R >> L
         self.convert_ped = convert_ped
         if filepath is not None:
             self.from_xml(filepath)
             self._add_sequences_from_file()
+
 
     def _add_sequences_from_file(self):
         if self.program_name is None:
@@ -1421,23 +1514,29 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             # specify the number of protocol
             # we are taking the first one, assuming it is the latest
             self.program_name = list(self.programs.keys())[0]
-            # raise ValueError('Program name not set. Use set_program_name() to set it')
+            # raise ValueError('Program name not set. Use set_program_name() to
+            # set it')
         for sequence_name in self.programs[self.program_name].keys():
             seq = ImagingSequence(name=sequence_name)
             parameters = {}
             for param_name in self._parameter_map.keys():
-                parameters[param_name] = self._get_parameter(sequence_name, param_name)
+                parameters[param_name] = self._get_parameter(sequence_name,
+                                                             param_name)
             seq.from_dict(parameters)
             self.add(seq)
+
 
     def set_program_name(self, program_name):
         self.program_name = program_name
 
+
     def add_to_map(self, parameter_name, access_keys):
         self._parameter_map[parameter_name] = access_keys
 
+
     def get_program_names(self):
         return self.programs.keys()
+
 
     def _get_parameter(self, sequence_name, parameter_name):
         def get_value(programs, program_name, sequence_name, access_keys):
@@ -1449,16 +1548,20 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                 try:
                     root_ = root_[key]
                 except KeyError as e:
-                    logger.warn(f'Parameter not found in the sequence {sequence_name}.')
+                    logger.warn(
+                        f'Parameter not found in the sequence {sequence_name}.')
                     raise e
             return root_
 
+
         if self.program_name is None:
-            raise ValueError('Program name not set. Use set_program_name() to set it')
+            raise ValueError(
+                'Program name not set. Use set_program_name() to set it')
 
         try:
             access_keys = self._parameter_map[parameter_name]
-            value = get_value(self.programs, self.program_name, sequence_name, access_keys)
+            value = get_value(self.programs, self.program_name, sequence_name,
+                              access_keys)
         except KeyError:
             logger.warn(f'Parameter not found : {parameter_name}')
             return Unspecified
@@ -1471,6 +1574,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                 return 'ROW'
         else:
             return value
+
 
     def from_xml(self, filepath=None):
         """
@@ -1509,7 +1613,8 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                         sequence_name = convert2ascii(protocol.get('name'))
                         self.programs[program_name][sequence_name] = dict(protocol.attrib)
             elif child.tag == 'PrintProtocol':
-                # The protocol is organized into cards. Each card contains a set of parameters
+                # The protocol is organized into cards. Each card contains a set
+                # of parameters
                 protocol = child.Protocol
                 for step in protocol.getchildren():
                     if step.tag == 'SubStep':
@@ -1523,7 +1628,8 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                                 for parameter in card.getchildren():
                                     label = parameter.Label.text.strip()
                                     # TODO: Also add unit to the reference protocol
-                                    value, unit = self._get_value_and_unit(parameter.ValueAndUnit.text.strip())
+                                    value, unit = self._get_value_and_unit(
+                                        parameter.ValueAndUnit.text.strip())
                                     card_name = card.get('name')
                                     if card_name not in self.programs[program_name][sequence_name]:
                                         self.programs[program_name][sequence_name][card_name] = {}
@@ -1536,6 +1642,7 @@ class ImagingSequence(BaseSequence, ABC):
     Although we would use it mostly for MR imaging sequences to start with
     it should be able to store any sequence captured by DICOM: CT, XRAY etc
     """
+
 
     def __init__(self,
                  name='MRI',
@@ -1557,6 +1664,7 @@ class ImagingSequence(BaseSequence, ABC):
             self.parse(dicom)
             self._parse_private(dicom)
             self.set_session_info(dicom)
+
 
     def set_session_info(self, dicom):
         """
@@ -1584,6 +1692,7 @@ class ImagingSequence(BaseSequence, ABC):
             datetime_obj = datetime.strptime(date, '%Y%m%d')
             self.timestamp = datetime_obj.strftime('%m_%d_%Y')
 
+
     def _init_param_classes(self):
         """
         Initializes the parameter classes for the sequence.
@@ -1596,6 +1705,7 @@ class ImagingSequence(BaseSequence, ABC):
                 logger.error(f'Could not import {param_cls_name}')
                 raise ImportError(f'Could not import {param_cls_name}')
             self.params_classes.append(cls_object)
+
 
     def parse(self, dicom, params=None):
         """Parses the parameter values from a given DICOM object or file."""
@@ -1624,6 +1734,7 @@ class ImagingSequence(BaseSequence, ABC):
                     self[pname] = param_class(value)
                 except TypeError or ValueError:
                     self[pname] = param_class(Invalid)
+
 
     def _parse_private(self, dicom):
         """vendor specific private headers"""
@@ -1672,6 +1783,7 @@ class ImagingSequence(BaseSequence, ABC):
                     self[pname] = param_cls(value)
                 except TypeError or ValueError:
                     self[pname] = param_cls(Invalid)
+
 
     def set_echo_times(self, echo_times, echo_number=None):
         """Sets the echo times for a multi-echo sequence."""

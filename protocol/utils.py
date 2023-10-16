@@ -10,8 +10,8 @@ from typing import Optional
 import pydicom
 from protocol import config
 from protocol import logger
-from protocol.config import BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS, \
-    Unspecified
+from protocol.config import (BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
+                             Unspecified)
 
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore')
@@ -77,7 +77,7 @@ def safe_get(dictionary: dict, keys: str, default=None):
         lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
         keys.split('.'),
         dictionary
-    )
+        )
 
 
 def parse_csa_params(dicom: pydicom.FileDataset,
@@ -137,11 +137,11 @@ def parse_csa_params(dicom: pydicom.FileDataset,
     if phase_value:
         phpl = phase_value[0]
 
-    values = {'MultiSliceMode': slice_mode,
+    values = {'MultiSliceMode'              : slice_mode,
               'ParallelAcquisitionTechnique': ipat,
-              'ShimSetting': shim_setting,
-              'ShimMode': shim,
-              'PhasePolarity': phpl}
+              'ShimSetting'                 : shim_setting,
+              'ShimMode'                    : shim,
+              'PhasePolarity'               : phpl}
 
     return csa_header, values
 
@@ -186,7 +186,8 @@ def get_csa_props(parameter, corpus):
         print(f"#WARNING: {parameter} in CSA too short: '{corpus[index:]}'")
         return -1
 
-    # 1st value -  parameter name, 2nd value - equals sign, 3rd value - parameter value
+    # 1st value -  parameter name, 2nd value - equals sign, 3rd value - parameter
+    # value
     param_val = corpus[index:]
     code_parts = re.split('[\t\n]', param_val)
     if len(code_parts) >= 3:
@@ -238,9 +239,9 @@ def header_exists(dicom: pydicom.FileDataset) -> bool:
         return True
     except Exception as e:
         logger.warn(f'Expects dicom files from Siemens to be able to'
-                      f' read the private header. For other vendors,'
-                      f'private header is skipped. '
-                      f'{e} in {dicom.filename}')
+                    f' read the private header. For other vendors,'
+                    f'private header is skipped. '
+                    f'{e} in {dicom.filename}')
         # "Use --skip_private_header to create report".format(e))
         # raise e
         return False
@@ -301,7 +302,7 @@ def import_string(dotted_path):
         raise ImportError(
             'Module "%s" does not define a "%s" attribute/class'
             % (module_path, class_name)
-        ) from err
+            ) from err
 
 
 def convert2ascii(value, allow_unicode=False):
@@ -320,6 +321,7 @@ def convert2ascii(value, allow_unicode=False):
             'NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value)
     return re.sub(r'[-\s]+', '-', value).strip('-_')
+
 
 def get_sequence_name(dicom: pydicom.FileDataset) -> str:
     """
@@ -351,6 +353,7 @@ def get_sequence_name(dicom: pydicom.FileDataset) -> str:
 
     return convert2ascii(value)
 
+
 def boolify(s):
     if s == 'True':
         return True
@@ -360,6 +363,8 @@ def boolify(s):
 
 
 def auto_convert(s):
+    """convert pydicom values to python data types for ease of use"""
+
     for fn in (boolify, int, float):
         try:
             return fn(s)

@@ -63,7 +63,6 @@ class BaseParameter(ABC):
         Acronym of the parameter. For example, 'TR' for RepetitionTime.
     """
 
-
     def __init__(self,
                  name='parameter',
                  value=Unspecified,
@@ -94,11 +93,9 @@ class BaseParameter(ABC):
 
         self.decimals = 2  # numerical tolerance in decimal places
 
-
     def get_value(self):
         """Getter for the value of the parameter."""
         return self._value
-
 
     def compliant(self, other, **kwargs):
         """
@@ -119,14 +116,19 @@ class BaseParameter(ABC):
         #  and other is not, return False.
         if isinstance(self._value, UnspecifiedType) or isinstance(other._value,
                                                                   UnspecifiedType):
-            logger.warning(f'one of the values being compared is UnspecifiedType'
-                           f'in {self.name}')
+            logger.debug(f'one of the values being compared is UnspecifiedType'
+                         f'in {self.name}')
             return True
         # elif isinstance(other.value, UnspecifiedType):
         #     return False
         else:
-            return self._check_compliance(other, **kwargs)
-
+            # type() returns the immediate class of the object. Of course,
+            # both are BaseParameter, but we need to check if they are the same
+            # subclass of BaseParameter
+            if type(other) == type(self):
+                return self._check_compliance(other, **kwargs)
+            else:
+                raise TypeError(f'Cannot compare {type(self)} with {type(other)}')
 
     @abstractmethod
     def _check_compliance(self, other, **kwargs):
@@ -134,13 +136,11 @@ class BaseParameter(ABC):
             either in equality or within acceptable range, for that data type.
         """
 
-
     @abstractmethod
     def _compare_value(self, other, **kwargs):
         """
         Method to compare the values of two parameters
         """
-
 
     @abstractmethod
     def _compare_units(self, other):
@@ -148,23 +148,19 @@ class BaseParameter(ABC):
         Method to compare the units of two parameters
         """
 
-
     def __eq__(self, other):
         """equality is defined as compliance here"""
 
         return self.compliant(other)
 
-
     def __hash__(self):
         return hash(self.__repr__())
-
 
     def __repr__(self):
         """repr"""
 
         name = self.acronym if self.acronym else self.name
         return f'{name}({self._value})'
-
 
     def __str__(self):
         return self.__repr__()
@@ -210,7 +206,6 @@ class MultiValueNumericParameter(BaseParameter):
         ImageOrientation, ShimSetting etc. have an order, they cannot be sorted.
         Therefore ordered=True.
     """
-
 
     def __init__(self,
                  name,
@@ -258,7 +253,6 @@ class MultiValueNumericParameter(BaseParameter):
         # overriding default from parent class
         self.decimals = 3
 
-
     def get_value(self):
         """
         Getter for the value of the parameter. If the parameter has only one value,
@@ -271,7 +265,6 @@ class MultiValueNumericParameter(BaseParameter):
         else:
             return self._value
 
-
     def _check_compliance(self, other, rtol=0, decimals=None):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
@@ -280,7 +273,6 @@ class MultiValueNumericParameter(BaseParameter):
             decimals = self.decimals
         return self._compare_value(other, rtol=rtol, decimals=decimals) and \
             self._compare_units(other)
-
 
     def _compare_value(self, other, rtol=0, decimals=None):
         """Method to compare the values of two parameters"""
@@ -299,7 +291,6 @@ class MultiValueNumericParameter(BaseParameter):
             if not np.isclose(v, o, rtol=rtol):
                 return False
         return True
-
 
     def _compare_units(self, other):
         # TODO: implement unit conversion
@@ -340,7 +331,6 @@ class NumericParameter(BaseParameter):
         Acronym of the parameter. For example, 'TR' for RepetitionTime.
     """
 
-
     def __init__(self,
                  name,
                  value,
@@ -376,7 +366,6 @@ class NumericParameter(BaseParameter):
         # overriding default from parent class
         self.decimals = 3
 
-
     def _check_compliance(self, other, rtol=0, decimals=None):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
@@ -385,7 +374,6 @@ class NumericParameter(BaseParameter):
             decimals = self.decimals
         return self._compare_value(other, rtol=rtol, decimals=decimals) and \
             self._compare_units(other)
-
 
     def _compare_value(self, other, rtol=0, decimals=None):
         if decimals is None:
@@ -402,7 +390,6 @@ class NumericParameter(BaseParameter):
             return True
         else:
             return False
-
 
     def _compare_units(self, other):
         # TODO: implement unit conversion
@@ -446,7 +433,6 @@ class MultiValueCategoricalParameter(BaseParameter):
     allowed_values : tuple
         Valid values for the parameter.
     """
-
 
     def __init__(self,
                  name,
@@ -495,7 +481,6 @@ class MultiValueCategoricalParameter(BaseParameter):
                 raise ValueError(f'Invalid value for {self.name}. '
                                  f'Must be one of {self.allowed_values}')
 
-
     def _check_compliance(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
@@ -503,11 +488,9 @@ class MultiValueCategoricalParameter(BaseParameter):
         # TODO we need to be able to convert units before comparison
         return self._compare_value(other) and self._compare_units(other)
 
-
     def _compare_units(self, other):
         # TODO: implement unit conversion
         return self.units == other.units
-
 
     def _compare_value(self, other):
         if isinstance(other._value, self.dtype):
@@ -547,7 +530,6 @@ class CategoricalParameter(BaseParameter):
     allowed_values : tuple
         Valid values for the parameter.
     """
-
 
     def __init__(self,
                  name,
@@ -593,18 +575,15 @@ class CategoricalParameter(BaseParameter):
                 raise ValueError(f'Invalid value for {self.name}. '
                                  f'Must be one of {self.allowed_values}')
 
-
     def _check_compliance(self, other):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
         return self._compare_value(other) and self._compare_units(other)
 
-
     def _compare_units(self, other):
         # TODO: implement unit conversion
         return self.units == other.units
-
 
     def _compare_value(self, other):
         if isinstance(other, type(self)):
@@ -656,7 +635,6 @@ class BaseSequence(MutableMapping):
         print(param.get_value())
     """
 
-
     def __init__(self,
                  name: str = 'Sequence',
                  params: dict = None,
@@ -684,11 +662,9 @@ class BaseSequence(MutableMapping):
         # parameters and their values can be modified
         self._mutable = True
 
-
     def get_session_info(self):
         """method to get metadata to the sequence"""
         return self.subject_id, self.session_id, self.run_id
-
 
     def add(self, param_list: Union[BaseParameter, Iterable[BaseParameter]]):
         """method to add new parameters; overwrite previous values if exists."""
@@ -705,7 +681,6 @@ class BaseSequence(MutableMapping):
             self.__dict__[param.name] = param
             self.params.add(param.name)
 
-
     def __setitem__(self,
                     key: str,
                     value: BaseParameter):
@@ -720,10 +695,8 @@ class BaseSequence(MutableMapping):
         self.__dict__[key] = value
         self.params.add(key)
 
-
     def get(self, name, not_found_value=None):
         return self.__getitem__(name=name, not_found_value=not_found_value)
-
 
     def __getitem__(self, name,
                     not_found_value=None):
@@ -736,7 +709,6 @@ class BaseSequence(MutableMapping):
                 return not_found_value
             else:
                 raise KeyError(f'{name} has not been set yet')
-
 
     def compliant(self, other, rtol=0, decimals=None, include_params=None):
         """
@@ -770,9 +742,9 @@ class BaseSequence(MutableMapping):
             # Don't raise error, just warn. It might be the case that
             # the two sequences are different. For example, if compliance
             # is checked only for a subset of parameters.
-            logger.info('different sets of parameters - '
-                        'below params exist in one but not the other :\n\t{}'
-                        ''.format(diff))
+            logger.debug('different sets of parameters - '
+                         'below params exist in one but not the other :\n\t{}'
+                         ''.format(diff))
             # return False, diff  # TODO varying dtype: list of names!
 
         non_compliant_params = list()
@@ -805,26 +777,21 @@ class BaseSequence(MutableMapping):
 
         return bool_flag, non_compliant_params  # list of BaseParameter classes
 
-
     def __eq__(self, other):
         """equivalence operator"""
 
         bool_flag, _ = self.compliant(other)
         return bool_flag
 
-
     def __delitem__(self, key):
         del self.__dict__[key]
         self.params.remove(key)
 
-
     def __iter__(self):
         return iter(self.params)
 
-
     def __len__(self):
         return len(self.params)
-
 
     def __str__(self):
         """human readable representation"""
@@ -836,7 +803,6 @@ class BaseSequence(MutableMapping):
             plist.append(f'{name}={param._value}')
 
         return '{}({})'.format(self.name, ','.join(plist))
-
 
     def __repr__(self):
         return self.__str__()
@@ -853,7 +819,6 @@ class BaseProtocol(ABC):
     name : str
         Name of the protocol.
     """
-
 
     def __init__(self,
                  name="Protocol"):
@@ -873,7 +838,6 @@ class BaseImagingProtocol(BaseProtocol):
         Category of the protocol. For example, 'MR' for MRI, 'CT' for CT, etc.
         It should be one of the supported imaging modalities.
     """
-
 
     def __init__(self,
                  name='ImagingProtocol',

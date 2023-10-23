@@ -1,4 +1,3 @@
-
 The protocol library provides a simple API for creating sequences and acquisition protocols. You can check if
 acquisition parameters for two imaging sequences are same. Sequences can also be checked for
 compliance against a reference protocol (XML) generated from Siemens scanners.

@@ -66,12 +66,12 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/protocol.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ protocol
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
+
+gh-pages: ## copy to gh-pages folder
+	cp -r docs/_build/html/* ../protocol-gh-pages/
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .

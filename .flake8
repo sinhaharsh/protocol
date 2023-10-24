@@ -1,0 +1,17 @@
+[flake8]
+# If you feel that flake8 is not reading these settings, update the
+# flake8 section in setup.cfg
+basepython = python
+deps = flake8
+commands = flake8 mrQA
+exclude =
+    docs,
+    */_version.py,
+    */tests/*.py,
+filename = *.py
+max-line-length = 100
+max-complexity = 12
+accept-encodings = utf-8
+inline-quotes = single
+multiline-quotes = double
+docstring-quotes = double

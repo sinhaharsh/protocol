@@ -125,7 +125,7 @@ class BaseParameter(ABC):
             # type() returns the immediate class of the object. Of course,
             # both are BaseParameter, but we need to check if they are the same
             # subclass of BaseParameter
-            if type(other) == type(self):
+            if type(other) is type(self):
                 return self._check_compliance(other, **kwargs)
             else:
                 raise TypeError(f'Cannot compare {type(self)} with {type(other)}')

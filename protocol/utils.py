@@ -364,15 +364,14 @@ def boolify(s):
 
 def auto_convert(s):
     """convert pydicom values to python data types for ease of use"""
-
     for fn in (boolify, int, float):
         try:
             return fn(s)
-        except ValueError:
+        except (ValueError, TypeError):
             continue
     if isinstance(s, str):
         return s.strip()
-    return s
+    return str(s)
 
 
 def read_json(filepath: Path):

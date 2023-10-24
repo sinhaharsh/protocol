@@ -100,23 +100,22 @@ Invalid = InvalidType()
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation
 SESSION_INFO_DICOM_TAGS = {
-    "series_instance_uid": (0x20, 0x0e),
-    "sequence"           : (0x18, 0x20),
-    "variant"            : (0x18, 0x21),
-    "patient_name"       : (0x10, 0x10),
-    "patient_id"         : (0x10, 0x20),
-    "study_id"           : (0x08, 0x1030),
-    "series_description" : (0x08, 0x103E),
-    "series_number"      : (0x20, 0x11),
-    "protocol_name"      : (0x18, 0x1030),
-    "sequence_name"      : (0x18, 0x24),
-    "image_type"         : (0x08, 0x08),
-    "echo_number"        : (0x18, 0x86),
-    "te"                 : (0x18, 0x81),
-    "patient_sex"        : (0x10, 0x40),
-    "patient_age"        : (0x10, 0x1010),
     "ContentDate"        : (0x08, 0x0023),
     "ContentTime"        : (0x08, 0x0033),
+    "SeriesInstanceUID"  : (0x20, 0x0e),
+    "PatientName"        : (0x10, 0x10),
+    "PatientID"          : (0x10, 0x20),
+    "StudyID"            : (0x08, 0x1030),
+    "SeriesDescription"  : (0x08, 0x103E),
+    "SeriesNumber"       : (0x20, 0x11),
+    "ProtocolName"       : (0x18, 0x1030),
+    "SequenceName"       : (0x18, 0x24),
+    "PatientSex"         : (0x10, 0x40),
+    "PatientAge"         : (0x10, 0x1010),
+    "PatientWeight"      : (0x10, 0x1030),
+    "PatientSize"        : (0x10, 0x1020),
+    "OperatorsName"       : (0x08, 0x1070),
+    "InstitutionName"    : (0x08, 0x1040),
     }
 
 BASE_IMAGING_PARAMS_DICOM_TAGS = {
@@ -280,16 +279,15 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'PositivePCSDirections'         : 'PPCSD',
     }
 
-ACRONYMS_SESSION_INFO = {
-    "SeriesInstanceUID": "SIUID",
-    "PatientName"      : "PN",
-    "PatientID"        : "PID",
-    "StudyID"          : "SID",
-    "SeriesDescription": "SD",
-    "SeriesNumber"     : "SN",
-    "ProtocolName"     : "PN",
-    "SequenceName"     : "SQNM",
-
+ACRONYMS_DEMOGRAPHICS = {
+    "PatientName"      : "PANM",
+    "PatientSex"       : "PASX",
+    "PatientAge"       : "PAAG",
+    "PatientWeight"    : "PAWT",
+    "PatientSize"      : "PASI",
+    "OperatorsName"     : "OPNM",
+    "InstitutionName"  : "INNM",
+    "SeriesNumber"    : "SSNM",
     }
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())

@@ -14,6 +14,7 @@ from protocol.base import (BaseImagingProtocol, BaseParameter, BaseSequence,
 from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
+                             ACRONYMS_DEMOGRAPHICS as ACRONYMS_DEMO,
                              Invalid, Unspecified, UnspecifiedType,
                              ProtocolType)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
@@ -1652,13 +1653,15 @@ class ImagingSequence(BaseSequence, ABC):
                  dicom=None,
                  imaging_params=None,
                  required_params=None,
+                 store_demographics=True,
                  path=None, ):
         """constructor"""
 
         self.multi_echo = False
         self.params_classes = []
         self.parameters = set(ACRONYMS_IMG.keys())
-
+        self.store_demographics = store_demographics
+        self.demographics = set(ACRONYMS_DEMO.keys())
         super().__init__(name=name, path=path)
 
         if self.parameters:
@@ -1667,6 +1670,7 @@ class ImagingSequence(BaseSequence, ABC):
             self.parse(dicom)
             self._parse_private(dicom)
             self.set_session_info(dicom)
+            self.collect_demographics(dicom)
 
 
     def set_session_info(self, dicom):
@@ -1693,8 +1697,13 @@ class ImagingSequence(BaseSequence, ABC):
         #   reconcile differences and use it in timestamp
         if not isinstance(date, UnspecifiedType):
             datetime_obj = datetime.strptime(date, '%Y%m%d')
-            self.timestamp = datetime_obj.strftime('%m_%d_%Y')
+            self.timestamp = datetime_obj
 
+    def collect_demographics(self, dicom):
+        if self.store_demographics:
+            for key in self.demographics:
+                value = dicom.get(key, Unspecified)
+                self.__dict__[key] = auto_convert(value)
 
     def _init_param_classes(self):
         """

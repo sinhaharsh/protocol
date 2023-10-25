@@ -115,7 +115,7 @@ SESSION_INFO_DICOM_TAGS = {
     "PatientWeight"      : (0x10, 0x1030),
     "PatientSize"        : (0x10, 0x1020),
     "OperatorsName"       : (0x08, 0x1070),
-    "InstitutionName"    : (0x08, 0x1040),
+    "InstitutionName"    : (0x08, 0x0080),
     }
 
 BASE_IMAGING_PARAMS_DICOM_TAGS = {
@@ -202,6 +202,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     "CoilString"                    : (0x51, 0x100f),
     "PATMode"                       : (0x51, 0x1011),
     "PositivePCSDirections"         : (0x51, 0x1013),
+    "FieldOfView"              : (0x51, 0x100c),
     }
 
 ACRONYMS_IMAGING_PARAMETERS = {
@@ -277,10 +278,10 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'CoilString'                    : 'CS',
     'PATMode'                       : 'PATM',
     'PositivePCSDirections'         : 'PPCSD',
+    'FieldOfView'                   : 'FOV',
     }
 
 ACRONYMS_DEMOGRAPHICS = {
-    "PatientName"      : "PANM",
     "PatientSex"       : "PASX",
     "PatientAge"       : "PAAG",
     "PatientWeight"    : "PAWT",
@@ -288,6 +289,7 @@ ACRONYMS_DEMOGRAPHICS = {
     "OperatorsName"     : "OPNM",
     "InstitutionName"  : "INNM",
     "SeriesNumber"    : "SSNM",
+    "ContentDate"       : "CD"
     }
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())

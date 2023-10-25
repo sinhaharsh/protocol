@@ -20,7 +20,8 @@ with warnings.catch_warnings():
 
 def get_dicom_param_value(dicom: pydicom.FileDataset,
                           name: str,
-                          not_found_value=None):
+                          not_found_value=None,
+                          tag_dict=DICOM_TAGS):
     """
     Extracts value from dicom metadata looking up the corresponding HEX tag
     in DICOM_TAGS
@@ -43,12 +44,12 @@ def get_dicom_param_value(dicom: pydicom.FileDataset,
     """
     # TODO: consider name.lower()
     try:
-        data = dicom.get(DICOM_TAGS[name], not_found_value)
+        data = dicom.get(tag_dict[name], not_found_value)
     except KeyError:
         return not_found_value
 
     if data:
-        return data.value
+        return auto_convert(data.value)
     else:
         return not_found_value
 

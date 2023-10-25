@@ -1355,6 +1355,17 @@ class ImageOrientationPatient(MultiValueNumericParameter):
             return [np.round(v, self.decimals) for v in self._value]
         return self._value
 
+class FieldOfView(CategoricalParameter):
+    _name = 'FieldOfView'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
 
 class ContentDate(CategoricalParameter):
     """Parameter specific class for BodyPartExamined"""
@@ -1364,12 +1375,124 @@ class ContentDate(CategoricalParameter):
 
     def __init__(self, value=Unspecified):
         """Constructor."""
+        if not isinstance(value, UnspecifiedType):
+            value = datetime.strptime(str(int(value)), '%Y%m%d')
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=datetime,
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
 
+class PatientSex(CategoricalParameter):
+    """Parameter specific class for BodyPartExamined"""
+
+    _name = 'PatientSex'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
         super().__init__(name=self._name,
                          value=value,
                          dtype=str,
                          dicom_tag=SESSION_TAGS[self._name],
-                         acronym=ACRONYMS_IMG[self._name])
+                         acronym=ACRONYMS_DEMO[self._name],
+                         allowed_values=('M', 'F', 'O'))
+
+class PatientWeight(NumericParameter):
+    _name = 'PatientWeight'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         units='kg',
+                         range=(0, 1e7),
+                         required=False,
+                         severity='critical',
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
+
+
+class PatientSize(NumericParameter):
+    _name = 'PatientSize'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         units='m',
+                         range=(0, 1e7),
+                         required=False,
+                         severity='critical',
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
+
+class OperatorsName(CategoricalParameter):
+    _name = 'OperatorsName'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
+
+class InstitutionName(CategoricalParameter):
+    _name = 'InstitutionName'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
+
+class SeriesNumber(NumericParameter):
+    _name = 'SeriesNumber'
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         units='NA',
+                         range=(0, 1e7),
+                         required=False,
+                         severity='critical',
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
+
+
+class PatientAge(NumericParameter):
+    _name = 'PatientAge'
+    # Prefer birthdate for age calculation
+    # https://groups.google.com/g/comp.protocols.dicom/c/GvClri1CcWk # noqa
+
+    def __init__(self, value=Unspecified):
+        """Constructor"""
+        value_years = Unspecified
+        if not isinstance(value, UnspecifiedType):
+            value_years = self.convert(value)
+
+        super().__init__(name=self._name,
+                         value=value_years,
+                         units='Y',
+                         range=(0, 999),
+                         required=False,
+                         severity='critical',
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
+
+    def convert(self, value):
+        unit = value[-1]
+        if unit == 'Y':
+            age = int(value[:-1])
+        elif unit == 'M':
+            age = int(value[:-1]) / 12
+        elif unit == 'D':
+            age = int(value[:-1]) / 365
+        else:
+            raise ValueError(f'Invalid unit {unit} in PatientAge')
+        return age
 
 
 class ContentTime(CategoricalParameter):
@@ -1701,9 +1824,15 @@ class ImagingSequence(BaseSequence, ABC):
 
     def collect_demographics(self, dicom):
         if self.store_demographics:
-            for key in self.demographics:
-                value = dicom.get(key, Unspecified)
-                self.__dict__[key] = auto_convert(value)
+            for pname in self.demographics:
+                value = get_dicom_param_value(dicom, pname,
+                                              tag_dict=SESSION_TAGS)
+                param_cls_name = f'protocol.imaging.{pname}'
+                param_cls = import_string(param_cls_name)
+                try:
+                    self[pname] = param_cls(value)
+                except (TypeError, ValueError):
+                    self[pname] = param_cls(Invalid)
 
     def _init_param_classes(self):
         """

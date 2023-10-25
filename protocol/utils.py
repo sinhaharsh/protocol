@@ -365,14 +365,18 @@ def boolify(s):
 
 def auto_convert(s):
     """convert pydicom values to python data types for ease of use"""
-    for fn in (boolify, int, float):
+
+    # keep float first, otherwise it will convert floats to integers
+    for fn in (boolify, float, int):
         try:
             return fn(s)
         except (ValueError, TypeError):
             continue
     if isinstance(s, str):
         return s.strip()
-    return str(s)
+    if isinstance(s, pydicom.valuerep.PersonName):
+        return str(s)
+    return s
 
 
 def read_json(filepath: Path):

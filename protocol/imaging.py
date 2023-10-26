@@ -1795,6 +1795,32 @@ class ImagingSequence(BaseSequence, ABC):
             self.set_session_info(dicom)
             self.collect_demographics(dicom)
 
+    def compare_subset_params(self, other):
+        """
+        Compares the parameters of the current sequence with another sequence. The
+        function compares a subset of parameters that are subject to variation e.g. EchoTime
+        Comparing all parameters is slow and might not be required.
+
+        For ex. while comparing slice, we just need to compare parameters that are known
+        to be variable e.g. EchoTime, EchoNumber etc. We don't need to compare all parameters
+        like SliceLocation, SliceThickness.
+
+        Parameters
+        ----------
+        other : BaseSequence
+            The other sequence to compare with
+
+        Returns
+        -------
+        bool
+            True if the parameters match, False otherwise
+        """
+        if not isinstance(other, BaseSequence):
+            raise TypeError('Input must be a valid BaseSequence object')
+        for parameter in ['EchoTime', 'EchoNumber']:
+            if not self[parameter].compliant(other[parameter]):
+                return False
+        return True
 
     def set_session_info(self, dicom):
         """

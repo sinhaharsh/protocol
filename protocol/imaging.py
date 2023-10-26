@@ -1483,7 +1483,11 @@ class PatientAge(NumericParameter):
                          acronym=ACRONYMS_DEMO[self._name])
 
     def convert(self, value):
-        unit = value[-1]
+        if len(value) > 1:
+            unit = value[-1]
+        else:
+            raise ValueError("Invalid value in PatientAge")
+
         if unit == 'Y':
             age = int(value[:-1])
         elif unit == 'M':

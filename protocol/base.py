@@ -106,7 +106,7 @@ class BaseParameter(ABC):
         ----------
         other : BaseParameter
             The other parameter to compare with.
-        kwargs : dict
+        kwargs : Any
             Additional keyword arguments to be passed.
 
         """
@@ -177,8 +177,6 @@ class MultiValueNumericParameter(BaseParameter):
         Name of the parameter.
     value : object
         Value of the parameter.
-    dtype : type
-        Data type of the parameter.
     units : str
         Units of the parameter. For example, 'ms' for milliseconds, 's' for
         seconds, etc.
@@ -201,10 +199,10 @@ class MultiValueNumericParameter(BaseParameter):
         Acronym of the parameter. For example, 'TR' for RepetitionTime.
     ordered : bool
         Whether the parameter values are ordered or not. Some array types don't
-        have any order like SequenceName, and SequenceVariant. Therefore
+        have any order like SequenceName, and SequenceVariant. Therefore,
         ordered=False. as the values can be sorted. But others like
         ImageOrientation, ShimSetting etc. have an order, they cannot be sorted.
-        Therefore ordered=True.
+        Therefore, ordered=True.
     """
 
     def __init__(self,
@@ -306,8 +304,6 @@ class NumericParameter(BaseParameter):
         Name of the parameter.
     value : object
         Value of the parameter.
-    dtype : type
-        Data type of the parameter.
     units : str
         Units of the parameter. For example, 'ms' for milliseconds, 's' for
         seconds, etc.
@@ -413,9 +409,6 @@ class MultiValueCategoricalParameter(BaseParameter):
     units : str
         Units of the parameter. For example, 'ms' for milliseconds, 's' for
         seconds, etc.
-    steps : int
-    Incremental steps of the parameter. For example, 10 for a parameter that can take
-        values such as 10, 20, 30, 40, etc.
     range : tuple
         Range of the parameter. For example, (0, 100) for a parameter that can
         take values
@@ -481,7 +474,7 @@ class MultiValueCategoricalParameter(BaseParameter):
                 raise ValueError(f'Invalid value for {self.name}. '
                                  f'Must be one of {self.allowed_values}')
 
-    def _check_compliance(self, other):
+    def _check_compliance(self, other, **kwargs):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
@@ -492,13 +485,13 @@ class MultiValueCategoricalParameter(BaseParameter):
         # TODO: implement unit conversion
         return self.units == other.units
 
-    def _compare_value(self, other):
+    def _compare_value(self, other, **kwargs):
         if isinstance(other._value, self.dtype):
             value_to_compare = other._value
         else:
             raise TypeError(f'Invalid type. Must be an instance of '
                             f'{self.dtype} or {self}')
-        return set(self._value) == set(other._value)
+        return set(self._value) == set(value_to_compare)
 
 
 class CategoricalParameter(BaseParameter):
@@ -575,7 +568,7 @@ class CategoricalParameter(BaseParameter):
                 raise ValueError(f'Invalid value for {self.name}. '
                                  f'Must be one of {self.allowed_values}')
 
-    def _check_compliance(self, other):
+    def _check_compliance(self, other, **kwargs):
         """Method to check if one parameter value is compatible w.r.t another,
             either in equality or within acceptable range, for that data type.
         """
@@ -585,7 +578,7 @@ class CategoricalParameter(BaseParameter):
         # TODO: implement unit conversion
         return self.units == other.units
 
-    def _compare_value(self, other):
+    def _compare_value(self, other, **kwargs):
         if isinstance(other, type(self)):
             value_to_compare = other._value
         elif isinstance(other, self.dtype):
@@ -607,8 +600,8 @@ class BaseSequence(MutableMapping):
     ----------
     name : str
         Name of the sequence.
-    params : dict
-        Dictionary of parameters and their values.
+    params : set
+        A set of parameters in the sequence.
     path : str
         Path to the sequence on disk.
 
@@ -637,7 +630,7 @@ class BaseSequence(MutableMapping):
 
     def __init__(self,
                  name: str = 'Sequence',
-                 params: dict = None,
+                 params: set = None,
                  path: str = None, ):
         """constructor"""
 
@@ -696,6 +689,7 @@ class BaseSequence(MutableMapping):
         self.params.add(key)
 
     def get(self, name, not_found_value=None):
+        """getter"""
         return self.__getitem__(name=name, not_found_value=not_found_value)
 
     def __getitem__(self, name,
@@ -725,7 +719,7 @@ class BaseSequence(MutableMapping):
         decimals : int
             Number of decimal places to consider for comparison. Default is 3.
         include_params : list
-            List of parameters to include while comparing two sequences. Default
+            The list of parameters to include while comparing two sequences. Default
             is all parameters.
         """
 
@@ -764,8 +758,8 @@ class BaseSequence(MutableMapping):
                 continue
 
             if isinstance(this_param, NumericParameter) or \
-                isinstance(this_param, MultiValueNumericParameter):
-                compliant = that_param.compliant(this_param, rtol=rtol,
+                    isinstance(this_param, MultiValueNumericParameter):
+                compliant = this_param.compliant(that_param, rtol=rtol,
                                                  decimals=decimals)
             else:
                 compliant = this_param.compliant(that_param)

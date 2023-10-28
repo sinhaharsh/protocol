@@ -1355,6 +1355,23 @@ class ImageOrientationPatient(MultiValueNumericParameter):
             return [np.round(v, self.decimals) for v in self._value]
         return self._value
 
+
+    def _compare_value(self, other, rtol=0, decimals=None):
+        # Fix ImageOrientationPatient comparison to 0 decimals
+        decimals = self.decimals
+
+        for v, o in zip(self._value, other._value):
+            # Numpy adds a warning : The default atol is not appropriate for
+            # comparing numbers that
+            # are much smaller than one (see Notes). Keeping relative tolerance
+            # for now.
+            # if not np.isclose(v, o, atol=1 ** -self.decimals):
+            v = np.round(v, decimals=decimals)
+            o = np.round(o, decimals=decimals)
+            if not np.isclose(v, o, rtol=rtol):
+                return False
+        return True
+
 class FieldOfView(CategoricalParameter):
     _name = 'FieldOfView'
 

@@ -1500,19 +1500,23 @@ class PatientAge(NumericParameter):
                          acronym=ACRONYMS_DEMO[self._name])
 
     def convert(self, value):
-        if len(value) > 1:
-            unit = value[-1]
+        if isinstance(value, str):
+            if len(value) > 1:
+                unit = value[-1]
+            else:
+                raise ValueError("Invalid value in PatientAge")
+            if unit == 'Y':
+                age = int(value[:-1])
+            elif unit == 'M':
+                age = int(value[:-1]) / 12
+            elif unit == 'D':
+                age = int(value[:-1]) / 365
+            else:
+                raise ValueError("Invalid value in PatientAge")
+        elif isinstance(value, int) or isinstance(value, float):
+            age = value
         else:
-            raise ValueError("Invalid value in PatientAge")
-
-        if unit == 'Y':
-            age = int(value[:-1])
-        elif unit == 'M':
-            age = int(value[:-1]) / 12
-        elif unit == 'D':
-            age = int(value[:-1]) / 365
-        else:
-            raise ValueError(f'Invalid unit {unit} in PatientAge')
+            logger.error(f"Found age as {value}, which is not a valid type. Skipping.")
         return age
 
 

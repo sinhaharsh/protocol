@@ -203,6 +203,12 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     "PATMode"                       : (0x51, 0x1011),
     "PositivePCSDirections"         : (0x51, 0x1013),
     "FieldOfView"              : (0x51, 0x100c),
+    # GE specific
+    "CoilName"                      : (0x43, 0x1081),
+    "EffectiveEchoSpacing"          : (0x43, 0x102c),
+    "GradientOffsetX"            : (0x43, 0x1002),
+    "GradientOffsetY": (0x43, 0x1003),
+    "GradientOffsetZ": (0x43, 0x1004),
     }
 
 ACRONYMS_IMAGING_PARAMETERS = {

@@ -1924,7 +1924,7 @@ class ImagingSequence(BaseSequence, ABC):
             else:
                 try:
                     self[pname] = param_class(value)
-                except TypeError or ValueError:
+                except (TypeError, ValueError):
                     self[pname] = param_class(Invalid)
 
 
@@ -1942,7 +1942,7 @@ class ImagingSequence(BaseSequence, ABC):
                         self[name] = param_cls(val)
                 except ImportError:
                     logger.error(f'Could not import {param_cls_name}')
-                except TypeError or ValueError:
+                except (TypeError, ValueError):
                     self[name] = param_cls(Invalid)
         else:
             logger.warn('No private header found in DICOM file')
@@ -1972,7 +1972,7 @@ class ImagingSequence(BaseSequence, ABC):
                 param_cls = import_string(param_cls_name)
                 try:
                     self[pname] = param_cls(value)
-                except TypeError or ValueError:
+                except (TypeError, ValueError) :
                     self[pname] = param_cls(Invalid)
 
 

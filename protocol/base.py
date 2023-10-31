@@ -471,7 +471,7 @@ class MultiValueCategoricalParameter(BaseParameter):
 
             # if allowed_values is set, check if input value is allowed
             if self.allowed_values and (value not in self.allowed_values):
-                raise ValueError(f'Invalid value for {self.name}. '
+                raise ValueError(f'Invalid value for {self.name}. Got {value} '
                                  f'Must be one of {self.allowed_values}')
 
     def _check_compliance(self, other, **kwargs):
@@ -565,7 +565,7 @@ class CategoricalParameter(BaseParameter):
 
             # if allowed_values is set, check if input value is allowed
             if self.allowed_values and (value not in self.allowed_values):
-                raise ValueError(f'Invalid value for {self.name}. '
+                raise ValueError(f'Invalid value for {self.name}. Got {value} '
                                  f'Must be one of {self.allowed_values}')
 
     def _check_compliance(self, other, **kwargs):

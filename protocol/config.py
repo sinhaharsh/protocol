@@ -295,7 +295,8 @@ ACRONYMS_DEMOGRAPHICS = {
     "OperatorsName"     : "OPNM",
     "InstitutionName"  : "INNM",
     "SeriesNumber"    : "SSNM",
-    "ContentDate"       : "CD"
+    "ContentDate"       : "CD",
+    "ContentTime"       : "CT",
     }
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())

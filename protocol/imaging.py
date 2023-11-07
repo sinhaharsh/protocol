@@ -1400,6 +1400,22 @@ class ContentDate(CategoricalParameter):
                          dicom_tag=SESSION_TAGS[self._name],
                          acronym=ACRONYMS_DEMO[self._name])
 
+class ContentTime(CategoricalParameter):
+    """Parameter specific class for BodyPartExamined"""
+
+    _name = 'ContentTime'
+
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        # if not isinstance(value, UnspecifiedType):
+        #     value = datetime.strptime(str(int(value)), '%Y%m%d')
+        super().__init__(name=self._name,
+                         value=value,
+                         dtype=str,
+                         dicom_tag=SESSION_TAGS[self._name],
+                         acronym=ACRONYMS_DEMO[self._name])
+
 class PatientSex(CategoricalParameter):
     """Parameter specific class for BodyPartExamined"""
 

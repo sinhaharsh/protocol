@@ -1536,22 +1536,6 @@ class PatientAge(NumericParameter):
         return age
 
 
-class ContentTime(CategoricalParameter):
-    """Parameter specific class for BodyPartExamined"""
-
-    _name = 'ContentTime'
-
-
-    def __init__(self, value=Unspecified):
-        """Constructor."""
-
-        super().__init__(name=self._name,
-                         value=value,
-                         dtype=str,
-                         dicom_tag=SESSION_TAGS[self._name],
-                         acronym=ACRONYMS_IMG[self._name])
-
-
 class MRImagingProtocol(BaseImagingProtocol):
     """Base class for all MR imaging protocols, including neuroimaging datasets
     """

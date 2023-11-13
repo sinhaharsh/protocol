@@ -395,3 +395,26 @@ def read_json(filepath: Path):
         except json.decoder.JSONDecodeError as e:
             raise ValueError(f'Error while reading {filepath}: {e}')
     return dict_
+
+
+def expand_number_range(input_string):
+    """
+    expand a string of comma separated numbers and ranges into a list of
+    numbers. For example,
+            1-6 will output [1, 2, 3, 4, 5, 6]
+            1,3-7 will output [1, 3, 4, 5, 6, 7]
+            1-7 will output [1, 2, 3, 4, 5, 6, 7]
+            2, 4, 6, 8 will output [2, 4, 6, 8]
+    """
+
+    result = []
+    ranges = input_string.split(',')
+
+    for r in ranges:
+        if '-' in r:
+            start, end = map(int, r.split('-'))
+            result.extend(range(start, end + 1))
+        else:
+            result.append(int(r))
+
+    return result

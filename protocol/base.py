@@ -160,7 +160,7 @@ class BaseParameter(ABC):
         """repr"""
 
         name = self.acronym if self.acronym else self.name
-        return f'{name}({self._value})'
+        return f'{name}({self.get_value()})'
 
     def __str__(self):
         return self.__repr__()

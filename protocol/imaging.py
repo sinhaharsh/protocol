@@ -1,7 +1,10 @@
 from abc import ABC
+from bisect import insort
+from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
+import re
 
 import numpy as np
 import pydicom
@@ -19,7 +22,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              ProtocolType)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
                             get_sequence_name, header_exists, import_string,
-                            parse_csa_params)
+                            parse_csa_params, expand_number_range)
 
 
 class Manufacturer(CategoricalParameter):
@@ -127,13 +130,83 @@ class ReceiveCoilActiveElements(CategoricalParameter):
 
     def __init__(self, value=Unspecified):
         """Constructor."""
+        if not isinstance(value, UnspecifiedType):
+            value = self.parse(value)
 
         super().__init__(name=self._name,
                          value=value,
+                         dtype=dict,
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
+
+    def parse(self, value):
+        coil_dict = {}
+        # strings are of the form  'T:BP1,2;BP2,4,6;BP1,2;SP4-6',
+        if ':' in value:
+            # don't know what the header tag means but there are different
+            #   values. For example, T, C
+            header, coil_info = value.split(':')
+            coil_dict['header'] = header
+        else:
+            coil_info = value
+
+        parsed_values = defaultdict(list)
+        for coil in coil_info.split(';'):
+            # Use regular expression to find the leading alphabets
+            # because there is no fixed length to coil name. It can be HC1,7 or HEA or L11
+            has_leading_alphabets = re.match(r'^[a-zA-Z]+', coil)
+            has_trailing_numbers = re.search(r'(\d+(?:[-,]\d+)*)$', coil)
+            # Check if a match is found
+            if has_leading_alphabets:
+                body_part = has_leading_alphabets.group(0)
+                if has_trailing_numbers:
+                    coil_numbers = has_trailing_numbers.group(1)
+                    expanded_numbers = expand_number_range(coil_numbers)
+                    for num in expanded_numbers:
+                        if num in parsed_values[body_part]:
+                            continue
+                        else:
+                            # add the number to the list in sorted order
+                            # this is required to compare lists later
+                            insort(parsed_values[body_part], num)
+                else:
+                    parsed_values[body_part] = []
+            else:
+                break
+
+        coil_dict['__str__'] = coil_info
+        # cast defaultdict to dict
+        coil_dict['parsed'] = dict(parsed_values)
+        return coil_dict
+
+    def __repr__(self):
+        """repr"""
+        name = self.acronym if self.acronym else self.name
+        return f'{name}({self._value["__str__"]})'
+
+    def get_value(self):
+        return self._value['parsed']
+
+    def _compare_value(self, other, **kwargs):
+        values1 = self.get_value()
+        values2 = other.get_value()
+        # TODO: check if the both have the a coil corresponding to the same body part
+        #  from BODY_PART_EXAMINED
+        if str(self) == str(other):
+            # if complete string matches, return True
+            return True
+        else:
+            # check if the coil names match and the numbers match
+            for coil_name1 in values1:
+                if coil_name1 in values2:
+                    # check numbers only for common coil names
+                    if values1[coil_name1] == values2[coil_name1]:
+                        continue
+                    else:
+                        return False
+            return True
 
 
 class MRTransmitCoilSequence(CategoricalParameter):
@@ -1639,7 +1712,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             'ParallelAcquisitionTechnique': ['Resolution - iPAT', 'Accel. mode'],
             'MultiSliceMode'              : ['Sequence - Part 1', 'Multi-slice mode'],
             'PixelBandwidth'              : ['Sequence - Part 1', 'Bandwidth'],
-            'RecieveCoilActiveElements'   : ['Routine', 'Coil elements'],
+            'ReceiveCoilActiveElements'   : ['Routine', 'Coil elements'],
             'InversionTime'               : ['Contrast - Common', 'TI'],
             'MRAcquisitionType'           : ['Sequence - Part 1', 'Dimension'],
             'PercentPhaseFOV'             : ['Geometry - Common', 'FoV phase'],

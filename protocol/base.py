@@ -757,19 +757,22 @@ class BaseSequence(MutableMapping):
                 logger.warn(f'{pname} not found in either of the sequences {other}')
                 continue
 
-            if isinstance(this_param, NumericParameter) or \
-                    isinstance(this_param, MultiValueNumericParameter):
-                compliant = this_param.compliant(that_param, rtol=rtol,
-                                                 decimals=decimals)
-            else:
-                compliant = this_param.compliant(that_param)
-
+            compliant = self._check_compliance(this_param, that_param, rtol=rtol, decimals=decimals)
             if not compliant:
                 non_compliant_params.append((this_param, that_param))
 
         bool_flag = len(non_compliant_params) < 1
 
         return bool_flag, non_compliant_params  # list of BaseParameter classes
+
+    def _check_compliance(self, this_param, that_param, rtol, decimals=None):
+        if isinstance(this_param, NumericParameter) or \
+                isinstance(this_param, MultiValueNumericParameter):
+            compliant = this_param.compliant(that_param, rtol=rtol,
+                                             decimals=decimals)
+        else:
+            compliant = this_param.compliant(that_param)
+        return compliant
 
     def __eq__(self, other):
         """equivalence operator"""

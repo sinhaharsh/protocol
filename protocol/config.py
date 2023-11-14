@@ -350,7 +350,9 @@ allowed_values_PED = list(['i', 'j', 'k',
 # , 'CT', 'PET', 'SPECT', 'US', 'NM', 'MG', 'CR', 'DX', 'OT']
 SUPPORTED_IMAGING_MODALITIES = ['MR']
 
-
+valid_head_coils = ['HC', 'HEA', 'HEP', 'HHA', 'HHP']
+valid_neck_coils = ['NC', 'NEA', 'NEP']
+valid_spine_coils = ['SP']
 class ProtocolType(Enum):
     INFERRED_FROM_DATASET = 1
     USER_DEFINED = 2

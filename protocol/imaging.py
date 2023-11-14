@@ -19,7 +19,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
                              ACRONYMS_DEMOGRAPHICS as ACRONYMS_DEMO,
                              Invalid, Unspecified, UnspecifiedType,
-                             ProtocolType)
+                             ProtocolType, valid_neck_coils, valid_spine_coils)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
                             get_sequence_name, header_exists, import_string,
                             parse_csa_params, expand_number_range)
@@ -176,18 +176,35 @@ class ReceiveCoilActiveElements(CategoricalParameter):
             else:
                 break
 
-        coil_dict['__str__'] = coil_info
+        self.__dict__['__str__'] = coil_info
         # cast defaultdict to dict
-        coil_dict['parsed'] = dict(parsed_values)
+        coil_dict = dict(parsed_values)
         return coil_dict
 
     def __repr__(self):
         """repr"""
         name = self.acronym if self.acronym else self.name
-        return f'{name}({self._value["__str__"]})'
+        return f"{name}({self.__dict__['__str__']})"
 
     def get_value(self):
-        return self._value['parsed']
+        return self._value
+
+    def _check_compliance(self, other, **kwargs):
+        """Method to check if one parameter value is compatible w.r.t another,
+            either in equality or within acceptable range, for that data type.
+        """
+        # If body part examined is HEAD, BRAIN, then only compare the head coils
+        # Non-compliance in neck coils or spine coils can be ignored.
+        ignore_list = []
+        if kwargs.get('body_part_examined', None):
+            bpe = kwargs['body_part_examined']
+            if not isinstance(bpe, UnspecifiedType):
+                if bpe in ['HEAD', 'BRAIN']:
+                    ignore_list.extend(valid_neck_coils)
+                    ignore_list.extend(valid_spine_coils)
+
+        # noinspection PyArgumentList
+        return self._compare_value(other, ignore_list=ignore_list) and self._compare_units(other)
 
     def _compare_value(self, other, **kwargs):
         values1 = self.get_value()
@@ -199,13 +216,16 @@ class ReceiveCoilActiveElements(CategoricalParameter):
             return True
         else:
             # check if the coil names match and the numbers match
-            for coil_name1 in values1:
-                if coil_name1 in values2:
-                    # check numbers only for common coil names
-                    if values1[coil_name1] == values2[coil_name1]:
-                        continue
-                    else:
+            coil_names_union = set(values1.keys()).union(set(values2.keys()))
+            ignore_list = kwargs.get('ignore_list', [])
+            compare_coils = coil_names_union.difference(ignore_list)
+
+            for coil_name in compare_coils:
+                if (coil_name in values1) and (coil_name in values2):
+                    if values1[coil_name] != values2[coil_name]:
                         return False
+                else:
+                    return False
             return True
 
 
@@ -2022,6 +2042,18 @@ class ImagingSequence(BaseSequence, ABC):
             # TODO: throw a warning when expected header doesnt exist
             # TODO: warn if specific parameter couldn't be read or queryable etc
 
+    def _check_compliance(self, this_param, that_param, rtol, decimals=None):
+        if isinstance(this_param, NumericParameter) or \
+                isinstance(this_param, MultiValueNumericParameter):
+            compliant = this_param.compliant(that_param, rtol=rtol,
+                                             decimals=decimals)
+        elif isinstance(this_param, ReceiveCoilActiveElements):
+            bpe = self['BodyPartExamined'].get_value()
+            compliant = this_param.compliant(that_param,
+                                             body_part_examined=bpe)
+        else:
+            compliant = this_param.compliant(that_param)
+        return compliant
 
     def from_dict(self, params_dict):
         """

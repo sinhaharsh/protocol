@@ -3,11 +3,15 @@
 # flake8 section in setup.cfg
 basepython = python
 deps = flake8
-commands = flake8 mrQA
+commands = flake8 protocol
+# E203 - whitespace before ':'
+ignore =
+    E203,
 exclude =
     docs,
     */_version.py,
     */tests/*.py,
+    __init__.py,
 filename = *.py
 max-line-length = 100
 max-complexity = 12

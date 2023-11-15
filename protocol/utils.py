@@ -78,7 +78,7 @@ def safe_get(dictionary: dict, keys: str, default=None):
         lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
         keys.split('.'),
         dictionary
-        )
+    )
 
 
 def parse_csa_params(dicom: pydicom.FileDataset,
@@ -303,7 +303,7 @@ def import_string(dotted_path):
         raise ImportError(
             'Module "%s" does not define a "%s" attribute/class'
             % (module_path, class_name)
-            ) from err
+        ) from err
 
 
 def convert2ascii(value, allow_unicode=False):

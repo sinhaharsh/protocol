@@ -33,14 +33,14 @@ def configure_logger(log, output_dir, mode='w', level='WARNING'):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     options = {
-        "warn": {
-            'level': logging.WARN,
-            'file': output_dir / 'warn.log',
+        "warn" : {
+            'level'    : logging.WARN,
+            'file'     : output_dir / 'warn.log',
             'formatter': warn_formatter
         },
         "error": {
-            'level': logging.ERROR,
-            'file': output_dir / 'error.log',
+            'level'    : logging.ERROR,
+            'file'     : output_dir / 'error.log',
             'formatter': error_formatter
         }
     }
@@ -72,14 +72,11 @@ class UnspecifiedType(object):
         to prevent them from assigning default values or imputing them another way!
     """
 
-
     def __init__(self):
         """constructor"""
 
-
     def __str__(self):
         return 'Unspecified'
-
 
     def __repr__(self):
         return 'Unspecified'
@@ -96,15 +93,12 @@ class InvalidType(UnspecifiedType):
         to prevent them from assigning default values or imputing them another way!
     """
 
-
     def __init__(self):
         """constructor"""
         super().__init__()
 
-
     def __str__(self):
         return 'InvalidType'
-
 
     def __repr__(self):
         return 'InvalidType'
@@ -115,26 +109,26 @@ Invalid = InvalidType()
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation
 SESSION_INFO_DICOM_TAGS = {
-    "ContentDate"        : (0x08, 0x0023),
-    "ContentTime"        : (0x08, 0x0033),
-    "SeriesInstanceUID"  : (0x20, 0x0e),
-    "PatientName"        : (0x10, 0x10),
-    "PatientID"          : (0x10, 0x20),
-    "StudyID"            : (0x08, 0x1030),
-    "SeriesDescription"  : (0x08, 0x103E),
-    "SeriesNumber"       : (0x20, 0x11),
-    "ProtocolName"       : (0x18, 0x1030),
-    "SequenceName"       : (0x18, 0x24),
-    "PatientSex"         : (0x10, 0x40),
-    "PatientAge"         : (0x10, 0x1010),
-    "PatientWeight"      : (0x10, 0x1030),
-    "PatientSize"        : (0x10, 0x1020),
-    "OperatorsName"       : (0x08, 0x1070),
-    "InstitutionName"    : (0x08, 0x0080),
-    }
+    "ContentDate"      : (0x08, 0x0023),
+    "ContentTime"      : (0x08, 0x0033),
+    "SeriesInstanceUID": (0x20, 0x0e),
+    "PatientName"      : (0x10, 0x10),
+    "PatientID"        : (0x10, 0x20),
+    "StudyID"          : (0x08, 0x1030),
+    "SeriesDescription": (0x08, 0x103E),
+    "SeriesNumber"     : (0x20, 0x11),
+    "ProtocolName"     : (0x18, 0x1030),
+    "SequenceName"     : (0x18, 0x24),
+    "PatientSex"       : (0x10, 0x40),
+    "PatientAge"       : (0x10, 0x1010),
+    "PatientWeight"    : (0x10, 0x1030),
+    "PatientSize"      : (0x10, 0x1020),
+    "OperatorsName"    : (0x08, 0x1070),
+    "InstitutionName"  : (0x08, 0x0080),
+}
 
 BASE_IMAGING_PARAMS_DICOM_TAGS = {
-    ## Hardware Parameters
+    # Hardware Parameters
     'Manufacturer'                  : (0x08, 0x70),
     'ManufacturersModelName'        : (0x08, 0x1090),
     'SoftwareVersions'              : (0x18, 0x1020),
@@ -143,7 +137,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'ReceiveCoilActiveElements'     : (0x51, 0x100F),
     'MRTransmitCoilSequence'        : (0x18, 0x9049),
 
-    ## Sequence Specifics
+    # Sequence Specifics
     'ScanningSequence'              : (0x18, 0x20),
     'SequenceVariant'               : (0x18, 0x21),
     'ScanOptions'                   : (0x18, 0x22),
@@ -153,33 +147,33 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'MTState'                       : (0x18, 0x9020),
     'SpoilingState'                 : (0x18, 0x9016),
 
-    ## In-Plane Spatial Encoding
+    # In-Plane Spatial Encoding
     'ParallelReductionFactorInPlane': (0x18, 0x9069),
     'ParallelAcquisitionTechnique'  : (0x18, 0x9078),
     'PartialFourier'                : (0x18, 0x9081),
     'PartialFourierDirection'       : (0x18, 0x9036),
     'PhaseEncodingDirection'        : (0x18, 0x1312),
 
-    ## Timing Parameters
+    # Timing Parameters
     'EchoTime'                      : (0x18, 0x81),
     'InversionTime'                 : (0x18, 0x82),
     'DwellTime'                     : (0x19, 0x1018),
     'RepetitionTime'                : (0x18, 0x80),
 
-    ## RF & Contrast Parameters
+    # RF & Contrast Parameters
     'FlipAngle'                     : (0x18, 0x1314),
 
-    ## Slice Acceleration Parameters
+    # Slice Acceleration Parameters
     'MultiBandAccelerationFactor'   : (0x43, 0x1083),
 
-    ## Misc Parameters
+    # Misc Parameters
     'BodyPartExamined'              : (0x18, 0x15),
     'EchoTrainLength'               : (0x18, 0x0091),
     'PixelBandwidth'                : (0x18, 0x95),
     'PhaseEncodingSteps'            : (0x18, 0x89),
     'EchoNumber'                    : (0x18, 0x86),
 
-    ## Session Info
+    # Session Info
     "PercentPhaseFOV"               : (0x18, 0x0094),
     "PercentSampling"               : (0x18, 0x0093),
     "VariableFlipAngleFlag"         : (0x18, 0x1315),
@@ -217,14 +211,14 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     "CoilString"                    : (0x51, 0x100f),
     "PATMode"                       : (0x51, 0x1011),
     "PositivePCSDirections"         : (0x51, 0x1013),
-    "FieldOfView"              : (0x51, 0x100c),
+    "FieldOfView"                   : (0x51, 0x100c),
     # GE specific
     "CoilName"                      : (0x43, 0x1081),
     "EffectiveEchoSpacing"          : (0x43, 0x102c),
-    "GradientOffsetX"            : (0x43, 0x1002),
-    "GradientOffsetY": (0x43, 0x1003),
-    "GradientOffsetZ": (0x43, 0x1004),
-    }
+    "GradientOffsetX"               : (0x43, 0x1002),
+    "GradientOffsetY"               : (0x43, 0x1003),
+    "GradientOffsetZ"               : (0x43, 0x1004),
+}
 
 ACRONYMS_IMAGING_PARAMETERS = {
     'Manufacturer'                  : 'MFR',
@@ -300,19 +294,19 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'PATMode'                       : 'PATM',
     'PositivePCSDirections'         : 'PPCSD',
     'FieldOfView'                   : 'FOV',
-    }
+}
 
 ACRONYMS_DEMOGRAPHICS = {
-    "PatientSex"       : "PASX",
-    "PatientAge"       : "PAAG",
-    "PatientWeight"    : "PAWT",
-    "PatientSize"      : "PASI",
-    "OperatorsName"     : "OPNM",
-    "InstitutionName"  : "INNM",
-    "SeriesNumber"    : "SSNM",
-    "ContentDate"       : "CD",
-    "ContentTime"       : "CT",
-    }
+    "PatientSex"     : "PASX",
+    "PatientAge"     : "PAAG",
+    "PatientWeight"  : "PAWT",
+    "PatientSize"    : "PASI",
+    "OperatorsName"  : "OPNM",
+    "InstitutionName": "INNM",
+    "SeriesNumber"   : "SSNM",
+    "ContentDate"    : "CD",
+    "ContentTime"    : "CT",
+}
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
 
@@ -320,19 +314,19 @@ BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
 HEADER_TAGS = {
     "image_header_info" : (0x29, 0x1010),
     "series_header_info": (0x29, 0x1020),
-    }
+}
 SLICE_MODE = {
     "1": "sequential",
     "2": "interleaved",
     "4": "singleshot"
-    }
+}
 SSDict = {
     "SE": "Spin Echo",
     "IR": "Inversion Recovery",
     "GR": "Gradient Recalled",
     "EP": "Echo Planar",
     "RM": "Research Mode"
-    }
+}
 SVDict = {
     "SK"  : "segmented k-space",
     "MTC" : "magnetization transfer contrast",
@@ -342,19 +336,19 @@ SVDict = {
     "MP"  : "MAG prepared",
     "OSP" : "oversampling phase",
     "NONE": "no sequence variant"
-    }
+}
 
 PAT = {
     "1": 'Not Selected',
     "2": 'Grappa',
     "3": 'Sense'
-    }
+}
 
 SHIM = {
     "1": 'tune_up',
     "2": 'standard',
     "4": 'advanced'
-    }
+}
 
 ATDict = ["2D", "3D"]
 
@@ -368,6 +362,8 @@ SUPPORTED_IMAGING_MODALITIES = ['MR']
 valid_head_coils = ['HC', 'HEA', 'HEP', 'HHA', 'HHP']
 valid_neck_coils = ['NC', 'NEA', 'NEP']
 valid_spine_coils = ['SP']
+
+
 class ProtocolType(Enum):
     INFERRED_FROM_DATASET = 1
     USER_DEFINED = 2

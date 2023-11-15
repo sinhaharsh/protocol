@@ -195,32 +195,32 @@ class ReceiveCoilActiveElements(CategoricalParameter):
             if not isinstance(bpe, UnspecifiedType):
                 if bpe in ['HEAD', 'BRAIN']:
                     ignore_list.extend(valid_neck_coils)
-                    ignore_list.extend(valid_spine_coils)
+                    # ignore_list.extend(valid_spine_coils)
 
         # noinspection PyArgumentList
-        return self._compare_value(other,
-                                   ignore_list=ignore_list) and self._compare_units(
-            other)
+        return (self._compare_value(other, ignore_list=ignore_list)
+                and self._compare_units(other))
 
     def _compare_value(self, other, **kwargs):
-        values1 = self.get_value()
-        values2 = other.get_value()
-        # TODO: check if the both have the a coil corresponding to the same body part
-        #  from BODY_PART_EXAMINED
+        ref_dict = self.get_value()
+        other_dict = other.get_value()
+        # TODO: check if the both have the a coil
+        #  corresponding to the same body part from BODY_PART_EXAMINED
         if str(self) == str(other):
             # if complete string matches, return True
             return True
         else:
             # check if the coil names match and the numbers match
-            coil_names_union = set(values1.keys()).union(set(values2.keys()))
+            coil_names_union = set(ref_dict.keys()).union(set(other_dict.keys()))
             ignore_list = kwargs.get('ignore_list', [])
             compare_coils = coil_names_union.difference(ignore_list)
 
             for coil_name in compare_coils:
-                if (coil_name in values1) and (coil_name in values2):
-                    if values1[coil_name] != values2[coil_name]:
-                        return False
-                else:
+                if coil_name not in ref_dict:
+                    return False
+                if coil_name not in other_dict:
+                    return False
+                if ref_dict[coil_name] != other_dict[coil_name]:
                     return False
             return True
 

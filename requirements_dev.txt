@@ -11,3 +11,4 @@ numpy
 lxml
 nibabel
 hypothesis
+flake8

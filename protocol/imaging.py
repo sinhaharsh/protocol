@@ -1359,7 +1359,8 @@ class ImageOrientationPatient(MultiValueNumericParameter):
     def get_value(self):
         """getter"""
         if not isinstance(self._value, UnspecifiedType):
-            return [np.round(v, self.decimals) for v in self._value]
+            # Add 0.0 will avoid -0.0
+            return [0.0+np.round(v, self.decimals) for v in self._value]
         return self._value
 
     def _compare_value(self, other, rtol=0, decimals=None):

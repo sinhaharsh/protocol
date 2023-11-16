@@ -126,6 +126,8 @@ class ReceiveCoilActiveElements(CategoricalParameter):
         """Constructor."""
         if not isinstance(value, UnspecifiedType):
             value = self.parse(value)
+        else:
+            self.__dict__['__str__'] = str(value)
 
         super().__init__(name=self._name,
                          value=value,
@@ -178,7 +180,10 @@ class ReceiveCoilActiveElements(CategoricalParameter):
     def __repr__(self):
         """repr"""
         name = self.acronym if self.acronym else self.name
-        return f"{name}({self.__dict__['__str__']})"
+        try:
+            return f"{name}({self.__dict__['__str__']})"
+        except KeyError:
+            return f"{name}({self._value})"
 
     def get_value(self):
         return self._value
@@ -220,8 +225,8 @@ class ReceiveCoilActiveElements(CategoricalParameter):
                     return False
                 if coil_name not in other_dict:
                     return False
-                if ref_dict[coil_name] != other_dict[coil_name]:
-                    return False
+                # if ref_dict[coil_name] != other_dict[coil_name]:
+                #     return False
             return True
 
 

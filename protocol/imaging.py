@@ -294,7 +294,7 @@ class SequenceName(CategoricalParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class NonLinearGradientCorrection(CategoricalParameter):
+class NonLinearGradientCorrection(MultiValueCategoricalParameter):
     """Parameter specific class for NonLinearGradientCorrection"""
 
     _name = 'NonLinearGradientCorrection'

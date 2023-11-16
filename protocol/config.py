@@ -61,7 +61,7 @@ def configure_logger(log, output_dir, mode='w', level='WARNING'):
     return log
 
 
-class UnspecifiedType(object):
+class UnspecifiedType(dict):
     """Class to denote an unspecified value
 
     Reasons include:
@@ -69,17 +69,24 @@ class UnspecifiedType(object):
         - enocded as None or similar; or presumed to be default
 
     We need this to correctly inform the downstream users of the source,
-        to prevent them from assigning default values or imputing them another way!
+        to prevent them from assigning default values or
+        imputing them another way!
+
+    It subclasses dict so that it can be exported into a JSON file
     """
 
     def __init__(self):
         """constructor"""
+        super().__init__()
 
     def __str__(self):
         return 'Unspecified'
 
     def __repr__(self):
         return 'Unspecified'
+
+    def __hash__(self):
+        return hash(str(self))
 
 
 class InvalidType(UnspecifiedType):

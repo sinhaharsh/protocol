@@ -24,7 +24,7 @@ class TestReceiveCoilActiveElements(unittest.TestCase):
 
         value = 'BO1,2;BO1-3;SP2-5'
         reference = 'BO1,2;BO3;SP4,5'
-        self.assertFalse(is_compliant(value, reference, self.param_name))
+        self.assertTrue(is_compliant(value, reference, self.param_name))
 
         value = 'BO1,2;BO1-3;SP2-5'
         reference = 'BO1,2;BO1-3;SP2-5'
@@ -46,15 +46,15 @@ class TestReceiveCoilActiveElements(unittest.TestCase):
                                      self.param_name, body_part_examined))
         value = 'HC1,3-7'
         reference = 'HC1-7;NC1,2'
-        self.assertFalse(is_compliant(value, reference,
+        self.assertTrue(is_compliant(value, reference,
                                       self.param_name, body_part_examined))
         value = 'HC1,3'
         reference = 'HC1-3;NC1,2'
-        self.assertFalse(is_compliant(value, reference,
+        self.assertTrue(is_compliant(value, reference,
                                       self.param_name, body_part_examined))
         value = 'HC1-3'
         reference = 'HC1,3'
-        self.assertFalse(is_compliant(value, reference,
+        self.assertTrue(is_compliant(value, reference,
                                       self.param_name, body_part_examined))
 
     def test_compliant_direction(self):

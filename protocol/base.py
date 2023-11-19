@@ -754,7 +754,8 @@ class BaseSequence(MutableMapping):
                 #   skip it and move on to the next one. That means, the
                 #   parameter is not required for compliance. And the parameter
                 #   is not tagged as non-compliant.
-                logger.warn(f'{pname} not found in either of the sequences {other}')
+                logger.info(f'{pname} not found in either of '
+                            f'the sequences <{self, other}>')
                 continue
 
             compliant = self._check_compliance(this_param, that_param, rtol=rtol, decimals=decimals)

@@ -1628,6 +1628,54 @@ class MRImagingProtocol(BaseImagingProtocol):
         seq.from_dict(param_dict)
         self.add(seq)
 
+    def compliant(self, other, rtol=0, decimals=None, include_params=None,
+                  include_sequences=None):
+        """Checks if the current protocol is compliant with another protocol"""
+
+        if not isinstance(other, MRImagingProtocol):
+            raise TypeError(
+                'Invalid type! Must be a valid instance of MRImagingProtocol')
+
+        if include_params is None:
+            include_params = []
+
+        # check if the sequences are the same
+        if set(self.get_sequence_ids()) != set(other.get_sequence_ids()):
+            logger.info(
+                f'Sequences are not the same! {self.get_sequence_ids()} '
+                f'vs {other.get_sequence_ids()}')
+            return False, None
+
+        non_compliant_sequences = []
+
+        if include_sequences is None:
+            include_sequences = self.get_sequence_ids()
+
+        # check if the parameters are the same
+        for seq_id in include_sequences:
+            try:
+                this_seq = self[seq_id]
+                that_seq = other[seq_id]
+            except KeyError:
+                # If the sequence is not found in either of the protocols,
+                #   skip it and move on to the next one.
+                logger.info(f'{seq_id} not found in either '
+                            f'of the protocols <{self, other}>')
+                continue
+
+            compliant =  this_seq.compliant(that_seq, rtol, decimals,
+                                      include_params)
+            if not compliant:
+                non_compliant_sequences.append((this_seq, that_seq))
+
+        bool_flag = len(non_compliant_sequences) < 1
+        return bool_flag, non_compliant_sequences
+
+    def __eq__(self, other):
+        """equivalence operator"""
+
+        bool_flag, _ = self.compliant(other)
+        return bool_flag
 
 class SiemensMRImagingProtocol(MRImagingProtocol):
     def __init__(self, name='SiemensMRProtocol',

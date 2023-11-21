@@ -1750,7 +1750,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
                 try:
                     root_ = root_[key]
                 except KeyError as e:
-                    logger.warn(
+                    logger.info(
                         f'Parameter not found in the sequence {sequence_name}.')
                     raise e
             return root_
@@ -1764,7 +1764,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             value = get_value(self.programs, self.program_name, sequence_name,
                               access_keys)
         except KeyError:
-            logger.warn(f'Parameter not found : {parameter_name}')
+            logger.info(f'Parameter not found : {parameter_name}')
             return Unspecified
 
         # convert PED to DICOM tags

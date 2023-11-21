@@ -1,7 +1,11 @@
 # test parser of ReceiveCoilActiveElements
 import unittest
+from pathlib import Path
 
+from protocol import SiemensMRImagingProtocol
 from protocol.imaging import ReceiveCoilActiveElements
+from protocol.tests.conftest import THIS_DIR
+from protocol.tests.utils import download
 from protocol.utils import import_string
 
 
@@ -184,3 +188,17 @@ def test_parse_receive_coil_active_elements():
         rcae = ReceiveCoilActiveElements(coil)
         print(str(rcae))
         print(rcae.get_value())
+
+
+def test_mr_protocol_xml_parsing():
+    # Using an example XML file from the following Github repository
+    # https://github.com/lrq3000/mri_protocol
+    url = 'https://raw.githubusercontent.com/lrq3000/mri_protocol/master/SiemensVidaProtocol/Coma%20Science%20Group.xml' # noqa
+    filename = THIS_DIR / 'coma_science.xml'
+    xml_file = Path(filename)
+
+    if not xml_file.is_file():
+        download(url, filename)
+
+    protocol = SiemensMRImagingProtocol(filepath=xml_file)
+    print(protocol)

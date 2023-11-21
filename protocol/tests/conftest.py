@@ -3,6 +3,7 @@ from pathlib import Path
 import pydicom
 import pytest
 
+THIS_DIR = Path(__file__).parent.resolve()
 
 @pytest.fixture()
 def sample_dcm(request):

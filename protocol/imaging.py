@@ -2054,11 +2054,15 @@ class ImagingSequence(BaseSequence, ABC):
     def set_echo_times(self, echo_times, echo_number=None):
         """Sets the echo times for a multi-echo sequence."""
 
-        if len(echo_times) > 1:
-            self.multi_echo = True
-        else:
-            self.multi_echo = False
+        self.multi_echo = len(echo_times) > 1
 
-        self['EchoTime'] = MultiValueEchoTime(echo_times)
+        try:
+            self['EchoTime'] = MultiValueEchoTime(echo_times)
+        except (TypeError, ValueError):
+            self['EchoTime'] = MultiValueEchoTime(Invalid)
+
         if echo_number is not None:
-            self['EchoNumber'] = MultiValueEchoNumber(echo_number)
+            try:
+                self['EchoNumber'] = MultiValueEchoNumber(echo_number)
+            except (TypeError, ValueError):
+                self['EchoNumber'] = MultiValueEchoNumber(Invalid)

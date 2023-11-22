@@ -5,6 +5,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import MutableMapping
 from numbers import Number
+from pathlib import Path
 from typing import Iterable, Union
 
 import numpy as np
@@ -602,7 +603,7 @@ class BaseSequence(MutableMapping):
         Name of the sequence.
     params : set
         A set of parameters in the sequence.
-    path : str
+    path : Path | str
         Path to the sequence on disk.
 
     Examples
@@ -631,7 +632,7 @@ class BaseSequence(MutableMapping):
     def __init__(self,
                  name: str = 'Sequence',
                  params: set = None,
-                 path: str = None, ):
+                 path: Union[str, Path] = None, ):
         """constructor"""
 
         super().__init__()

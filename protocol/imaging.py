@@ -2009,7 +2009,7 @@ class ImagingSequence(BaseSequence, ABC):
                 except (TypeError, ValueError):
                     self[name] = param_cls(Invalid)
         else:
-            logger.warn('No private header found in DICOM file')
+            logger.info('No private header found in DICOM file')
             # TODO: throw a warning when expected header doesnt exist
             # TODO: warn if specific parameter couldn't be read or queryable etc
 

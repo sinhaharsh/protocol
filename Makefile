@@ -51,7 +51,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint: ## check style with flake8
-	flake8 protocol tests
+	flake8 protocol
 
 test: ## run tests quickly with the default Python
 	py.test
@@ -66,12 +66,12 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/protocol.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ protocol
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
+
+gh-pages: ## copy to gh-pages folder
+	cp -r docs/_build/html/* ../protocol-gh-pages/
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
@@ -86,3 +86,12 @@ dist: clean ## builds source and wheel package
 
 install: clean ## install the package to the active Python's site-packages
 	python setup.py install
+
+merge:
+	git switch mrdsv2
+	git push
+	git switch master
+	git merge mrdsv2
+	git push origin master
+	git switch mrdsv2
+

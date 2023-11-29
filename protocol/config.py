@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 
 
-def configure_logger(log, output_dir, mode='w', level='ERROR'):
+def configure_logger(log, output_dir, mode='w', level='WARNING'):
     """
     Initiate log files.
 
@@ -16,37 +16,52 @@ def configure_logger(log, output_dir, mode='w', level='ERROR'):
         The logger object.
     mode : str, (``'w'``, ``'a'``)
         The writing mode to the log files.
-        Defaults to ``'w'``, overwrites previous files.    """
+        Defaults to ``'w'``, overwrites previous files.
+    output_dir : str or Path
+        The path to the output directory.
+    level : str,
+        The level of logging to the console. One of ['WARNING', 'ERROR']
+    """
 
     console_handler = logging.StreamHandler()  # creates the handler
-    warn_formatter = '%(filename)s:%(name)s:%(funcName)s:%(lineno)d: %(message)s'
+    warn_formatter = ('%(filename)s:%(name)s:%(funcName)s:%(lineno)d:'
+                      ' %(message)s')
     error_formatter = '%(asctime)s - %(levelname)s - %(message)s'
     if output_dir is None:
         output_dir = tempfile.gettempdir()
-    output_dir = Path(output_dir) / '.protocol'
+    output_dir = Path(output_dir) / '.mrdataset'
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    warn_file = output_dir / 'warn.log'
-    if level == 'WARNING':
-        warn = logging.FileHandler(warn_file, mode=mode)
-        warn.setLevel(logging.WARN)
-        warn.setFormatter(logging.Formatter(warn_formatter))
-        log.addHandler(warn)
+    options = {
+        "warn" : {
+            'level'    : logging.WARN,
+            'file'     : output_dir / 'warn.log',
+            'formatter': warn_formatter
+        },
+        "error": {
+            'level'    : logging.ERROR,
+            'file'     : output_dir / 'error.log',
+            'formatter': error_formatter
+        }
+    }
 
-    # keep only errors on console
-    console_handler.setLevel(logging.ERROR)  # sets the handler info
-    console_handler.setFormatter(logging.Formatter(error_formatter))
+    if level == 'ERROR':
+        config = options['error']
+    else:
+        config = options['warn']
+
+    file_handler = logging.FileHandler(config['file'], mode=mode)
+    file_handler.setLevel(config['level'])
+    file_handler.setFormatter(logging.Formatter(config['formatter']))
+    log.addHandler(file_handler)
+
+    console_handler.setLevel(config['level'])  # sets the handler info
+    console_handler.setFormatter(logging.Formatter(config['formatter']))
     log.addHandler(console_handler)
-
-    error_file = output_dir / 'error.log'
-    error = logging.FileHandler(error_file, mode=mode)
-    error.setLevel(logging.ERROR)
-    error.setFormatter(logging.Formatter(error_formatter))
-    log.addHandler(error)
     return log
 
 
-class UnspecifiedType(object):
+class UnspecifiedType(dict):
     """Class to denote an unspecified value
 
     Reasons include:
@@ -54,20 +69,24 @@ class UnspecifiedType(object):
         - enocded as None or similar; or presumed to be default
 
     We need this to correctly inform the downstream users of the source,
-        to prevent them from assigning default values or imputing them another way!
-    """
+        to prevent them from assigning default values or
+        imputing them another way!
 
+    It subclasses dict so that it can be exported into a JSON file
+    """
 
     def __init__(self):
         """constructor"""
-
+        super().__init__()
 
     def __str__(self):
         return 'Unspecified'
 
-
     def __repr__(self):
         return 'Unspecified'
+
+    def __hash__(self):
+        return hash(str(self))
 
 
 class InvalidType(UnspecifiedType):
@@ -81,15 +100,12 @@ class InvalidType(UnspecifiedType):
         to prevent them from assigning default values or imputing them another way!
     """
 
-
     def __init__(self):
         """constructor"""
         super().__init__()
 
-
     def __str__(self):
         return 'InvalidType'
-
 
     def __repr__(self):
         return 'InvalidType'
@@ -100,27 +116,26 @@ Invalid = InvalidType()
 
 # Constant Dicom Identifiers Used for dataset creation and manipulation
 SESSION_INFO_DICOM_TAGS = {
-    "series_instance_uid": (0x20, 0x0e),
-    "sequence"           : (0x18, 0x20),
-    "variant"            : (0x18, 0x21),
-    "patient_name"       : (0x10, 0x10),
-    "patient_id"         : (0x10, 0x20),
-    "study_id"           : (0x08, 0x1030),
-    "series_description" : (0x08, 0x103E),
-    "series_number"      : (0x20, 0x11),
-    "protocol_name"      : (0x18, 0x1030),
-    "sequence_name"      : (0x18, 0x24),
-    "image_type"         : (0x08, 0x08),
-    "echo_number"        : (0x18, 0x86),
-    "te"                 : (0x18, 0x81),
-    "patient_sex"        : (0x10, 0x40),
-    "patient_age"        : (0x10, 0x1010),
-    "ContentDate"        : (0x08, 0x0023),
-    "ContentTime"        : (0x08, 0x0033),
-    }
+    "ContentDate"      : (0x08, 0x0023),
+    "ContentTime"      : (0x08, 0x0033),
+    "SeriesInstanceUID": (0x20, 0x0e),
+    "PatientName"      : (0x10, 0x10),
+    "PatientID"        : (0x10, 0x20),
+    "StudyID"          : (0x08, 0x1030),
+    "SeriesDescription": (0x08, 0x103E),
+    "SeriesNumber"     : (0x20, 0x11),
+    "ProtocolName"     : (0x18, 0x1030),
+    "SequenceName"     : (0x18, 0x24),
+    "PatientSex"       : (0x10, 0x40),
+    "PatientAge"       : (0x10, 0x1010),
+    "PatientWeight"    : (0x10, 0x1030),
+    "PatientSize"      : (0x10, 0x1020),
+    "OperatorsName"    : (0x08, 0x1070),
+    "InstitutionName"  : (0x08, 0x0080),
+}
 
 BASE_IMAGING_PARAMS_DICOM_TAGS = {
-    ## Hardware Parameters
+    # Hardware Parameters
     'Manufacturer'                  : (0x08, 0x70),
     'ManufacturersModelName'        : (0x08, 0x1090),
     'SoftwareVersions'              : (0x18, 0x1020),
@@ -129,7 +144,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'ReceiveCoilActiveElements'     : (0x51, 0x100F),
     'MRTransmitCoilSequence'        : (0x18, 0x9049),
 
-    ## Sequence Specifics
+    # Sequence Specifics
     'ScanningSequence'              : (0x18, 0x20),
     'SequenceVariant'               : (0x18, 0x21),
     'ScanOptions'                   : (0x18, 0x22),
@@ -139,33 +154,33 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'MTState'                       : (0x18, 0x9020),
     'SpoilingState'                 : (0x18, 0x9016),
 
-    ## In-Plane Spatial Encoding
+    # In-Plane Spatial Encoding
     'ParallelReductionFactorInPlane': (0x18, 0x9069),
     'ParallelAcquisitionTechnique'  : (0x18, 0x9078),
     'PartialFourier'                : (0x18, 0x9081),
     'PartialFourierDirection'       : (0x18, 0x9036),
     'PhaseEncodingDirection'        : (0x18, 0x1312),
 
-    ## Timing Parameters
+    # Timing Parameters
     'EchoTime'                      : (0x18, 0x81),
     'InversionTime'                 : (0x18, 0x82),
     'DwellTime'                     : (0x19, 0x1018),
     'RepetitionTime'                : (0x18, 0x80),
 
-    ## RF & Contrast Parameters
+    # RF & Contrast Parameters
     'FlipAngle'                     : (0x18, 0x1314),
 
-    ## Slice Acceleration Parameters
+    # Slice Acceleration Parameters
     'MultiBandAccelerationFactor'   : (0x43, 0x1083),
 
-    ## Misc Parameters
+    # Misc Parameters
     'BodyPartExamined'              : (0x18, 0x15),
     'EchoTrainLength'               : (0x18, 0x0091),
     'PixelBandwidth'                : (0x18, 0x95),
     'PhaseEncodingSteps'            : (0x18, 0x89),
     'EchoNumber'                    : (0x18, 0x86),
 
-    ## Session Info
+    # Session Info
     "PercentPhaseFOV"               : (0x18, 0x0094),
     "PercentSampling"               : (0x18, 0x0093),
     "VariableFlipAngleFlag"         : (0x18, 0x1315),
@@ -203,7 +218,14 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     "CoilString"                    : (0x51, 0x100f),
     "PATMode"                       : (0x51, 0x1011),
     "PositivePCSDirections"         : (0x51, 0x1013),
-    }
+    "FieldOfView"                   : (0x51, 0x100c),
+    # GE specific
+    "CoilName"                      : (0x43, 0x1081),
+    "EffectiveEchoSpacing"          : (0x43, 0x102c),
+    "GradientOffsetX"               : (0x43, 0x1002),
+    "GradientOffsetY"               : (0x43, 0x1003),
+    "GradientOffsetZ"               : (0x43, 0x1004),
+}
 
 ACRONYMS_IMAGING_PARAMETERS = {
     'Manufacturer'                  : 'MFR',
@@ -278,19 +300,20 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'CoilString'                    : 'CS',
     'PATMode'                       : 'PATM',
     'PositivePCSDirections'         : 'PPCSD',
-    }
+    'FieldOfView'                   : 'FOV',
+}
 
-ACRONYMS_SESSION_INFO = {
-    "SeriesInstanceUID": "SIUID",
-    "PatientName"      : "PN",
-    "PatientID"        : "PID",
-    "StudyID"          : "SID",
-    "SeriesDescription": "SD",
-    "SeriesNumber"     : "SN",
-    "ProtocolName"     : "PN",
-    "SequenceName"     : "SQNM",
-
-    }
+ACRONYMS_DEMOGRAPHICS = {
+    "PatientSex"     : "PASX",
+    "PatientAge"     : "PAAG",
+    "PatientWeight"  : "PAWT",
+    "PatientSize"    : "PASI",
+    "OperatorsName"  : "OPNM",
+    "InstitutionName": "INNM",
+    "SeriesNumber"   : "SSNM",
+    "ContentDate"    : "CD",
+    "ContentTime"    : "CT",
+}
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
 
@@ -298,19 +321,19 @@ BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
 HEADER_TAGS = {
     "image_header_info" : (0x29, 0x1010),
     "series_header_info": (0x29, 0x1020),
-    }
+}
 SLICE_MODE = {
     "1": "sequential",
     "2": "interleaved",
     "4": "singleshot"
-    }
+}
 SSDict = {
     "SE": "Spin Echo",
     "IR": "Inversion Recovery",
     "GR": "Gradient Recalled",
     "EP": "Echo Planar",
     "RM": "Research Mode"
-    }
+}
 SVDict = {
     "SK"  : "segmented k-space",
     "MTC" : "magnetization transfer contrast",
@@ -320,19 +343,19 @@ SVDict = {
     "MP"  : "MAG prepared",
     "OSP" : "oversampling phase",
     "NONE": "no sequence variant"
-    }
+}
 
 PAT = {
     "1": 'Not Selected',
     "2": 'Grappa',
     "3": 'Sense'
-    }
+}
 
 SHIM = {
     "1": 'tune_up',
     "2": 'standard',
     "4": 'advanced'
-    }
+}
 
 ATDict = ["2D", "3D"]
 
@@ -342,6 +365,10 @@ allowed_values_PED = list(['i', 'j', 'k',
 
 # , 'CT', 'PET', 'SPECT', 'US', 'NM', 'MG', 'CR', 'DX', 'OT']
 SUPPORTED_IMAGING_MODALITIES = ['MR']
+
+valid_head_coils = ['HC', 'HEA', 'HEP', 'HHA', 'HHP']
+valid_neck_coils = ['NC', 'NEA', 'NEP']
+valid_spine_coils = ['SP']
 
 
 class ProtocolType(Enum):

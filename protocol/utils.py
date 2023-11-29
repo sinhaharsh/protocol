@@ -20,7 +20,8 @@ with warnings.catch_warnings():
 
 def get_dicom_param_value(dicom: pydicom.FileDataset,
                           name: str,
-                          not_found_value=None):
+                          not_found_value=None,
+                          tag_dict=DICOM_TAGS):
     """
     Extracts value from dicom metadata looking up the corresponding HEX tag
     in DICOM_TAGS
@@ -43,12 +44,12 @@ def get_dicom_param_value(dicom: pydicom.FileDataset,
     """
     # TODO: consider name.lower()
     try:
-        data = dicom.get(DICOM_TAGS[name], not_found_value)
+        data = dicom.get(tag_dict[name], not_found_value)
     except KeyError:
         return not_found_value
 
     if data:
-        return data.value
+        return auto_convert(data.value)
     else:
         return not_found_value
 
@@ -77,7 +78,7 @@ def safe_get(dictionary: dict, keys: str, default=None):
         lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
         keys.split('.'),
         dictionary
-        )
+    )
 
 
 def parse_csa_params(dicom: pydicom.FileDataset,
@@ -186,24 +187,24 @@ def get_csa_props(parameter, corpus):
         print(f"#WARNING: {parameter} in CSA too short: '{corpus[index:]}'")
         return -1
 
-    # 1st value -  parameter name, 2nd value - equals sign, 3rd value - parameter
-    # value
-    param_val = corpus[index:]
-    code_parts = re.split('[\t\n]', param_val)
-    if len(code_parts) >= 3:
-        return code_parts[2]
+    try:
+        # 1st value -  parameter name, 2nd value - equals sign, 3rd value - parameter value
+        param_val = corpus[index:]
+        code_parts = re.split('[\t\n]', param_val)
+        if len(code_parts) >= 3:
+            return float(code_parts[2])
+    except ValueError:
+        # if not above, might look like:
+        # sAdjData.uiAdjShimMode                = 0x1
 
-    # if not above, might look like:
-    # sAdjData.uiAdjShimMode                = 0x1
-
-    # this runs multiple times on every dicom
-    # regexp is expesive? dont use unless we need to
-    match = re.search(r'=\s*([^\n]+)', corpus[index:])
-    if match:
-        match = match.groups()[0]
-        # above is also a string. dont worry about conversion?
-        # match = int(match, 0)  # 0x1 -> 1
-        return match
+        # this runs multiple times on every dicom
+        # regexp is expesive? dont use unless we need to
+        match = re.search(r'=\s*([^\n]+)', corpus[index:])
+        if match:
+            match = match.groups()[0]
+            # above is also a string. dont worry about conversion?
+            # match = int(match, 0)  # 0x1 -> 1
+            return match
 
     # couldn't figure out
     return -1
@@ -238,7 +239,7 @@ def header_exists(dicom: pydicom.FileDataset) -> bool:
         series_header['tags']['MrPhoenixProtocol']['items'][0].split('\n')
         return True
     except Exception as e:
-        logger.warn(f'Expects dicom files from Siemens to be able to'
+        logger.info(f'Expects dicom files from Siemens to be able to'
                     f' read the private header. For other vendors,'
                     f'private header is skipped. '
                     f'{e} in {dicom.filename}')
@@ -302,7 +303,7 @@ def import_string(dotted_path):
         raise ImportError(
             'Module "%s" does not define a "%s" attribute/class'
             % (module_path, class_name)
-            ) from err
+        ) from err
 
 
 def convert2ascii(value, allow_unicode=False):
@@ -365,13 +366,16 @@ def boolify(s):
 def auto_convert(s):
     """convert pydicom values to python data types for ease of use"""
 
-    for fn in (boolify, int, float):
+    # keep float first, otherwise it will convert floats to integers
+    for fn in (boolify, float, int):
         try:
             return fn(s)
-        except ValueError:
+        except (ValueError, TypeError):
             continue
     if isinstance(s, str):
         return s.strip()
+    if isinstance(s, pydicom.valuerep.PersonName):
+        return str(s)
     return s
 
 
@@ -391,3 +395,26 @@ def read_json(filepath: Path):
         except json.decoder.JSONDecodeError as e:
             raise ValueError(f'Error while reading {filepath}: {e}')
     return dict_
+
+
+def expand_number_range(input_string):
+    """
+    expand a string of comma separated numbers and ranges into a list of
+    numbers. For example,
+            1-6 will output [1, 2, 3, 4, 5, 6]
+            1,3-7 will output [1, 3, 4, 5, 6, 7]
+            1-7 will output [1, 2, 3, 4, 5, 6, 7]
+            2, 4, 6, 8 will output [2, 4, 6, 8]
+    """
+
+    result = []
+    ranges = input_string.split(',')
+
+    for r in ranges:
+        if '-' in r:
+            start, end = map(int, r.split('-'))
+            result.extend(range(start, end + 1))
+        else:
+            result.append(int(r))
+
+    return result

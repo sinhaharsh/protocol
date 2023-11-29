@@ -13,14 +13,14 @@ Current release focuses on MRI image acquisition protocols for QA purposes only.
 Features
 --------
 
- - simple tool to check for *protocol compliance* :
+- simple tool to check for *protocol compliance* :
     ensure all subjects in a given dataset were acquired with same/compatible values for few key parameters.
- - programmatic parsing of Siemens protocols in XML format
+- programmatic parsing of Siemens protocols in XML format
 
 
 
 Documentation
 -------------
 
-* Software docs : https://raamana.github.io/protocol
+* Docs with examples : https://raamana.github.io/protocol
 * Free software: Apache 2.0 license

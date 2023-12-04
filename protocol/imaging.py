@@ -1,15 +1,14 @@
+import re
 from abc import ABC
 from bisect import insort
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-import re
 
 import numpy as np
 import pydicom
 from lxml import objectify
-
 from protocol import config as cfg, logger
 from protocol.base import (BaseImagingProtocol, BaseParameter, BaseSequence,
                            CategoricalParameter, MultiValueCategoricalParameter,
@@ -19,7 +18,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
                              ACRONYMS_DEMOGRAPHICS as ACRONYMS_DEMO,
                              Invalid, Unspecified, UnspecifiedType,
-                             ProtocolType, valid_neck_coils, valid_spine_coils)
+                             ProtocolType, valid_neck_coils)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
                             get_sequence_name, header_exists, import_string,
                             parse_csa_params, expand_number_range)
@@ -1360,7 +1359,7 @@ class ImageOrientationPatient(MultiValueNumericParameter):
         """getter"""
         if not isinstance(self._value, UnspecifiedType):
             # Add 0.0 will avoid -0.0
-            return [0.0+np.round(v, self.decimals) for v in self._value]
+            return [0.0 + np.round(v, self.decimals) for v in self._value]
         return self._value
 
     def _compare_value(self, other, rtol=0, decimals=None):
@@ -1663,8 +1662,8 @@ class MRImagingProtocol(BaseImagingProtocol):
                             f'of the protocols <{self, other}>')
                 continue
 
-            compliant =  this_seq.compliant(that_seq, rtol, decimals,
-                                      include_params)
+            compliant = this_seq.compliant(that_seq, rtol, decimals,
+                                           include_params)
             if not compliant:
                 non_compliant_sequences.append((this_seq, that_seq))
 
@@ -1676,6 +1675,7 @@ class MRImagingProtocol(BaseImagingProtocol):
 
         bool_flag, _ = self.compliant(other)
         return bool_flag
+
 
 class SiemensMRImagingProtocol(MRImagingProtocol):
     def __init__(self, name='SiemensMRProtocol',

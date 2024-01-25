@@ -314,13 +314,28 @@ class NonLinearGradientCorrection(CategoricalParameter):
 
     def __init__(self, value=Unspecified):
         """Constructor."""
-
+        nlgc = self.parse(value)
         super().__init__(name=self._name,
-                         value=value,
+                         value=nlgc,
+                         dtype=bool,
                          required=True,
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
+
+    def parse(self, value):
+        if not isinstance(value, UnspecifiedType):
+            if isinstance(value, list):
+                for i in value:
+                    if i in ['DIS2D', 'DIS3D']:
+                        return True
+                    elif i in ['ND']:
+                        return False
+            elif isinstance(value, bool):
+                return value
+            else:
+                raise ValueError("Expected a boolean value or Iterable.")
+        return value
 
 
 class MRAcquisitionType(CategoricalParameter):

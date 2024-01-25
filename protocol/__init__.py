@@ -19,4 +19,4 @@ from protocol.config import (BASE_IMAGING_PARAMETER_NAMES,
                              BASE_IMAGING_PARAMS_DICOM_TAGS,
                              ACRONYMS_IMAGING_PARAMETERS,
                              UnspecifiedType)
-from protocol.imaging import ImagingSequence, SiemensMRImagingProtocol, MRImagingProtocol
+from protocol.imaging import DICOMImagingSequence, SiemensMRImagingProtocol, MRImagingProtocol

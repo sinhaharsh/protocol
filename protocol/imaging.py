@@ -1723,7 +1723,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             # raise ValueError('Program name not set. Use set_program_name() to
             # set it')
         for sequence_name in self.programs[self.program_name].keys():
-            seq = ImagingSequence(name=sequence_name)
+            seq = DICOMImagingSequence(name=sequence_name)
             parameters = {}
             for param_name in self._parameter_map.keys():
                 parameters[param_name] = self._get_parameter(sequence_name,
@@ -1944,12 +1944,34 @@ class ImagingSequence(BaseSequence, ABC):
             for pname in self.demographics:
                 value = get_dicom_param_value(dicom, pname,
                                               tag_dict=SESSION_TAGS)
-                param_cls_name = f'protocol.imaging.{pname}'
-                param_cls = import_string(param_cls_name)
-                try:
-                    self[pname] = param_cls(value)
-                except (TypeError, ValueError):
-                    self[pname] = param_cls(Invalid)
+                self.add_parameter(pname, value)
+
+    def add_parameter(self, pname, value, module='protocol.imaging'):
+        """
+        Adds a new parameter to the sequence.
+
+        Parameters
+        ----------
+        pname : str
+            Name of the parameter
+        value : object
+            Value of the parameter
+        module : str
+            Name of the module where the parameter class is defined
+        """
+        param_cls_name = f'{module}.{pname}'
+
+        try:
+            param_cls = import_string(param_cls_name)
+        except ImportError:
+            logger.error(f'Could not import {param_cls_name}')
+            raise ImportError(f'Could not import {param_cls_name}')
+
+        try:
+            param = param_cls(value)
+        except (TypeError, ValueError):
+            param = param_cls(Invalid)
+        self.add(param)
 
     def _init_param_classes(self):
         """
@@ -1984,13 +2006,7 @@ class ImagingSequence(BaseSequence, ABC):
         for param_class in self.params_classes:
             pname = param_class._name
             value = get_dicom_param_value(dicom, pname)
-            if value is None:
-                self[pname] = param_class(Unspecified)
-            else:
-                try:
-                    self[pname] = param_class(value)
-                except (TypeError, ValueError):
-                    self[pname] = param_class(Invalid)
+            self.add_parameter(pname, value)
 
     def _parse_private(self, dicom):
         """vendor specific private headers"""
@@ -1998,16 +2014,8 @@ class ImagingSequence(BaseSequence, ABC):
         if header_exists(dicom):
             csa_header, csa_values = parse_csa_params(dicom)
             for name, val in csa_values.items():
-                param_cls_name = f'protocol.imaging.{name}'
-
-                try:
-                    param_cls = import_string(param_cls_name)
-                    if name in self.parameters:
-                        self[name] = param_cls(val)
-                except ImportError:
-                    logger.error(f'Could not import {param_cls_name}')
-                except (TypeError, ValueError):
-                    self[name] = param_cls(Invalid)
+                if name in self.parameters:
+                    self.add_parameter(name, val)
         else:
             logger.info('No private header found in DICOM file')
             # TODO: throw a warning when expected header doesnt exist
@@ -2044,12 +2052,7 @@ class ImagingSequence(BaseSequence, ABC):
             if isinstance(value, BaseParameter):
                 self[pname] = value
             else:
-                param_cls_name = f'protocol.imaging.{pname}'
-                param_cls = import_string(param_cls_name)
-                try:
-                    self[pname] = param_cls(value)
-                except (TypeError, ValueError):
-                    self[pname] = param_cls(Invalid)
+                self.add_parameter(pname, value)
 
     def set_echo_times(self, echo_times, echo_number=None):
         """Sets the echo times for a multi-echo sequence."""

@@ -3,7 +3,7 @@
 import pytest
 import pydicom
 from pathlib import Path
-from protocol import DICOMImagingSequence, logger
+from protocol import DicomImagingSequence, logger
 from protocol.config import Unspecified, UnspecifiedType
 from protocol.imaging import MultiValueEchoTime, MultiValueEchoNumber
 from protocol.utils import import_string, get_dicom_param_value, header_exists, \
@@ -14,7 +14,7 @@ from hypothesis import given
 from hypothesis.strategies import dictionaries, text, floats, lists
 
 # Import your class here
-from protocol import DICOMImagingSequence
+from protocol import DicomImagingSequence
 
 # Hypothesis strategy for valid DICOM parameters
 dicom_params = dictionaries(
@@ -24,7 +24,7 @@ dicom_params = dictionaries(
 
 # # Test multi-echo handling
 # def test_multi_echo_handling():
-#     seq = DICOMImagingSequence()
+#     seq = DicomImagingSequence()
 #     seq.set_echo_times([20.0, 30.0], echo_number=2)
 #     assert seq.multi_echo
 #     assert seq['EchoTime'].values == [20.0, 30.0]

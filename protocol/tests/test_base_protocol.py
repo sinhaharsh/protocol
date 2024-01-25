@@ -3,7 +3,7 @@ from hypothesis import given, settings
 from hypothesis import HealthCheck
 from hypothesis.strategies import text, lists, dictionaries
 from protocol import MRImagingProtocol, \
-    DICOMImagingSequence  # Replace with actual import path
+    DicomImagingSequence  # Replace with actual import path
 from protocol.utils import convert2ascii
 
 
@@ -17,7 +17,7 @@ def test_initialization_defaults():
 
 # Test adding sequences
 def test_add_sequence(sample_dcm):
-    sequence = DICOMImagingSequence(dicom=sample_dcm)
+    sequence = DicomImagingSequence(dicom=sample_dcm)
     protocol = MRImagingProtocol()
     protocol.add(sequence)
     assert len(protocol._seq) == 1
@@ -32,8 +32,8 @@ def test_add_invalid_type():
 
 def test_add_duplicate_name(sample_dcm):
     protocol = MRImagingProtocol()
-    sequence1 = DICOMImagingSequence(name="Sequence1", dicom=sample_dcm)
-    sequence2 = DICOMImagingSequence(name="Sequence1", dicom=sample_dcm)
+    sequence1 = DicomImagingSequence(name="Sequence1", dicom=sample_dcm)
+    sequence2 = DicomImagingSequence(name="Sequence1", dicom=sample_dcm)
     protocol.add(sequence1)
     with pytest.raises(ValueError):
         protocol.add(sequence2)
@@ -44,7 +44,7 @@ def test_protocol_emptiness():
     empty_protocol = MRImagingProtocol()
     assert not empty_protocol
     non_empty_protocol = MRImagingProtocol()
-    non_empty_protocol.add(DICOMImagingSequence())
+    non_empty_protocol.add(DicomImagingSequence())
     assert non_empty_protocol
 
 
@@ -56,9 +56,9 @@ def test_get_sequence(sequence_name, sample_dcm):
     seq_name = convert2ascii(sequence_name)
     if not seq_name:
         with pytest.raises(ValueError):
-            sequence = DICOMImagingSequence(name=sequence_name, dicom=sample_dcm)
+            sequence = DicomImagingSequence(name=sequence_name, dicom=sample_dcm)
     else:
-        sequence = DICOMImagingSequence(name=sequence_name, dicom=sample_dcm)
+        sequence = DicomImagingSequence(name=sequence_name, dicom=sample_dcm)
         protocol.add(sequence)
         assert len(protocol._seq) == 1
 

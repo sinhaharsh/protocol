@@ -1752,7 +1752,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             # raise ValueError('Program name not set. Use set_program_name() to
             # set it')
         for sequence_name in self.programs[self.program_name].keys():
-            seq = DICOMImagingSequence(name=sequence_name)
+            seq = DicomImagingSequence(name=sequence_name)
             parameters = {}
             for param_name in self._parameter_map.keys():
                 parameters[param_name] = self._get_parameter(sequence_name,

@@ -18,6 +18,40 @@ with warnings.catch_warnings():
     from nibabel.nicom import csareader
 
 
+def get_bids_param_value(bidsdata: dict,
+                         name: str,
+                         not_found_value=None,
+                         tag_dict=DICOM_TAGS):
+    """
+    Extracts value from BIDS metadata looking up the corresponding HEX tag
+    in config.BIDS_TAGS
+
+    Parameters
+    ----------
+    bidsdata : dict
+        bids data dictionary
+
+    name : str
+        parameter name such as MagneticFieldStrength or Manufacturer
+
+    not_found_value : object
+        value to be returned if name is not found
+
+    Returns
+    -------
+    This method return a value for the given key. If key is not available,
+    then returns default value None.
+    """
+    if name not in tag_dict:
+        return None
+
+    value = bidsdata.get(name, None)
+
+    if value is not None:
+        return auto_convert(value)
+    else:
+        return not_found_value
+
 def get_dicom_param_value(dicom: pydicom.FileDataset,
                           name: str,
                           not_found_value=None,
@@ -356,6 +390,8 @@ def get_sequence_name(dicom: pydicom.FileDataset) -> str:
 
 
 def boolify(s):
+    if isinstance(s, bool):
+        return s
     if s == 'True':
         return True
     if s == 'False':

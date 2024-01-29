@@ -294,6 +294,7 @@ class SequenceName(CategoricalParameter):
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
 
+
 class ImageType(MultiValueCategoricalParameter):
     """Parameter specific class for ImageType"""
 
@@ -308,6 +309,7 @@ class ImageType(MultiValueCategoricalParameter):
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
+
 
 class NonLinearGradientCorrection(CategoricalParameter):
     """Parameter specific class for NonLinearGradientCorrection"""
@@ -1982,7 +1984,6 @@ class BidsImagingSequence(ImagingSequence):
     def parse(self, bidsfile, params=None):
         """Parses the parameter values from a given DICOM object or file."""
 
-
         if self.parameters is None:
             if params is None:
                 raise ValueError('imaging_params must be provided either during'
@@ -1998,7 +1999,6 @@ class BidsImagingSequence(ImagingSequence):
                 bidsdata = json.load(f)
             except ValueError:
                 raise ValueError(f'BIDS file - {bidsfile} is not a valid json.')
-
 
         for pname in self.parameters:
             # pname = param_class._name

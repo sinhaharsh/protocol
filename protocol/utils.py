@@ -37,6 +37,9 @@ def get_bids_param_value(bidsdata: dict,
     not_found_value : object
         value to be returned if name is not found
 
+    tag_dict: dict
+        dictionary containing tag name for various parameters
+
     Returns
     -------
     This method return a value for the given key. If key is not available,
@@ -52,6 +55,7 @@ def get_bids_param_value(bidsdata: dict,
     else:
         return not_found_value
 
+
 def get_dicom_param_value(dicom: pydicom.FileDataset,
                           name: str,
                           not_found_value=None,
@@ -62,6 +66,8 @@ def get_dicom_param_value(dicom: pydicom.FileDataset,
 
     Parameters
     ----------
+    tag_dict: dict
+        dictionary containing tag name and corresponding HEX tag
     dicom : pydicom.FileDataset
         dicom object read from pydicom.read_file
 
@@ -119,7 +125,8 @@ def parse_csa_params(dicom: pydicom.FileDataset,
                      not_found_value=None
                      ):
     """
-    Returns params parsed from private CSA header from Siemens scanner exported DICOM
+    Returns params parsed from private CSA header from Siemens scanner exported
+    DICOM
 
     Parameters
     ----------
@@ -168,7 +175,7 @@ def parse_csa_params(dicom: pydicom.FileDataset,
     image_header = csareader.read(get_header(dicom, 'image_header_info'))
     phase_value = safe_get(image_header,
                            'tags.PhaseEncodingDirectionPositive.items')
-    phpl = None
+    phpl = not_found_value
     if phase_value:
         phpl = phase_value[0]
 
@@ -215,14 +222,15 @@ def get_csa_props(parameter, corpus):
     if index == -1:
         return -1
 
-    # checks for atleast one character after equal sign
+    # checks for at least one character after equal sign
     shift = len(parameter) + 6
     if index + shift > len(corpus):
         print(f"#WARNING: {parameter} in CSA too short: '{corpus[index:]}'")
         return -1
 
     try:
-        # 1st value -  parameter name, 2nd value - equals sign, 3rd value - parameter value
+        # 1st value -  parameter name, 2nd value - equals sign,
+        # 3rd value - parameter value
         param_val = corpus[index:]
         code_parts = re.split('[\t\n]', param_val)
         if len(code_parts) >= 3:
@@ -232,11 +240,11 @@ def get_csa_props(parameter, corpus):
         # sAdjData.uiAdjShimMode                = 0x1
 
         # this runs multiple times on every dicom
-        # regexp is expesive? dont use unless we need to
+        # regexp is expensive? don't use unless we need to
         match = re.search(r'=\s*([^\n]+)', corpus[index:])
         if match:
             match = match.groups()[0]
-            # above is also a string. dont worry about conversion?
+            # above is also a string. don't worry about conversion?
             # match = int(match, 0)  # 0x1 -> 1
             return match
 
@@ -284,7 +292,7 @@ def header_exists(dicom: pydicom.FileDataset) -> bool:
 
 def get_effective_echo_spacing(dicom: pydicom.FileDataset,
                                not_found_value=Unspecified
-                               ) -> Optional[float]:
+                               ) -> Optional:
     """
     Calculates effective echo spacing in sec.
     * For Siemens
@@ -298,6 +306,10 @@ def get_effective_echo_spacing(dicom: pydicom.FileDataset,
     Parameters
     ----------
     dicom : pydicom.FileDataset
+        dicom object read from pydicom.read_file
+
+    not_found_value : object
+        value to be returned if a parameter is not found
 
     Returns
     -------
@@ -400,7 +412,14 @@ def boolify(s):
 
 
 def auto_convert(s):
-    """convert pydicom values to python data types for ease of use"""
+    """
+    convert pydicom values to python data types for ease of use
+
+    Parameters
+    ----------
+    s : object
+        value to be converted
+    """
 
     # keep float first, otherwise it will convert floats to integers
     for fn in (boolify, float, int):

@@ -1967,22 +1967,56 @@ class ImagingSequence(BaseSequence, ABC):
 
 
 class BidsImagingSequence(ImagingSequence):
+    """
+    Class representing an Imaging sequence for BIDS datasets
+    """
     def __init__(self, name='MRI', bidsfile=None,
                  path=None):
         """constructor"""
         super().__init__(name=name, path=path)
         self.non_empty_flag = False
+        self.img_paths = None
+        if path:
+            self.set_img_path(path)
+
         if bidsfile is not None:
             self.parse(bidsfile)
 
     def set_session_info(self, name, subject_id, session_id, run_id):
+        """
+        Sets the session information.
+
+        Parameters
+        ----------
+        name : str
+            Name of the sequence
+        subject_id : str
+            Subject ID
+        session_id : str
+            Session ID
+        run_id : str
+            Run ID
+
+        """
         self.name = name
         self.subject_id = subject_id
         self.session_id = session_id
         self.run_id = run_id
 
+    def set_img_path(self, path):
+        """
+        Stores the path to the image files
+
+        Parameters
+        ----------
+        path : Path
+            Path to the image files
+
+        """
+        self.img_paths = list(path.glob('*.nii*'))
+
     def parse(self, bidsfile, params=None):
-        """Parses the parameter values from a given DICOM object or file."""
+        """Parses the parameter values from a given BIDS JSON object or file."""
 
         if self.parameters is None:
             if params is None:
@@ -2001,13 +2035,21 @@ class BidsImagingSequence(ImagingSequence):
                 raise ValueError(f'BIDS file - {bidsfile} is not a valid json.')
 
         for pname in self.parameters:
-            # pname = param_class._name
             value = get_bids_param_value(bidsdata, pname)
             if value is not None:
+                # If even one value is not None, we will set the non_empty_flag
                 self.non_empty_flag = True
             self.add_parameter(pname, value)
 
     def is_valid(self):
+        """
+        Checks if the sequence is valid
+
+        JSON files don't have any standard. Therefore, it is possible that
+        non of the parameters specified in the config are available in the JSON
+        file. In such cases, we will return False.
+        """
+
         return self.non_empty_flag
 
 

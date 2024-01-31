@@ -153,6 +153,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'MRAcquisitionType'             : (0x18, 0x23),
     'MTState'                       : (0x18, 0x9020),
     'SpoilingState'                 : (0x18, 0x9016),
+    'ImageType'                     : (0x08, 0x08),
 
     # In-Plane Spatial Encoding
     'ParallelReductionFactorInPlane': (0x18, 0x9069),
@@ -301,6 +302,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'PATMode'                       : 'PATM',
     'PositivePCSDirections'         : 'PPCSD',
     'FieldOfView'                   : 'FOV',
+    'ImageType'                     : 'IT',
 }
 
 ACRONYMS_DEMOGRAPHICS = {

@@ -549,6 +549,8 @@ class CategoricalParameter(BaseParameter):
 
         self.allowed_values = allowed_values
         if not isinstance(value, UnspecifiedType):
+            if value is None:
+                raise ValueError(f'Got NoneType, Expected {dtype}.')
             if not isinstance(value, self.dtype):
                 try:
                     value = self.dtype(value)

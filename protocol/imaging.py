@@ -1,15 +1,15 @@
+import re
 from abc import ABC
 from bisect import insort
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-import re
 
 import numpy as np
 import pydicom
 from lxml import objectify
-
+import json
 from protocol import config as cfg, logger
 from protocol.base import (BaseImagingProtocol, BaseParameter, BaseSequence,
                            CategoricalParameter, MultiValueCategoricalParameter,
@@ -19,10 +19,11 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
                              ACRONYMS_DEMOGRAPHICS as ACRONYMS_DEMO,
                              Invalid, Unspecified, UnspecifiedType,
-                             ProtocolType, valid_neck_coils, valid_spine_coils)
+                             ProtocolType, valid_neck_coils)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
                             get_sequence_name, header_exists, import_string,
-                            parse_csa_params, expand_number_range)
+                            parse_csa_params, expand_number_range,
+                            get_bids_param_value)
 
 
 class Manufacturer(CategoricalParameter):
@@ -294,10 +295,10 @@ class SequenceName(CategoricalParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class NonLinearGradientCorrection(MultiValueCategoricalParameter):
-    """Parameter specific class for NonLinearGradientCorrection"""
+class ImageType(MultiValueCategoricalParameter):
+    """Parameter specific class for ImageType"""
 
-    _name = 'NonLinearGradientCorrection'
+    _name = 'ImageType'
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -308,6 +309,37 @@ class NonLinearGradientCorrection(MultiValueCategoricalParameter):
                          severity='optional',
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name])
+
+
+class NonLinearGradientCorrection(CategoricalParameter):
+    """Parameter specific class for NonLinearGradientCorrection"""
+
+    _name = 'NonLinearGradientCorrection'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        nlgc = self.parse(value)
+        super().__init__(name=self._name,
+                         value=nlgc,
+                         dtype=bool,
+                         required=True,
+                         severity='optional',
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name])
+
+    def parse(self, value):
+        if not isinstance(value, UnspecifiedType):
+            if isinstance(value, list):
+                for i in value:
+                    if i in ['DIS2D', 'DIS3D']:
+                        return True
+                    elif i in ['ND']:
+                        return False
+            elif isinstance(value, bool):
+                return value
+            else:
+                raise ValueError("Expected a boolean value or Iterable.")
+        return value
 
 
 class MRAcquisitionType(CategoricalParameter):
@@ -1360,7 +1392,7 @@ class ImageOrientationPatient(MultiValueNumericParameter):
         """getter"""
         if not isinstance(self._value, UnspecifiedType):
             # Add 0.0 will avoid -0.0
-            return [0.0+np.round(v, self.decimals) for v in self._value]
+            return [0.0 + np.round(v, self.decimals) for v in self._value]
         return self._value
 
     def _compare_value(self, other, rtol=0, decimals=None):
@@ -1663,8 +1695,8 @@ class MRImagingProtocol(BaseImagingProtocol):
                             f'of the protocols <{self, other}>')
                 continue
 
-            compliant =  this_seq.compliant(that_seq, rtol, decimals,
-                                      include_params)
+            compliant = this_seq.compliant(that_seq, rtol, decimals,
+                                           include_params)
             if not compliant:
                 non_compliant_sequences.append((this_seq, that_seq))
 
@@ -1676,6 +1708,7 @@ class MRImagingProtocol(BaseImagingProtocol):
 
         bool_flag, _ = self.compliant(other)
         return bool_flag
+
 
 class SiemensMRImagingProtocol(MRImagingProtocol):
     def __init__(self, name='SiemensMRProtocol',
@@ -1723,7 +1756,7 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
             # raise ValueError('Program name not set. Use set_program_name() to
             # set it')
         for sequence_name in self.programs[self.program_name].keys():
-            seq = ImagingSequence(name=sequence_name)
+            seq = DicomImagingSequence(name=sequence_name)
             parameters = {}
             for param_name in self._parameter_map.keys():
                 parameters[param_name] = self._get_parameter(sequence_name,
@@ -1856,6 +1889,171 @@ class SiemensMRImagingProtocol(MRImagingProtocol):
 
 
 class ImagingSequence(BaseSequence, ABC):
+    def __init__(self,
+                 name='MRI',
+                 dicom=None,
+                 imaging_params=None,
+                 required_params=None,
+                 store_demographics=True,
+                 path=None, ):
+        """constructor"""
+
+        self.multi_echo = False
+        self.params_classes = []
+        self.parameters = set(ACRONYMS_IMG.keys())
+        self.store_demographics = store_demographics
+        self.demographics = set(ACRONYMS_DEMO.keys())
+        super().__init__(name=name, path=path)
+
+    def add_parameter(self, pname, value, module='protocol.imaging'):
+        """
+        Adds a new parameter to the sequence.
+
+        Parameters
+        ----------
+        pname : str
+            Name of the parameter
+        value : object
+            Value of the parameter
+        module : str
+            Name of the module where the parameter class is defined
+        """
+        param_cls_name = f'{module}.{pname}'
+
+        try:
+            param_cls = import_string(param_cls_name)
+        except ImportError:
+            logger.error(f'Could not import {param_cls_name}')
+            raise ImportError(f'Could not import {param_cls_name}')
+
+        try:
+            param = param_cls(value)
+        except (TypeError, ValueError):
+            param = param_cls(Invalid)
+        self.add(param)
+
+    def _init_param_classes(self):
+        """
+        Initializes the parameter classes for the sequence.
+        """
+        for p in self.parameters:
+            param_cls_name = f'protocol.imaging.{p}'
+            try:
+                cls_object = import_string(param_cls_name)
+            except ImportError:
+                logger.error(f'Could not import {param_cls_name}')
+                raise ImportError(f'Could not import {param_cls_name}')
+            self.params_classes.append(cls_object)
+
+    def from_dict(self, params_dict):
+        """
+        Populates the sequence parameters from a dictionary.
+
+        Parameters
+        ----------
+        params_dict : dict
+            Dictionary containing the parameter names and values as key, value pairs.
+        """
+        self.parameters = set(params_dict.keys())
+
+        for pname, value in params_dict.items():
+            if isinstance(value, float) and np.isnan(value):
+                value = Unspecified
+
+            if isinstance(value, BaseParameter):
+                self[pname] = value
+            else:
+                self.add_parameter(pname, value)
+
+
+class BidsImagingSequence(ImagingSequence):
+    """
+    Class representing an Imaging sequence for BIDS datasets
+    """
+    def __init__(self, name='MRI', bidsfile=None,
+                 path=None):
+        """constructor"""
+        super().__init__(name=name, path=path)
+        self.non_empty_flag = False
+        self.img_paths = None
+        if path:
+            self.set_img_path(path)
+
+        if bidsfile is not None:
+            self.parse(bidsfile)
+
+    def set_session_info(self, name, subject_id, session_id, run_id):
+        """
+        Sets the session information.
+
+        Parameters
+        ----------
+        name : str
+            Name of the sequence
+        subject_id : str
+            Subject ID
+        session_id : str
+            Session ID
+        run_id : str
+            Run ID
+
+        """
+        self.name = name
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.run_id = run_id
+
+    def set_img_path(self, path):
+        """
+        Stores the path to the image files
+
+        Parameters
+        ----------
+        path : Path
+            Path to the image files
+
+        """
+        self.img_paths = list(path.glob('*.nii*'))
+
+    def parse(self, bidsfile, params=None):
+        """Parses the parameter values from a given BIDS JSON object or file."""
+
+        if self.parameters is None:
+            if params is None:
+                raise ValueError('imaging_params must be provided either during'
+                                 ' initialization or during parse() call')
+            else:
+                self._init_param_classes()
+
+        if not bidsfile.exists():
+            raise IOError('input bids file path does not exist!')
+
+        with open(bidsfile, 'r') as f:
+            try:
+                bidsdata = json.load(f)
+            except ValueError:
+                raise ValueError(f'BIDS file - {bidsfile} is not a valid json.')
+
+        for pname in self.parameters:
+            value = get_bids_param_value(bidsdata, pname)
+            if value is not None:
+                # If even one value is not None, we will set the non_empty_flag
+                self.non_empty_flag = True
+            self.add_parameter(pname, value)
+
+    def is_valid(self):
+        """
+        Checks if the sequence is valid
+
+        JSON files don't have any standard. Therefore, it is possible that
+        non of the parameters specified in the config are available in the JSON
+        file. In such cases, we will return False.
+        """
+
+        return self.non_empty_flag
+
+
+class DicomImagingSequence(ImagingSequence):
     """Class representing an Imaging sequence
 
     Although we would use it mostly for MR imaging sequences to start with
@@ -1929,8 +2127,6 @@ class ImagingSequence(BaseSequence, ABC):
         self.series_number = str(dicom.get('SeriesNumber', None))
         self.session_id = str(dicom.get('StudyInstanceUID', None))
         self.run_id = dicom.get('SeriesInstanceUID', None)
-        # if self.series_number:
-        #     self.name = f'{self.name}_{self.series_number}'
         date = dicom.get('ContentDate', None)
         # time = dicom.get('ContentTime', None)
         # TODO: time format varies across datasets. Find a way to
@@ -1944,25 +2140,7 @@ class ImagingSequence(BaseSequence, ABC):
             for pname in self.demographics:
                 value = get_dicom_param_value(dicom, pname,
                                               tag_dict=SESSION_TAGS)
-                param_cls_name = f'protocol.imaging.{pname}'
-                param_cls = import_string(param_cls_name)
-                try:
-                    self[pname] = param_cls(value)
-                except (TypeError, ValueError):
-                    self[pname] = param_cls(Invalid)
-
-    def _init_param_classes(self):
-        """
-        Initializes the parameter classes for the sequence.
-        """
-        for p in self.parameters:
-            param_cls_name = f'protocol.imaging.{p}'
-            try:
-                cls_object = import_string(param_cls_name)
-            except ImportError:
-                logger.error(f'Could not import {param_cls_name}')
-                raise ImportError(f'Could not import {param_cls_name}')
-            self.params_classes.append(cls_object)
+                self.add_parameter(pname, value)
 
     def parse(self, dicom, params=None):
         """Parses the parameter values from a given DICOM object or file."""
@@ -1981,16 +2159,10 @@ class ImagingSequence(BaseSequence, ABC):
                     raise IOError('input dicom path does not exist!')
                 dicom = pydicom.dcmread(dicom)
 
-        for param_class in self.params_classes:
-            pname = param_class._name
+        for pname in self.parameters:
+            # pname = param_class._name
             value = get_dicom_param_value(dicom, pname)
-            if value is None:
-                self[pname] = param_class(Unspecified)
-            else:
-                try:
-                    self[pname] = param_class(value)
-                except (TypeError, ValueError):
-                    self[pname] = param_class(Invalid)
+            self.add_parameter(pname, value)
 
     def _parse_private(self, dicom):
         """vendor specific private headers"""
@@ -1998,16 +2170,8 @@ class ImagingSequence(BaseSequence, ABC):
         if header_exists(dicom):
             csa_header, csa_values = parse_csa_params(dicom)
             for name, val in csa_values.items():
-                param_cls_name = f'protocol.imaging.{name}'
-
-                try:
-                    param_cls = import_string(param_cls_name)
-                    if name in self.parameters:
-                        self[name] = param_cls(val)
-                except ImportError:
-                    logger.error(f'Could not import {param_cls_name}')
-                except (TypeError, ValueError):
-                    self[name] = param_cls(Invalid)
+                if name in self.parameters:
+                    self.add_parameter(name, val)
         else:
             logger.info('No private header found in DICOM file')
             # TODO: throw a warning when expected header doesnt exist
@@ -2025,31 +2189,6 @@ class ImagingSequence(BaseSequence, ABC):
         else:
             compliant = this_param.compliant(that_param)
         return compliant
-
-    def from_dict(self, params_dict):
-        """
-        Populates the sequence parameters from a dictionary.
-
-        Parameters
-        ----------
-        params_dict : dict
-            Dictionary containing the parameter names and values as key, value pairs.
-        """
-        self.parameters = set(params_dict.keys())
-
-        for pname, value in params_dict.items():
-            if isinstance(value, float) and np.isnan(value):
-                value = Unspecified
-
-            if isinstance(value, BaseParameter):
-                self[pname] = value
-            else:
-                param_cls_name = f'protocol.imaging.{pname}'
-                param_cls = import_string(param_cls_name)
-                try:
-                    self[pname] = param_cls(value)
-                except (TypeError, ValueError):
-                    self[pname] = param_cls(Invalid)
 
     def set_echo_times(self, echo_times, echo_number=None):
         """Sets the echo times for a multi-echo sequence."""

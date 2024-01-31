@@ -6,7 +6,7 @@ deps = flake8
 commands = flake8 protocol
 # E203 - whitespace before ':'
 ignore =
-    E203,
+    E203, W503
 exclude =
     docs,
     */_version.py,

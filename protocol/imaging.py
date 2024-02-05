@@ -485,10 +485,10 @@ class DwellTime(NumericParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class MultiBandAccelerationFactor(NumericParameter):
-    """Parameter specific class for MultiBandAccelerationFactor"""
+class MultibandAccelerationFactor(NumericParameter):
+    """Parameter specific class for MultibandAccelerationFactor"""
 
-    _name = 'MultiBandAccelerationFactor'
+    _name = 'MultibandAccelerationFactor'
 
     def __init__(self, value=Unspecified):
         """Constructor."""

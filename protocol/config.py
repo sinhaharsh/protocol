@@ -172,7 +172,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'FlipAngle'                     : (0x18, 0x1314),
 
     # Slice Acceleration Parameters
-    'MultiBandAccelerationFactor'   : (0x43, 0x1083),
+    'MultibandAccelerationFactor'   : (0x43, 0x1083),
 
     # Misc Parameters
     'BodyPartExamined'              : (0x18, 0x15),
@@ -254,7 +254,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'DwellTime'                     : 'DT',
     'RepetitionTime'                : 'TR',
     'FlipAngle'                     : 'FA',
-    'MultiBandAccelerationFactor'   : 'MAF',
+    'MultibandAccelerationFactor'   : 'MAF',
     'BodyPartExamined'              : 'BPE',
     'EchoTrainLength'               : 'ETL',
     'PixelBandwidth'                : 'PBW',

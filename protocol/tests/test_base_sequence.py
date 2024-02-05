@@ -5,6 +5,7 @@ from hypothesis.strategies import text, dictionaries, floats
 
 from protocol import BaseSequence  # Replace with actual import path
 from protocol.base import NumericParameter
+from protocol.config import Unspecified
 from protocol.utils import convert2ascii
 
 
@@ -151,4 +152,78 @@ def test_string_representation(parameter_name1, parameter_value1,
                 sequence) == (f"Sequence({parameter_name1}={parameter_value1},"
                               f"{parameter_name2}={parameter_value2})")
         except AssertionError:
-            assert str(sequence) == f"Sequence({convert2ascii(parameter_name2)}={parameter_value2},{convert2ascii(parameter_name1)}={parameter_value1})"
+            assert str(
+                sequence) == (f"Sequence({parameter_name2}={parameter_value2},"
+                              f"{parameter_name1}={parameter_value1})")
+
+
+@given(parameter_name1=text(), parameter_value1=floats(),
+       parameter_name2=text(), parameter_value2=floats())
+def test_string_representation_with_unspecified(parameter_name1,
+                                                parameter_value1,
+                                                parameter_name2,
+                                                parameter_value2):
+    """
+    Test string representation with unspecified parameters. If the parameter
+    name is not specified or the value is UnspecifiedType,
+    the parameter should not be included in the string representation.
+    """
+    parameter_name1 = convert2ascii(parameter_name1)
+    parameter_name2 = convert2ascii(parameter_name2)
+
+    sequence = BaseSequence()
+
+    # Create dummy parameters
+    if (not parameter_name1) or np.isnan(parameter_value1):
+        with pytest.raises(ValueError):
+            _ = NumericParameter(name=parameter_name1,
+                                 value=parameter_value1)
+        return
+    else:
+        parameter1 = NumericParameter(name=parameter_name1,
+                                      value=parameter_value1)
+
+    if (not parameter_name2) or np.isnan(parameter_value2):
+        with pytest.raises(ValueError):
+            _ = NumericParameter(name=parameter_name2,
+                                 value=parameter_value2)
+        return
+    else:
+        parameter2 = NumericParameter(name=parameter_name2,
+                                      value=parameter_value2)
+
+    # Create an unspecified parameter
+    unspecified_parameter = NumericParameter(name="UnspecifiedParameter",
+                                             value=Unspecified)
+
+    # Add parameters to the sequence
+    sequence.add(parameter1)
+    sequence.add(parameter2)
+    sequence.add(unspecified_parameter)
+
+    # Test string representation
+    # If the parameter name is not specified (the value is UnspecifiedType),
+    # the parameter should not be included in the string representation.
+
+    # If hypothesis generates a parameter name that is same for both parameters,
+    # the string representation will include the updated value of the parameter.
+    # i.e. parameter_name2 and parameter_value2
+    if parameter_name1 == parameter_name2:
+        # ground truth string representation
+        str_gt = f"Sequence({parameter_name2}={parameter_value2})"
+        assert str(sequence) == str_gt
+    else:
+        # the parameter names in the string representation can be in any order
+        # checking for both possible string representations
+        try:
+            # ground truth string representation
+            str_gt = (f"Sequence({parameter_name1}={parameter_value1},"
+                      f"{parameter_name2}={parameter_value2})")
+            assert str(
+                sequence) == str_gt
+        except AssertionError:
+            # ground truth string representation
+            str_gt = (f"Sequence({parameter_name2}={parameter_value2},"
+                      f"{parameter_name1}={parameter_value1})")
+            assert str(
+                sequence) == str_gt

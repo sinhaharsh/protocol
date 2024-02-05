@@ -32,7 +32,7 @@ def test_add_parameter():
 def test_add_non_baseparameter():
     sequence = BaseSequence()
     with pytest.raises(ValueError):
-        sequence.add("invalid_parameter")
+        sequence.add("invalid_parameter")  # noqa
 
 
 # Test getting parameters
@@ -42,13 +42,13 @@ def test_get_parameter(parameter_name, parameter_value):
     name = convert2ascii(parameter_name)
     if not name:
         with pytest.raises(ValueError):
-            parameter = NumericParameter(name=parameter_name,
-                                         value=parameter_value)
+            NumericParameter(name=parameter_name,
+                             value=parameter_value)
         return
     if np.isnan(parameter_value):
         with pytest.raises(ValueError):
-            parameter = NumericParameter(name=parameter_name,
-                                     value=parameter_value)
+            NumericParameter(name=parameter_name,
+                             value=parameter_value)
         return
     else:
         parameter = NumericParameter(name=parameter_name,
@@ -61,7 +61,7 @@ def test_get_parameter(parameter_name, parameter_value):
 def test_get_non_existing_parameter():
     sequence = BaseSequence()
     with pytest.raises(KeyError):
-        retrieved_parameter = sequence["NonExistingParameter"]
+        _ = sequence["NonExistingParameter"]
     default_value = sequence.get("NonExistingParameter", "DefaultValue")
     assert default_value == "DefaultValue"
 
@@ -73,17 +73,23 @@ def test_equivalence_and_compliance(params_dict):
     if any(not convert2ascii(name) for name in params_dict.keys()):
         with pytest.raises(ValueError):
             sequence1 = BaseSequence()
-            sequence1.add(NumericParameter(name=name, value=value) for name, value in params_dict.items())
+            sequence1.add(
+                NumericParameter(name=name, value=value) for name, value in
+                params_dict.items())
         return
     if any(np.isnan(value) for value in params_dict.values()):
         with pytest.raises(ValueError):
             sequence1 = BaseSequence()
-            sequence1.add(NumericParameter(name=name, value=value) for name, value in params_dict.items())
+            sequence1.add(
+                NumericParameter(name=name, value=value) for name, value in
+                params_dict.items())
         return
     sequence1 = BaseSequence()
-    sequence1.add(NumericParameter(name=name, value=value) for name, value in params_dict.items())
+    sequence1.add(NumericParameter(name=name, value=value) for name, value in
+                  params_dict.items())
     sequence2 = BaseSequence()
-    sequence2.add(NumericParameter(name=name, value=value) for name, value in params_dict.items())
+    sequence2.add(NumericParameter(name=name, value=value) for name, value in
+                  params_dict.items())
     assert sequence1 == sequence2
     compliant, non_compliant_params = sequence1.compliant(sequence2)
     assert compliant
@@ -105,7 +111,8 @@ def test_deletion_and_iterable(parameter_name, parameter_value):
 
 
 # Test string representation
-@given(parameter_name1=text(), parameter_value1=floats(), parameter_name2=text(), parameter_value2=floats())
+@given(parameter_name1=text(), parameter_value1=floats(),
+       parameter_name2=text(), parameter_value2=floats())
 def test_string_representation(parameter_name1, parameter_value1,
                                parameter_name2, parameter_value2):
     # assume(convert2ascii(parameter_name1))
@@ -117,8 +124,8 @@ def test_string_representation(parameter_name1, parameter_value1,
 
     if (not parameter_name1) or np.isnan(parameter_value1):
         with pytest.raises(ValueError):
-            parameter1 = NumericParameter(name=parameter_name1,
-                                          value=parameter_value1)
+            _ = NumericParameter(name=parameter_name1,
+                                 value=parameter_value1)
         return
     else:
         parameter1 = NumericParameter(name=parameter_name1,
@@ -126,8 +133,8 @@ def test_string_representation(parameter_name1, parameter_value1,
 
     if (not parameter_name2) or np.isnan(parameter_value2):
         with pytest.raises(ValueError):
-            parameter2 = NumericParameter(name=parameter_name2,
-                                          value=parameter_value2)
+            _ = NumericParameter(name=parameter_name2,
+                                 value=parameter_value2)
         return
     else:
         parameter2 = NumericParameter(name=parameter_name2,
@@ -136,9 +143,12 @@ def test_string_representation(parameter_name1, parameter_value1,
     sequence.add(parameter1)
     sequence.add(parameter2)
     if parameter_name1 == parameter_name2:
-        assert str(sequence) == f"Sequence({convert2ascii(parameter_name1)}={parameter_value2})"
+        assert str(
+            sequence) == f"Sequence({parameter_name1}={parameter_value2})"
     else:
         try:
-            assert str(sequence) == f"Sequence({convert2ascii(parameter_name1)}={parameter_value1},{convert2ascii(parameter_name2)}={parameter_value2})"
+            assert str(
+                sequence) == (f"Sequence({parameter_name1}={parameter_value1},"
+                              f"{parameter_name2}={parameter_value2})")
         except AssertionError:
             assert str(sequence) == f"Sequence({convert2ascii(parameter_name2)}={parameter_value2},{convert2ascii(parameter_name1)}={parameter_value1})"

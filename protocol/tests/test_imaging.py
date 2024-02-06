@@ -3,10 +3,9 @@ import unittest
 from pathlib import Path
 
 from protocol import SiemensMRImagingProtocol
-from protocol.imaging import ReceiveCoilActiveElements
+from protocol.imaging import ReceiveCoilActiveElements, ImagingSequence
 from protocol.tests.conftest import THIS_DIR
 from protocol.tests.utils import download
-from protocol.utils import import_string
 
 
 def is_compliant(value, ref_value, param_name, body_part_examined=None):

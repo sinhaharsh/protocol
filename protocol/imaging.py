@@ -1,9 +1,11 @@
+import json
 import re
 from abc import ABC
 from bisect import insort
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
+from importlib import import_module
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +24,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              Invalid, Unspecified, UnspecifiedType,
                              ProtocolType, valid_neck_coils)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
-                            get_sequence_name, header_exists, import_string,
+                            get_sequence_name, header_exists,
                             parse_csa_params, expand_number_range,
                             get_bids_param_value)
 
@@ -1937,7 +1939,7 @@ class ImagingSequence(BaseSequence, ABC):
         param_cls_name = f'{module}.{pname}'
 
         try:
-            param_cls = import_string(param_cls_name)
+            param_cls = self.import_string(param_cls_name)
         except ImportError:
             logger.error(f'Could not import {param_cls_name}')
             raise ImportError(f'Could not import {param_cls_name}')
@@ -1955,7 +1957,7 @@ class ImagingSequence(BaseSequence, ABC):
         for p in self.parameters:
             param_cls_name = f'protocol.imaging.{p}'
             try:
-                cls_object = import_string(param_cls_name)
+                cls_object = self.import_string(param_cls_name)
             except ImportError:
                 logger.error(f'Could not import {param_cls_name}')
                 raise ImportError(f'Could not import {param_cls_name}')
@@ -1980,6 +1982,47 @@ class ImagingSequence(BaseSequence, ABC):
                 self[pname] = value
             else:
                 self.add_parameter(pname, value)
+
+    @staticmethod
+    def import_string(dotted_path):
+        """
+        Import a dotted module path and return the attribute/class designated by
+        the last name in the path. Raise ImportError if the import failed.
+        """
+
+        # TODO: if not able to search for the module, then find the class
+        #  by comparing all classes in lowercase.
+        #  If found, then return the class
+
+        # check if it is a valid module path
+        try:
+            module_path, class_name = dotted_path.rsplit(".", 1)
+        except ValueError as err:
+            raise ImportError(
+                "%s doesn't look like a module path" % dotted_path) from err
+
+        # if the parameter class exists with an alternative name in the module
+        if class_name in ANALOGUES_DICT:
+            class_name = ANALOGUES_DICT[class_name]
+
+        # import module : protocol.imaging
+        module = import_module(module_path)
+
+        try:
+            # directly try if the parameter class exists
+            return getattr(module, class_name)
+        except AttributeError:
+            # if not, search for appropriate parameter class in the module
+            for name, cls in module.__dict__.items():
+                if name.lower() == class_name.lower() \
+                        and issubclass(cls, BaseParameter):
+                    return getattr(module, name)
+
+        # didn't find an appropriate class raise error
+        raise ImportError(
+            'Module "%s" does not define a "%s" attribute/class'
+            % (module_path, class_name)
+        )
 
 
 class BidsImagingSequence(ImagingSequence):

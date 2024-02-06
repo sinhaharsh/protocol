@@ -3,7 +3,6 @@ import json
 import re
 import unicodedata
 import warnings
-from importlib import import_module
 from pathlib import Path
 from typing import Optional
 
@@ -328,32 +327,6 @@ def get_effective_echo_spacing(dicom: pydicom.FileDataset,
         return value / 1000
     else:
         return not_found_value
-
-
-def import_string(dotted_path):
-    """
-    Import a dotted module path and return the attribute/class designated by the
-    last name in the path. Raise ImportError if the import failed.
-    """
-
-    # TODO: if not able to search for the module, then find the class
-    #  by comparing all classes in lowercase. If found, then return the class
-
-    try:
-        module_path, class_name = dotted_path.rsplit(".", 1)
-    except ValueError as err:
-        raise ImportError(
-            "%s doesn't look like a module path" % dotted_path) from err
-
-    module = import_module(module_path)
-
-    try:
-        return getattr(module, class_name)
-    except AttributeError as err:
-        raise ImportError(
-            'Module "%s" does not define a "%s" attribute/class'
-            % (module_path, class_name)
-        ) from err
 
 
 def convert2ascii(value, allow_unicode=False):

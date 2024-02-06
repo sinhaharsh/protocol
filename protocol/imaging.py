@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pydicom
 from lxml import objectify
-import json
+
 from protocol import config as cfg, logger
 from protocol.base import (BaseImagingProtocol, BaseParameter, BaseSequence,
                            CategoricalParameter, MultiValueCategoricalParameter,
@@ -18,6 +18,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
                              ACRONYMS_DEMOGRAPHICS as ACRONYMS_DEMO,
+                             PARAMETERS_ANALOGUES_DICT as ANALOGUES_DICT,
                              Invalid, Unspecified, UnspecifiedType,
                              ProtocolType, valid_neck_coils)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
@@ -761,6 +762,21 @@ class PhaseEncodingDirection(CategoricalParameter):
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name],
                          allowed_values=cfg.allowed_values_PED)
+
+
+class InPlanePhaseEncodingDirection(CategoricalParameter):
+    """Parameter specific class for InPlanePhaseEncodingDirection"""
+
+    _name = 'InPlanePhaseEncodingDirection'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name],
+                         allowed_values=['ROW', 'COL'])
 
 
 class ScanningSequence(CategoricalParameter):

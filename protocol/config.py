@@ -161,6 +161,7 @@ BASE_IMAGING_PARAMS_DICOM_TAGS = {
     'PartialFourier'                : (0x18, 0x9081),
     'PartialFourierDirection'       : (0x18, 0x9036),
     'PhaseEncodingDirection'        : (0x18, 0x1312),
+    'InPlanePhaseEncodingDirection' : (0x18, 0x1312),
 
     # Timing Parameters
     'EchoTime'                      : (0x18, 0x81),
@@ -303,6 +304,7 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'PositivePCSDirections'         : 'PPCSD',
     'FieldOfView'                   : 'FOV',
     'ImageType'                     : 'IT',
+    'InPlanePhaseEncodingDirection' : 'PPED'
 }
 
 ACRONYMS_DEMOGRAPHICS = {
@@ -316,6 +318,27 @@ ACRONYMS_DEMOGRAPHICS = {
     "ContentDate"    : "CD",
     "ContentTime"    : "CT",
 }
+
+PARAMETERS_ANALOGUES = {
+    'InPlanePhaseEncodingDirection': [
+        'InPlanePhaseEncodingDirectionDICOM',
+    ],
+    'ManufacturersModelName': [
+        'ManufacturerModelName',
+    ],
+    'PhaseEncodingSteps'    : [
+        'NumberOfPhaseEncodingSteps',
+    ],
+    'PercentPhaseFOV'       : [
+        'PercentPhaseFieldOfView',
+    ],
+
+}
+
+# Invert the dictionary to get the reverse mapping
+PARAMETERS_ANALOGUES_DICT = {val: key
+                             for key, values in PARAMETERS_ANALOGUES.items()
+                             for val in values}
 
 BASE_IMAGING_PARAMETER_NAMES = list(BASE_IMAGING_PARAMS_DICOM_TAGS.keys())
 

@@ -2093,12 +2093,14 @@ class BidsImagingSequence(ImagingSequence):
             except ValueError:
                 raise ValueError(f'BIDS file - {bidsfile} is not a valid json.')
 
-        for pname in self.parameters:
+        for pname in bidsdata.keys():
+            # check if an alternative name for the class exists
+            pname_alter = ANALOGUES_DICT.get(pname, pname)
             value = get_bids_param_value(bidsdata, pname)
             if value is not None:
                 # If even one value is not None, we will set the non_empty_flag
                 self.non_empty_flag = True
-            self.add_parameter(pname, value)
+            self.add_parameter(pname_alter, value)
 
     def is_valid(self):
         """

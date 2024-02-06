@@ -6,7 +6,7 @@ from pathlib import Path
 from protocol import DicomImagingSequence, logger
 from protocol.config import Unspecified, UnspecifiedType
 from protocol.imaging import MultiValueEchoTime, MultiValueEchoNumber
-from protocol.utils import import_string, get_dicom_param_value, header_exists, \
+from protocol.utils import get_dicom_param_value, header_exists, \
     parse_csa_params
 
 import pytest

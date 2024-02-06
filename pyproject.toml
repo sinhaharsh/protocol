@@ -17,7 +17,7 @@ dependencies = [
 ]
 authors = [
     { name = "Pradeep Reddy Raamana", email = "raamana@gmail.com" },
-    { name = "Harsh Sinha", email = "sinha.harsh@pitt.edu" },
+    { name = "Harsh Sinha", email = "harsh.sinha@pitt.edu" },
 ]
 keywords = [
     "protocol",

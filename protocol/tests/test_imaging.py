@@ -11,7 +11,7 @@ from protocol.utils import import_string
 
 def is_compliant(value, ref_value, param_name, body_part_examined=None):
     """Check if two values are equal"""
-    param_cls = import_string(f'protocol.imaging.{param_name}')
+    param_cls = ImagingSequence.import_string(f'protocol.imaging.{param_name}')
     param = param_cls(value)
     ref_param = param_cls(ref_value)
     return ref_param.compliant(param, body_part_examined=body_part_examined)
@@ -39,7 +39,7 @@ class TestReceiveCoilActiveElements(unittest.TestCase):
         value = 'HC1-7;SP2-5'
         reference = 'HC1-7;NC1,2'
         self.assertFalse(is_compliant(value, reference,
-                                     self.param_name, body_part_examined))
+                                      self.param_name, body_part_examined))
         value = 'HC1-7'
         reference = 'HC1-7;NC1,2'
         self.assertTrue(is_compliant(value, reference,
@@ -51,15 +51,15 @@ class TestReceiveCoilActiveElements(unittest.TestCase):
         value = 'HC1,3-7'
         reference = 'HC1-7;NC1,2'
         self.assertTrue(is_compliant(value, reference,
-                                      self.param_name, body_part_examined))
+                                     self.param_name, body_part_examined))
         value = 'HC1,3'
         reference = 'HC1-3;NC1,2'
         self.assertTrue(is_compliant(value, reference,
-                                      self.param_name, body_part_examined))
+                                     self.param_name, body_part_examined))
         value = 'HC1-3'
         reference = 'HC1,3'
         self.assertTrue(is_compliant(value, reference,
-                                      self.param_name, body_part_examined))
+                                     self.param_name, body_part_examined))
 
     def test_compliant_direction(self):
         body_part_examined = 'BRAIN'
@@ -193,7 +193,7 @@ def test_parse_receive_coil_active_elements():
 def test_mr_protocol_xml_parsing():
     # Using an example XML file from the following Github repository
     # https://github.com/lrq3000/mri_protocol
-    url = 'https://raw.githubusercontent.com/lrq3000/mri_protocol/master/SiemensVidaProtocol/Coma%20Science%20Group.xml' # noqa
+    url = 'https://raw.githubusercontent.com/lrq3000/mri_protocol/master/SiemensVidaProtocol/Coma%20Science%20Group.xml'  # noqa
     filename = THIS_DIR / 'coma_science.xml'
     xml_file = Path(filename)
 

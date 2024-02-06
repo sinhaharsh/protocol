@@ -10,7 +10,7 @@ import pydicom
 
 from protocol import logger
 from protocol.config import (BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
-                             Unspecified)
+                             Unspecified, SLICE_MODE, PAT, SHIM, HEADER_TAGS)
 
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore')
@@ -150,13 +150,13 @@ def parse_csa_params(dicom: pydicom.FileDataset,
         raise AttributeError('CSA Header exists, but xProtocol is missing')
 
     slice_code = get_csa_props("sKSpace.ucMultiSliceMode", text)
-    slice_mode = config.SLICE_MODE.get(slice_code, slice_code)
+    slice_mode = SLICE_MODE.get(slice_code, slice_code)
 
     ipat_code = get_csa_props("sPat.ucPATMode", text)
-    ipat = config.PAT.get(ipat_code, ipat_code)
+    ipat = PAT.get(ipat_code, ipat_code)
 
     shim_code = get_csa_props("sAdjData.uiAdjShimMode", text)
-    shim = config.SHIM.get(shim_code, shim_code)
+    shim = SHIM.get(shim_code, shim_code)
 
     shim_first_order = []
     for i in ['X', 'Y', 'Z']:
@@ -205,7 +205,7 @@ def get_header(dicom: pydicom.FileDataset, name: str):
     This method return a value for the given key. If key is not available,
     then returns default value None.
     """
-    data = dicom.get(config.HEADER_TAGS[name], None)
+    data = dicom.get(HEADER_TAGS[name], None)
     if data:
         return data.value
     return None

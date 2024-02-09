@@ -35,9 +35,11 @@ Homepage = "https://github.com/raamana/protocol"
 [tool.hatch.build]
 include = [
     "protocol/*.py",
+    "protocol/resources/*",
+    "protocol/tests/*",
+    "protocol/tests/resources/*",
 ]
 exclude = [
-    "protocol/tests/*",
 ]
 
 [tool.hatch.version]

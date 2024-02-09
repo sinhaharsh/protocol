@@ -2100,7 +2100,13 @@ class BidsImagingSequence(ImagingSequence):
             if value is not None:
                 # If even one value is not None, we will set the non_empty_flag
                 self.non_empty_flag = True
-            self.add_parameter(pname_alter, value)
+
+            try:
+                self.add_parameter(pname_alter, value)
+            except ImportError as err:
+                # if the parameter class does not exist, log the error
+                # and continue to the next parameter
+                logger.error(err)
 
     def is_valid(self):
         """

@@ -12,3 +12,4 @@ lxml
 nibabel
 hypothesis
 flake8
+requests

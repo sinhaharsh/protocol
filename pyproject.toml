@@ -27,7 +27,13 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3.11",
 ]
-
+[project.optional-dependencies]
+test = [
+    "requests",
+    "pytest",
+    "hypothesis",
+    "flake8",
+]
 [project.urls]
 Homepage = "https://github.com/raamana/protocol"
 

@@ -22,7 +22,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              ACRONYMS_DEMOGRAPHICS as ACRONYMS_DEMO,
                              PARAMETERS_ANALOGUES_DICT as ANALOGUES_DICT,
                              Invalid, Unspecified, UnspecifiedType,
-                             ProtocolType, valid_neck_coils)
+                             ProtocolType, valid_neck_coils, INVALID_PARAMETERS)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
                             get_sequence_name, header_exists,
                             parse_csa_params, expand_number_range,
@@ -1941,8 +1941,9 @@ class ImagingSequence(BaseSequence, ABC):
         try:
             param_cls = self.import_string(param_cls_name)
         except ImportError:
-            logger.error(f'Could not import {param_cls_name}')
-            raise ImportError(f'Could not import {param_cls_name}')
+            raise ImportError(f'Parameter {pname} is not '
+                              f'supported yet. '
+                              f'Please raise a issue on GitHub.')
 
         try:
             param = param_cls(value)
@@ -1959,8 +1960,9 @@ class ImagingSequence(BaseSequence, ABC):
             try:
                 cls_object = self.import_string(param_cls_name)
             except ImportError:
-                logger.error(f'Could not import {param_cls_name}')
-                raise ImportError(f'Could not import {param_cls_name}')
+                raise ImportError(f'Parameter {param_cls_name} is not '
+                                  f'supported yet. '
+                                  f'Please raise a issue on GitHub.')
             self.params_classes.append(cls_object)
 
     def from_dict(self, params_dict):
@@ -2103,7 +2105,12 @@ class BidsImagingSequence(ImagingSequence):
             except ValueError:
                 raise ValueError(f'BIDS file - {bidsfile} is not a valid json.')
 
+        invalid_parameters = []
+        unsupported_parameters = []
         for pname in bidsdata.keys():
+            if pname in INVALID_PARAMETERS:
+                invalid_parameters.append(pname)
+                continue
             # check if an alternative name for the class exists
             pname_alter = ANALOGUES_DICT.get(pname, pname)
             value = get_bids_param_value(bidsdata, pname)
@@ -2116,7 +2123,15 @@ class BidsImagingSequence(ImagingSequence):
             except ImportError as err:
                 # if the parameter class does not exist, log the error
                 # and continue to the next parameter
-                logger.error(err)
+                unsupported_parameters.append(pname)
+
+        if len(invalid_parameters) > 0:
+            logger.error(f'Invalid parameters found : '
+                           f'{invalid_parameters}')
+        if len(unsupported_parameters) > 0:
+            logger.error(f'Following parameters are not supported yet.'
+                         f' Please raise an issue on GitHub : '
+                         f'{unsupported_parameters}')
 
     def is_valid(self):
         """

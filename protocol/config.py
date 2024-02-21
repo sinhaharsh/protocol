@@ -304,7 +304,8 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'PositivePCSDirections'         : 'PPCSD',
     'FieldOfView'                   : 'FOV',
     'ImageType'                     : 'IT',
-    'InPlanePhaseEncodingDirection' : 'PPED'
+    'InPlanePhaseEncodingDirection' : 'PPED',
+    'EffectiveEchoSpacing'          : 'EES',
 }
 
 ACRONYMS_DEMOGRAPHICS = {
@@ -334,6 +335,13 @@ PARAMETERS_ANALOGUES = {
     ],
 
 }
+
+INVALID_PARAMETERS = [
+    'DatasetType', 'License', 'Authors', 'Acknowledgements',
+    'HowToAcknowledge', 'Funding', 'ReferencesAndLinks',
+    'DatasetDOI', 'EthicsApprovals', 'ClinicalTrials',
+    'Name', 'Description', 'BIDSVersion',
+]
 
 # Invert the dictionary to get the reverse mapping
 PARAMETERS_ANALOGUES_DICT = {val: key

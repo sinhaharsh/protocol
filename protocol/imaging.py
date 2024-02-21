@@ -2028,8 +2028,18 @@ class ImagingSequence(BaseSequence, ABC):
 class BidsImagingSequence(ImagingSequence):
     """
     Class representing an Imaging sequence for BIDS datasets
+
+    Parameters
+    ----------
+    bidsfile : Path or str
+        Path to the BIDS JSON file
+    name : str
+        Name of the sequence
+    path : Path or str
+        Path to the folder containing the files
     """
-    def __init__(self, name='MRI', bidsfile=None,
+
+    def __init__(self, bidsfile=None, name='MRI',
                  path=None):
         """constructor"""
         super().__init__(name=name, path=path)
@@ -2076,7 +2086,7 @@ class BidsImagingSequence(ImagingSequence):
 
     def parse(self, bidsfile, params=None):
         """Parses the parameter values from a given BIDS JSON object or file."""
-
+        bidsfile = Path(bidsfile)
         if self.parameters is None:
             if params is None:
                 raise ValueError('imaging_params must be provided either during'
@@ -2128,8 +2138,8 @@ class DicomImagingSequence(ImagingSequence):
     """
 
     def __init__(self,
-                 name='MRI',
                  dicom=None,
+                 name='MRI',
                  imaging_params=None,
                  required_params=None,
                  store_demographics=True,

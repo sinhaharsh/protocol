@@ -1,4 +1,3 @@
-import json
 import re
 from abc import ABC
 from bisect import insort
@@ -11,7 +10,6 @@ from pathlib import Path
 import numpy as np
 import pydicom
 from lxml import objectify
-
 from protocol import config as cfg, logger
 from protocol.base import (BaseImagingProtocol, BaseParameter, BaseSequence,
                            CategoricalParameter, MultiValueCategoricalParameter,
@@ -26,7 +24,7 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
                             get_sequence_name, header_exists,
                             parse_csa_params, expand_number_range,
-                            get_bids_param_value)
+                            get_bids_param_value, read_json)
 
 
 class Manufacturer(CategoricalParameter):
@@ -2089,21 +2087,10 @@ class BidsImagingSequence(ImagingSequence):
     def parse(self, bidsfile, params=None):
         """Parses the parameter values from a given BIDS JSON object or file."""
         bidsfile = Path(bidsfile)
-        if self.parameters is None:
-            if params is None:
-                raise ValueError('imaging_params must be provided either during'
-                                 ' initialization or during parse() call')
-            else:
-                self._init_param_classes()
 
         if not bidsfile.exists():
             raise IOError('input bids file path does not exist!')
-
-        with open(bidsfile, 'r') as f:
-            try:
-                bidsdata = json.load(f)
-            except ValueError:
-                raise ValueError(f'BIDS file - {bidsfile} is not a valid json.')
+        bidsdata = read_json(bidsfile)
 
         invalid_parameters = []
         unsupported_parameters = []
@@ -2120,16 +2107,16 @@ class BidsImagingSequence(ImagingSequence):
 
             try:
                 self.add_parameter(pname_alter, value)
-            except ImportError as err:
+            except ImportError:
                 # if the parameter class does not exist, log the error
                 # and continue to the next parameter
                 unsupported_parameters.append(pname)
 
         if len(invalid_parameters) > 0:
-            logger.error(f'Invalid parameters found : '
+            logger.warning(f'Invalid parameters found : '
                            f'{invalid_parameters}')
         if len(unsupported_parameters) > 0:
-            logger.error(f'Following parameters are not supported yet.'
+            logger.warning(f'Following parameters are not supported yet.'
                          f' Please raise an issue on GitHub : '
                          f'{unsupported_parameters}')
 

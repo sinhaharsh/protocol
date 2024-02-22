@@ -2048,6 +2048,9 @@ class BidsImagingSequence(ImagingSequence):
         if path:
             self.set_img_path(path)
 
+        self.invalid_parameters = []
+        self.unsupported_parameters = []
+
         if bidsfile is not None:
             self.parse(bidsfile)
 
@@ -2092,11 +2095,9 @@ class BidsImagingSequence(ImagingSequence):
             raise IOError('input bids file path does not exist!')
         bidsdata = read_json(bidsfile)
 
-        invalid_parameters = []
-        unsupported_parameters = []
         for pname in bidsdata.keys():
             if pname in INVALID_PARAMETERS:
-                invalid_parameters.append(pname)
+                self.invalid_parameters.append(pname)
                 continue
             # check if an alternative name for the class exists
             pname_alter = ANALOGUES_DICT.get(pname, pname)
@@ -2110,15 +2111,7 @@ class BidsImagingSequence(ImagingSequence):
             except ImportError:
                 # if the parameter class does not exist, log the error
                 # and continue to the next parameter
-                unsupported_parameters.append(pname)
-
-        if len(invalid_parameters) > 0:
-            logger.warning(f'Invalid parameters found : '
-                           f'{invalid_parameters}')
-        if len(unsupported_parameters) > 0:
-            logger.warning(f'Following parameters are not supported yet.'
-                           f' Please raise an issue on GitHub : '
-                           f'{unsupported_parameters}')
+                self.unsupported_parameters.append(pname)
 
     def is_valid(self):
         """
@@ -2129,6 +2122,16 @@ class BidsImagingSequence(ImagingSequence):
         file. In such cases, we will return False.
         """
 
+        if len(self.invalid_parameters) > 0:
+            logger.error(f'Invalid parameters found : '
+                         f'{self.invalid_parameters}')
+        if len(self.unsupported_parameters) > 0:
+            logger.error(f'Following parameters are not supported yet.'
+                         f' Please raise an issue on GitHub : '
+                         f'{self.unsupported_parameters}')
+        if not self.non_empty_flag:
+            logger.error('None of the parameters found in the JSON file'
+                         'are supported/valid. Please check the JSON file.')
         return self.non_empty_flag
 
 

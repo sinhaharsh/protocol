@@ -2117,8 +2117,8 @@ class BidsImagingSequence(ImagingSequence):
                            f'{invalid_parameters}')
         if len(unsupported_parameters) > 0:
             logger.warning(f'Following parameters are not supported yet.'
-                         f' Please raise an issue on GitHub : '
-                         f'{unsupported_parameters}')
+                           f' Please raise an issue on GitHub : '
+                           f'{unsupported_parameters}')
 
     def is_valid(self):
         """

@@ -29,7 +29,7 @@ def configure_logger(log, output_dir, mode='w', level='WARNING'):
     error_formatter = '%(asctime)s - %(levelname)s - %(message)s'
     if output_dir is None:
         output_dir = tempfile.gettempdir()
-    output_dir = Path(output_dir) / '.mrdataset'
+    output_dir = Path(output_dir) / '.protocol'
     output_dir.mkdir(parents=True, exist_ok=True)
 
     options = {

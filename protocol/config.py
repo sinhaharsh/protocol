@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 
 
-def configure_logger(log, output_dir, mode='w', level='WARNING'):
+def configure_logger(log, output_dir, mode='w', level='ERROR'):
     """
     Initiate log files.
 

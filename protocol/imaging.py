@@ -2123,15 +2123,15 @@ class BidsImagingSequence(ImagingSequence):
         """
 
         if len(self.invalid_parameters) > 0:
-            logger.error(f'Invalid parameters found : '
-                         f'{self.invalid_parameters}')
+            logger.warning(f'Invalid parameters found : '
+                           f'{self.invalid_parameters}')
         if len(self.unsupported_parameters) > 0:
-            logger.error(f'Following parameters are not supported yet.'
-                         f' Please raise an issue on GitHub : '
-                         f'{self.unsupported_parameters}')
+            logger.warning(f'Following parameters are not supported yet.'
+                           f' Please raise an issue on GitHub : '
+                           f'{self.unsupported_parameters}')
         if not self.non_empty_flag:
-            logger.error('None of the parameters found in the JSON file'
-                         'are supported/valid. Please check the JSON file.')
+            logger.warning('None of the parameters found in the JSON file'
+                           'are supported/valid. Please check the JSON file.')
         return self.non_empty_flag
 
 

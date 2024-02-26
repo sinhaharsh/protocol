@@ -3,15 +3,14 @@ import json
 import re
 import unicodedata
 import warnings
-from importlib import import_module
 from pathlib import Path
 from typing import Optional
 
 import pydicom
-from protocol import config
+
 from protocol import logger
 from protocol.config import (BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
-                             Unspecified)
+                             Unspecified, SLICE_MODE, PAT, SHIM, HEADER_TAGS)
 
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore')
@@ -45,8 +44,8 @@ def get_bids_param_value(bidsdata: dict,
     This method return a value for the given key. If key is not available,
     then returns default value None.
     """
-    if name not in tag_dict:
-        return None
+    # if name not in tag_dict:
+    #     return None
 
     value = bidsdata.get(name, None)
 
@@ -151,13 +150,13 @@ def parse_csa_params(dicom: pydicom.FileDataset,
         raise AttributeError('CSA Header exists, but xProtocol is missing')
 
     slice_code = get_csa_props("sKSpace.ucMultiSliceMode", text)
-    slice_mode = config.SLICE_MODE.get(slice_code, slice_code)
+    slice_mode = SLICE_MODE.get(slice_code, slice_code)
 
     ipat_code = get_csa_props("sPat.ucPATMode", text)
-    ipat = config.PAT.get(ipat_code, ipat_code)
+    ipat = PAT.get(ipat_code, ipat_code)
 
     shim_code = get_csa_props("sAdjData.uiAdjShimMode", text)
-    shim = config.SHIM.get(shim_code, shim_code)
+    shim = SHIM.get(shim_code, shim_code)
 
     shim_first_order = []
     for i in ['X', 'Y', 'Z']:
@@ -206,7 +205,7 @@ def get_header(dicom: pydicom.FileDataset, name: str):
     This method return a value for the given key. If key is not available,
     then returns default value None.
     """
-    data = dicom.get(config.HEADER_TAGS[name], None)
+    data = dicom.get(HEADER_TAGS[name], None)
     if data:
         return data.value
     return None
@@ -328,28 +327,6 @@ def get_effective_echo_spacing(dicom: pydicom.FileDataset,
         return value / 1000
     else:
         return not_found_value
-
-
-def import_string(dotted_path):
-    """
-    Import a dotted module path and return the attribute/class designated by the
-    last name in the path. Raise ImportError if the import failed.
-    """
-    try:
-        module_path, class_name = dotted_path.rsplit(".", 1)
-    except ValueError as err:
-        raise ImportError(
-            "%s doesn't look like a module path" % dotted_path) from err
-
-    module = import_module(module_path)
-
-    try:
-        return getattr(module, class_name)
-    except AttributeError as err:
-        raise ImportError(
-            'Module "%s" does not define a "%s" attribute/class'
-            % (module_path, class_name)
-        ) from err
 
 
 def convert2ascii(value, allow_unicode=False):

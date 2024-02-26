@@ -31,11 +31,12 @@ jobs:
             -   name: Install dependencies
                 run: |
                     python -m pip install --upgrade pip
-                    if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
                     pip install .
+                    pip install .[test]
             -   name: Lint with flake8
                 run: |
                     make lint
             -   name: Test with pytest
+                working-directory: ${{ runner.temp }}
                 run: |
-                    pytest
+                    pytest --pyargs protocol

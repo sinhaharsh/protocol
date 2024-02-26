@@ -4,12 +4,12 @@ from bisect import insort
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
+from importlib import import_module
 from pathlib import Path
 
 import numpy as np
 import pydicom
 from lxml import objectify
-import json
 from protocol import config as cfg, logger
 from protocol.base import (BaseImagingProtocol, BaseParameter, BaseSequence,
                            CategoricalParameter, MultiValueCategoricalParameter,
@@ -18,12 +18,13 @@ from protocol.config import (ACRONYMS_IMAGING_PARAMETERS as ACRONYMS_IMG,
                              BASE_IMAGING_PARAMS_DICOM_TAGS as DICOM_TAGS,
                              SESSION_INFO_DICOM_TAGS as SESSION_TAGS,
                              ACRONYMS_DEMOGRAPHICS as ACRONYMS_DEMO,
+                             PARAMETERS_ANALOGUES_DICT as ANALOGUES_DICT,
                              Invalid, Unspecified, UnspecifiedType,
-                             ProtocolType, valid_neck_coils)
+                             ProtocolType, valid_neck_coils, INVALID_PARAMETERS)
 from protocol.utils import (auto_convert, convert2ascii, get_dicom_param_value,
-                            get_sequence_name, header_exists, import_string,
+                            get_sequence_name, header_exists,
                             parse_csa_params, expand_number_range,
-                            get_bids_param_value)
+                            get_bids_param_value, read_json)
 
 
 class Manufacturer(CategoricalParameter):
@@ -485,10 +486,10 @@ class DwellTime(NumericParameter):
                          acronym=ACRONYMS_IMG[self._name])
 
 
-class MultiBandAccelerationFactor(NumericParameter):
-    """Parameter specific class for MultiBandAccelerationFactor"""
+class MultibandAccelerationFactor(NumericParameter):
+    """Parameter specific class for MultibandAccelerationFactor"""
 
-    _name = 'MultiBandAccelerationFactor'
+    _name = 'MultibandAccelerationFactor'
 
     def __init__(self, value=Unspecified):
         """Constructor."""
@@ -761,6 +762,21 @@ class PhaseEncodingDirection(CategoricalParameter):
                          dicom_tag=DICOM_TAGS[self._name],
                          acronym=ACRONYMS_IMG[self._name],
                          allowed_values=cfg.allowed_values_PED)
+
+
+class InPlanePhaseEncodingDirection(CategoricalParameter):
+    """Parameter specific class for InPlanePhaseEncodingDirection"""
+
+    _name = 'InPlanePhaseEncodingDirection'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+
+        super().__init__(name=self._name,
+                         value=value,
+                         dicom_tag=DICOM_TAGS[self._name],
+                         acronym=ACRONYMS_IMG[self._name],
+                         allowed_values=['ROW', 'COL'])
 
 
 class ScanningSequence(CategoricalParameter):
@@ -1921,10 +1937,11 @@ class ImagingSequence(BaseSequence, ABC):
         param_cls_name = f'{module}.{pname}'
 
         try:
-            param_cls = import_string(param_cls_name)
+            param_cls = self.import_string(param_cls_name)
         except ImportError:
-            logger.error(f'Could not import {param_cls_name}')
-            raise ImportError(f'Could not import {param_cls_name}')
+            raise ImportError(f'Parameter {pname} is not '
+                              f'supported yet. '
+                              f'Please raise a issue on GitHub.')
 
         try:
             param = param_cls(value)
@@ -1939,10 +1956,11 @@ class ImagingSequence(BaseSequence, ABC):
         for p in self.parameters:
             param_cls_name = f'protocol.imaging.{p}'
             try:
-                cls_object = import_string(param_cls_name)
+                cls_object = self.import_string(param_cls_name)
             except ImportError:
-                logger.error(f'Could not import {param_cls_name}')
-                raise ImportError(f'Could not import {param_cls_name}')
+                raise ImportError(f'Parameter {param_cls_name} is not '
+                                  f'supported yet. '
+                                  f'Please raise a issue on GitHub.')
             self.params_classes.append(cls_object)
 
     def from_dict(self, params_dict):
@@ -1965,12 +1983,63 @@ class ImagingSequence(BaseSequence, ABC):
             else:
                 self.add_parameter(pname, value)
 
+    @staticmethod
+    def import_string(dotted_path):
+        """
+        Import a dotted module path and return the attribute/class designated by
+        the last name in the path. Raise ImportError if the import failed.
+        """
+
+        # TODO: if not able to search for the module, then find the class
+        #  by comparing all classes in lowercase.
+        #  If found, then return the class
+
+        # check if it is a valid module path
+        try:
+            module_path, class_name = dotted_path.rsplit(".", 1)
+        except ValueError as err:
+            raise ImportError(
+                "%s doesn't look like a module path" % dotted_path) from err
+
+        # if the parameter class exists with an alternative name in the module
+        if class_name in ANALOGUES_DICT:
+            class_name = ANALOGUES_DICT[class_name]
+
+        # import module : protocol.imaging
+        module = import_module(module_path)
+
+        try:
+            # directly try if the parameter class exists
+            return getattr(module, class_name)
+        except AttributeError:
+            # if not, search for appropriate parameter class in the module
+            for name, cls in module.__dict__.items():
+                if name.lower() == class_name.lower() \
+                        and issubclass(cls, BaseParameter):
+                    return getattr(module, name)
+
+        # didn't find an appropriate class raise error
+        raise ImportError(
+            'Module "%s" does not define a "%s" attribute/class'
+            % (module_path, class_name)
+        )
+
 
 class BidsImagingSequence(ImagingSequence):
     """
     Class representing an Imaging sequence for BIDS datasets
+
+    Parameters
+    ----------
+    bidsfile : Path or str
+        Path to the BIDS JSON file
+    name : str
+        Name of the sequence
+    path : Path or str
+        Path to the folder containing the files
     """
-    def __init__(self, name='MRI', bidsfile=None,
+
+    def __init__(self, bidsfile=None, name='MRI',
                  path=None):
         """constructor"""
         super().__init__(name=name, path=path)
@@ -1978,6 +2047,9 @@ class BidsImagingSequence(ImagingSequence):
         self.img_paths = None
         if path:
             self.set_img_path(path)
+
+        self.invalid_parameters = []
+        self.unsupported_parameters = []
 
         if bidsfile is not None:
             self.parse(bidsfile)
@@ -2017,29 +2089,29 @@ class BidsImagingSequence(ImagingSequence):
 
     def parse(self, bidsfile, params=None):
         """Parses the parameter values from a given BIDS JSON object or file."""
-
-        if self.parameters is None:
-            if params is None:
-                raise ValueError('imaging_params must be provided either during'
-                                 ' initialization or during parse() call')
-            else:
-                self._init_param_classes()
+        bidsfile = Path(bidsfile)
 
         if not bidsfile.exists():
             raise IOError('input bids file path does not exist!')
+        bidsdata = read_json(bidsfile)
 
-        with open(bidsfile, 'r') as f:
-            try:
-                bidsdata = json.load(f)
-            except ValueError:
-                raise ValueError(f'BIDS file - {bidsfile} is not a valid json.')
-
-        for pname in self.parameters:
+        for pname in bidsdata.keys():
+            if pname in INVALID_PARAMETERS:
+                self.invalid_parameters.append(pname)
+                continue
+            # check if an alternative name for the class exists
+            pname_alter = ANALOGUES_DICT.get(pname, pname)
             value = get_bids_param_value(bidsdata, pname)
             if value is not None:
                 # If even one value is not None, we will set the non_empty_flag
                 self.non_empty_flag = True
-            self.add_parameter(pname, value)
+
+            try:
+                self.add_parameter(pname_alter, value)
+            except ImportError:
+                # if the parameter class does not exist, log the error
+                # and continue to the next parameter
+                self.unsupported_parameters.append(pname)
 
     def is_valid(self):
         """
@@ -2050,6 +2122,16 @@ class BidsImagingSequence(ImagingSequence):
         file. In such cases, we will return False.
         """
 
+        if len(self.invalid_parameters) > 0:
+            logger.warning(f'Invalid parameters found : '
+                           f'{self.invalid_parameters}')
+        if len(self.unsupported_parameters) > 0:
+            logger.warning(f'Following parameters are not supported yet.'
+                           f' Please raise an issue on GitHub : '
+                           f'{self.unsupported_parameters}')
+        if not self.non_empty_flag:
+            logger.warning('None of the parameters found in the JSON file'
+                           'are supported/valid. Please check the JSON file.')
         return self.non_empty_flag
 
 
@@ -2061,8 +2143,8 @@ class DicomImagingSequence(ImagingSequence):
     """
 
     def __init__(self,
-                 name='MRI',
                  dicom=None,
+                 name='MRI',
                  imaging_params=None,
                  required_params=None,
                  store_demographics=True,

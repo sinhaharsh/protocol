@@ -801,7 +801,8 @@ class BaseSequence(MutableMapping):
         for key in self.params:
             param = self.__dict__[key]
             name = param.acronym if param.acronym else param.name
-            plist.append(f'{name}={param._value}')
+            if not isinstance(param.get_value(), UnspecifiedType):
+                plist.append(f'{name}={param.get_value()}')
 
         return '{}({})'.format(self.name, ','.join(plist))
 

@@ -26,8 +26,8 @@ def test_add_sequence(sample_dcm):
 
 def test_add_invalid_type():
     with pytest.raises(TypeError):
-        protocol = MRImagingProtocol(name="TestProtocol",
-                                         category="TestCategory")
+        _ = MRImagingProtocol(name="TestProtocol",
+                              category="TestCategory")
 
 
 def test_add_duplicate_name(sample_dcm):
@@ -49,14 +49,16 @@ def test_protocol_emptiness():
 
 
 # Test getting sequences
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture],
+          deadline=None)
 @given(sequence_name=text())
 def test_get_sequence(sequence_name, sample_dcm):
     protocol = MRImagingProtocol()
     seq_name = convert2ascii(sequence_name)
     if not seq_name:
         with pytest.raises(ValueError):
-            sequence = DicomImagingSequence(name=sequence_name, dicom=sample_dcm)
+            _ = DicomImagingSequence(name=sequence_name,
+                                            dicom=sample_dcm)
     else:
         sequence = DicomImagingSequence(name=sequence_name, dicom=sample_dcm)
         protocol.add(sequence)

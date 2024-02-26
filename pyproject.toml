@@ -17,7 +17,7 @@ dependencies = [
 ]
 authors = [
     { name = "Pradeep Reddy Raamana", email = "raamana@gmail.com" },
-    { name = "Harsh Sinha", email = "sinha.harsh@pitt.edu" },
+    { name = "Harsh Sinha", email = "harsh.sinha@pitt.edu" },
 ]
 keywords = [
     "protocol",
@@ -27,7 +27,13 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3.11",
 ]
-
+[project.optional-dependencies]
+test = [
+    "requests",
+    "pytest",
+    "hypothesis",
+    "flake8",
+]
 [project.urls]
 Homepage = "https://github.com/raamana/protocol"
 
@@ -35,9 +41,11 @@ Homepage = "https://github.com/raamana/protocol"
 [tool.hatch.build]
 include = [
     "protocol/*.py",
+    "protocol/resources/*",
+    "protocol/tests/*",
+    "protocol/tests/resources/*",
 ]
 exclude = [
-    "protocol/tests/*",
 ]
 
 [tool.hatch.version]

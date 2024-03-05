@@ -2102,12 +2102,12 @@ class BidsImagingSequence(ImagingSequence):
             # check if an alternative name for the class exists
             pname_alter = ANALOGUES_DICT.get(pname, pname)
             value = get_bids_param_value(bidsdata, pname)
-            if value is not None:
-                # If even one value is not None, we will set the non_empty_flag
-                self.non_empty_flag = True
 
             try:
                 self.add_parameter(pname_alter, value)
+                # If even one parameter was added, the non_empty_flag
+                #  will be set to True
+                self.non_empty_flag = True
             except ImportError:
                 # if the parameter class does not exist, log the error
                 # and continue to the next parameter

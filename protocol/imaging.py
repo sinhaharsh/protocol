@@ -1941,7 +1941,15 @@ class ImagingSequence(BaseSequence, ABC):
         self.parameters = set(ACRONYMS_IMG.keys())
         self.store_demographics = store_demographics
         self.demographics = set(ACRONYMS_DEMO.keys())
+        self.allowed_keys = []
         super().__init__(name=name, path=path)
+
+    def set_attributes(self, kwargs):
+        """set attributes"""
+        # note that __setattr__ is 1.4x slower than __dict__.update
+        for pname, value in kwargs.items():
+            if pname in self.allowed_keys:
+                self.add_parameter(pname, value)
 
     def add_parameter(self, pname, value, module='protocol.imaging'):
         """
@@ -2062,7 +2070,7 @@ class BidsImagingSequence(ImagingSequence):
     """
 
     def __init__(self, bidsfile=None, name='MRI',
-                 path=None):
+                 path=None, **kwargs):
         """constructor"""
         super().__init__(name=name, path=path)
         self.non_empty_flag = False
@@ -2072,6 +2080,9 @@ class BidsImagingSequence(ImagingSequence):
 
         self.invalid_parameters = []
         self.unsupported_parameters = []
+
+        self.allowed_keys = ['task', 'acquisition']
+        self.set_attributes(kwargs)
 
         if bidsfile is not None:
             self.parse(bidsfile)

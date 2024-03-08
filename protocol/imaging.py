@@ -1556,6 +1556,28 @@ class SeriesNumber(NumericParameter):
                          acronym=ACRONYMS_DEMO[self._name])
 
 
+class Task(CategoricalParameter):
+    _name = 'Task'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         dicom_tag=None,
+                         acronym=ACRONYMS_IMG[self._name])
+
+
+class Acquisition(CategoricalParameter):
+    _name = 'Acquisition'
+
+    def __init__(self, value=Unspecified):
+        """Constructor."""
+        super().__init__(name=self._name,
+                         value=value,
+                         dicom_tag=None,
+                         acronym=ACRONYMS_IMG[self._name])
+
+
 class PatientAge(NumericParameter):
     _name = 'PatientAge'
 

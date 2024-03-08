@@ -306,6 +306,9 @@ ACRONYMS_IMAGING_PARAMETERS = {
     'ImageType'                     : 'IT',
     'InPlanePhaseEncodingDirection' : 'PPED',
     'EffectiveEchoSpacing'          : 'EES',
+    # BIDS entities
+    'Task'                          : 'BTSK',
+    'Acquisition'                   : 'BACQ'
 }
 
 ACRONYMS_DEMOGRAPHICS = {
